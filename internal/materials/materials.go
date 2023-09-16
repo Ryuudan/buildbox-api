@@ -1,4 +1,4 @@
-package projects
+package materials
 
 import (
 	"net/http"
@@ -13,10 +13,10 @@ var (
 
 func Initialize(client *mongo.Client) {
 	routes := chi.NewRouter()
-	println("-------------- PROJECTS MODULE INITIALIZED --------------")
-	routes.Get("/projects", func(w http.ResponseWriter, r *http.Request) {
+	println("-------------- MATERIALS MODULE INITIALIZED --------------")
+	routes.Get("/materials", func(w http.ResponseWriter, r *http.Request) {
 		// Write a string response to the client.
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("This is a simple endpoint for listing projects"))
+		w.Write([]byte("This is a simple endpoint for listing materials"))
 	})
 }

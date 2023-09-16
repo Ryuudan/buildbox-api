@@ -9,6 +9,9 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/Pyakz/buildbox-api/internal/documents"
+	"github.com/Pyakz/buildbox-api/internal/employees"
+	"github.com/Pyakz/buildbox-api/internal/materials"
 	"github.com/Pyakz/buildbox-api/internal/projects"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -79,10 +82,15 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	app.Get("/test", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 
-	
 	projects.Initialize(client)
-	
+	materials.Initialize(client)
+	documents.Initialize(client)
+	employees.Initialize(client)
+
 	// Start server
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
