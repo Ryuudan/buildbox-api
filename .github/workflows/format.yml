@@ -2,9 +2,9 @@ name: Format Check
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   format-check:
@@ -21,8 +21,7 @@ jobs:
           go-version: 1.21.1 # Replace with your desired Go version
 
       - name: Run GoFmt
-        run: |
-          go fmt -s -w .
+        run: go fmt ./...
 
       - name: Check Code Formatting
         run: |
