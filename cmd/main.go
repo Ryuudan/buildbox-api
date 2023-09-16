@@ -82,14 +82,15 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	app.Get("/test", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	API_ROUTES := chi.NewRouter()
 
-	projects.Initialize(client)
-	materials.Initialize(client)
-	documents.Initialize(client)
-	employees.Initialize(client)
+	projects.Initialize(client, API_ROUTES)
+	materials.Initialize(client, API_ROUTES)
+	documents.Initialize(client, API_ROUTES)
+	employees.Initialize(client, API_ROUTES)
+
+	// every routes in API_ROUTES now starts at /api
+	app.Mount("/api", API_ROUTES)
 
 	// Start server
 	server := http.Server{

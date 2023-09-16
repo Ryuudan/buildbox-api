@@ -1,0 +1,32 @@
+name: Format Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  format-check:
+    name: Check Code Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.1 # Replace with your desired Go version
+
+      - name: Run GoFmt
+        run: |
+          go fmt -s -w .
+
+      - name: Check Code Formatting
+        run: |
+          if [[ -n "$(git diff --name-only)" ]]; then
+            echo "Code formatting issues found. Please run 'gofmt -s -w .' to format your code."
+            exit 1
+          fi
