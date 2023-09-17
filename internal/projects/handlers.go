@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Pyakz/buildbox-api/utils"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator"
 )
 
@@ -74,33 +75,20 @@ func (p *ProjectHandler) GetProjectsHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (p *ProjectHandler) GetProjectHandler(w http.ResponseWriter, r *http.Request) {
-	// You can call methods from ph.projectService to fetch a specific project
-	// For example:
-	// project, err := ph.projectService.GetProjectByID(r.Context(), projectID)
-	// Handle the result and error accordingly
-	utils.RenderJSON(w, http.StatusOK, []string{"Project 1", "Project 2", "Project 3"})
-}
+	projectId := chi.URLParam(r, "id")
 
-func (p *ProjectHandler) UpdateProjectsHandler(w http.ResponseWriter, r *http.Request) {
-	// You can call methods from ph.projectService to update projects
-	// For example:
-	// updatedProject, err := ph.projectService.UpdateProjectByID(r.Context(), projectID, updatedData)
-	// Handle the result and error accordingly
-	utils.RenderJSON(w, http.StatusOK, []string{"Project 1", "Project 2", "Project 3"})
-}
+	if projectId == "" {
+		utils.RenderError(w, "Project ID is required", http.StatusBadRequest, "")
+		return
+	}
 
-func (p *ProjectHandler) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) {
-	// You can call methods from ph.projectService to delete a project
-	// For example:
-	// err := ph.projectService.DeleteProjectByID(r.Context(), projectID)
-	// Handle the error accordingly
-	utils.RenderJSON(w, http.StatusOK, []string{"Project 1", "Project 2", "Project 3"})
-}
+	project, err := p.projectService.GetProjectByID(r.Context(), projectId)
 
-func (p *ProjectHandler) ArchiveProjectsHandler(w http.ResponseWriter, r *http.Request) {
-	// You can call methods from ph.projectService to archive projects
-	// For example:
-	// err := ph.projectService.ArchiveProject(r.Context(), projectID)
-	// Handle the error accordingly
-	utils.RenderJSON(w, http.StatusOK, []string{"Project 1", "Project 2", "Project 3"})
+	if err != nil {
+		utils.RenderError(w, "Oops! Something went wrong while fetching the project. Please try again later.", http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	defer r.Body.Close()
+	utils.RenderJSON(w, http.StatusOK, project)
 }

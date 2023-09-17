@@ -24,7 +24,6 @@ type projectService struct {
 }
 
 func NewProjectService(collection *mongo.Collection) ProjectService {
-
 	return &projectService{
 		collection: collection,
 	}
@@ -38,6 +37,10 @@ func (p *projectService) CreateProject(ctx context.Context, newProject *Project)
 	if newProject.StartDate == nil {
 		currentDate := time.Now().UTC()
 		newProject.StartDate = &currentDate
+	}
+
+	if newProject.Status == "" {
+		newProject.Status = "planning" // Default status
 	}
 
 	if _, err := p.collection.InsertOne(ctx, newProject); err != nil {
@@ -55,12 +58,13 @@ func (p *projectService) GetProjectByID(ctx context.Context, projectID string) (
 	}
 
 	project := &Project{}
+
 	if err := p.collection.FindOne(ctx, bson.M{"_id": projectID}).Decode(project); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("Project not found for the provided ID")
 		}
 		return nil, fmt.Errorf("an error occurred while retrieving the project: %w", err)
 	}
-
+	println("--", project)
 	return project, nil
 }
