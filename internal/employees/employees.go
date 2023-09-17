@@ -11,7 +11,7 @@ var (
 // Define package-level constants or configuration settings here.
 )
 
-func Initialize(client *mongo.Client, router *chi.Mux) {
+func Initialize(db *mongo.Database, router *chi.Mux) {
 	println("-------------- EMPLOYEES MODULE INITIALIZED --------------")
 	router.Get("/employees", func(w http.ResponseWriter, _ *http.Request) {
 		// Write a string response to the client.

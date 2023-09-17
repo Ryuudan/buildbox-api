@@ -51,6 +51,7 @@ func main() {
 	if err := client.Ping(ctx, nil); err != nil {
 		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
+	
 	fmt.Println("Connected to MongoDB")
 
 	// Set up router
@@ -83,11 +84,11 @@ func main() {
 	})
 
 	API_ROUTES := chi.NewRouter()
-
-	projects.Initialize(client, API_ROUTES)
-	materials.Initialize(client, API_ROUTES)
-	documents.Initialize(client, API_ROUTES)
-	employees.Initialize(client, API_ROUTES)
+	db := client.Database(os.Getenv("MONGODB_NAME"))
+	projects.Initialize(db, API_ROUTES)
+	materials.Initialize(db, API_ROUTES)
+	documents.Initialize(db, API_ROUTES)
+	employees.Initialize(db, API_ROUTES)
 
 	// every routes in API_ROUTES now starts at /api
 	app.Mount("/api", API_ROUTES)

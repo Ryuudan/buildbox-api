@@ -1,21 +1,25 @@
 package projects
 
 import (
-	"net/http"
-
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var (
-// Define package-level constants or configuration settings here.
-)
-
-func Initialize(client *mongo.Client, router chi.Router) {
+func Initialize(db *mongo.Database, router chi.Router) {
 	println("-------------- PROJECTS MODULE INITIALIZED --------------")
-	router.Get("/projects", func(w http.ResponseWriter, _ *http.Request) {
-		// Write a string response to the client.
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("This is a simple endpoint for listing projects"))
+
+	service := NewProjectService(db.Collection("projects"))
+	project := NewProjectHandler(service)
+
+	router.Route("/v1", func(v1 chi.Router) {
+		v1.Use(utils.VersionMiddleware("v1"))
+
+		v1.Get("/projects", project.GetProjectsHandler)
+		v1.Post("/projects", project.CreateProjectHandler)
+		v1.Get("/projects/{id}", project.GetProjectHandler)
+		v1.Patch("/projects/{id}", project.UpdateProjectsHandler)
+		v1.Delete("/projects/{id}", project.DeleteProjectHandler)
+		v1.Put("/projects/{id}/archive", project.ArchiveProjectsHandler)
 	})
 }
