@@ -9,14 +9,12 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/Pyakz/buildbox-api/internal/projects"
+	"github.com/Pyakz/buildbox-api/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -26,28 +24,13 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// Set up database connection
-	mongoURI := os.Getenv("MONGODB_URI")
-	clientOptions := options.Client().ApplyURI(mongoURI)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	db_client, err := db.PostgresConnect()
+
 	if err != nil {
-		log.Fatalf("Error creating MongoDB client: %v", err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			log.Fatalf("Error disconnecting from MongoDB: %v", err)
-		}
-	}()
-
-	// Ping the MongoDB server to check if the connection was successful.
-	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatalf("Failed to ping MongoDB: %v", err)
+		log.Fatalf("Error connecting to the database: %v", err)
 	}
 
-	fmt.Println("Connected to MongoDB")
+	defer db_client.Close()
 
 	// Set up router
 	app := chi.NewRouter()
@@ -79,8 +62,8 @@ func main() {
 	})
 
 	API_ROUTES := chi.NewRouter()
-	db := client.Database(os.Getenv("MONGODB_NAME"))
-	projects.Initialize(db, API_ROUTES)
+	// db := client.Database(os.Getenv("MONGODB_NAME"))
+	// projects.Initialize(db, API_ROUTES)
 	// materials.Initialize(db, API_ROUTES)
 	// documents.Initialize(db, API_ROUTES)
 	// employees.Initialize(db, API_ROUTES)
@@ -109,7 +92,7 @@ func main() {
 	<-sigChan
 
 	log.Println("Shutting down server...")
-	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("Error shutting down server: %v", err)
