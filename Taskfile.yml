@@ -1,0 +1,29 @@
+version: "3"
+
+tasks:
+  dev:
+    cmds:
+      - air
+  docker:
+    cmds:
+      - docker-compose up
+  format:
+    cmds:
+      - go fmt ./...
+  tidy:
+    cmds:
+      - go mod tidy
+  docs:
+    cmds:
+      - swag init --dir ./cmd
+  build:
+    cmds:
+      - go build -o buildbox-api ./cmd
+  start:
+    cmds:
+      - ./buildbox-api
+
+  install:
+    cmds:
+      - go install github.com/swaggo/swag/cmd/swag@latest
+      - go install github.com/go-task/task/v3/cmd/task@latest
