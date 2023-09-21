@@ -10,19 +10,23 @@ import (
 	"time"
 
 	"github.com/Pyakz/buildbox-api/db"
+	"github.com/Pyakz/buildbox-api/internal/projects"
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"github.com/joho/godotenv"
 )
 
-func main() {
-
-	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+func init() {
+	// Load environment variables here
+	if err := utils.LoadEnvironmentVariables(); err != nil {
+		fmt.Printf("Failed to load environment variables: %v\n", err)
+		os.Exit(1)
 	}
+}
+
+func main() {
 
 	db_client, err := db.PostgresConnect()
 
@@ -63,7 +67,7 @@ func main() {
 
 	API_ROUTES := chi.NewRouter()
 	// db := client.Database(os.Getenv("MONGODB_NAME"))
-	// projects.Initialize(db, API_ROUTES)
+	projects.Initialize(db_client.Project, API_ROUTES)
 	// materials.Initialize(db, API_ROUTES)
 	// documents.Initialize(db, API_ROUTES)
 	// employees.Initialize(db, API_ROUTES)

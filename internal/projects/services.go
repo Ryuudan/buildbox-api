@@ -2,69 +2,86 @@ package projects
 
 import (
 	"context"
-	"fmt"
-	"time"
 
-	"github.com/Pyakz/buildbox-api/utils"
-	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/Pyakz/buildbox-api/ent"
+	"github.com/Pyakz/buildbox-api/ent/project"
+	_ "github.com/lib/pq"
 )
 
+// ProjectService defines methods for project management.
 type ProjectService interface {
-	CreateProject(ctx context.Context, newProject *Project) (*Project, error)
-	GetProjectByID(ctx context.Context, projectID string) (*Project, error)
-
-	// Add more methods here for project management
+	CreateProject(ctx context.Context, newProject *Project) (*ent.Project, error)
+	GetProjects(ctx context.Context) ([]*ent.Project, error)
 }
 
+// EntProjectService is an implementation of ProjectService that uses the Ent client.
 type projectService struct {
-	collection *mongo.Collection
-	// You can include other dependencies or repositories here if needed
+	client *ent.ProjectClient
 }
 
-func NewProjectService(collection *mongo.Collection) ProjectService {
-	return &projectService{
-		collection: collection,
-	}
+// NewEntProjectService creates a new instance of EntProjectService.
+func NewProjectService(client *ent.ProjectClient) ProjectService {
+	return &projectService{client: client}
 }
 
-func (p *projectService) CreateProject(ctx context.Context, newProject *Project) (*Project, error) {
-	if newProject.ID == "" {
-		newProject.ID = utils.GenerateID()
-	}
+// CreateProject creates a new project.
+func (s *projectService) CreateProject(ctx context.Context, newProject *Project) (*ent.Project, error) {
 
-	if newProject.StartDate == nil {
-		currentDate := time.Now().UTC()
-		newProject.StartDate = &currentDate
-	}
+	// if status is not in the payload just use the default which is "planning"
 
 	if newProject.Status == "" {
-		newProject.Status = "planning" // Default status
+		newProject.Status = project.StatusPlanning
 	}
 
-	if _, err := p.collection.InsertOne(ctx, newProject); err != nil {
-		return nil, fmt.Errorf("failed to create project: %w", err)
+	project, err := s.client.Create().
+		// accountID can be found in claims
+		// SetAccountID(newProject.AccountID).
+
+		// createdBy can be found in claims
+		// which is the id of the current user
+		// SetCreatedBy(newProject.CreatedBy).
+
+		SetName(newProject.Name).
+		SetStatus(newProject.Status).
+		SetStartDate(*newProject.StartDate).
+		SetEndDate(*newProject.EndDate).
+		SetClientID(newProject.ClientID).
+		SetBudget(newProject.Budget).
+		SetLocation(newProject.Location).
+		SetDescription(newProject.Description).
+		SetNotes(newProject.Notes).
+		SetManagerID(newProject.ManagerID).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return newProject, nil
+	return project, nil
 }
 
-func (p *projectService) GetProjectByID(ctx context.Context, projectID string) (*Project, error) {
-	// Validate that projectID is a valid UUID
-	_, err := uuid.Parse(projectID)
+func (s *projectService) GetProjects(ctx context.Context) ([]*ent.Project, error) {
+	projects, err := s.client.Query().Select(
+		// return all fields
+		project.FieldID,
+		project.FieldAccountID,
+		project.FieldClientID,
+		project.FieldManagerID,
+		project.FieldCreatedBy,
+		project.FieldName,
+		project.FieldDescription,
+		project.FieldNotes,
+		project.FieldStatus,
+		project.FieldLocation,
+		project.FieldBudget,
+		project.FieldDeleted,
+		project.FieldStartDate,
+		project.FieldEndDate,
+		project.FieldUpdatedAt,
+		project.FieldCreatedAt,
+	).All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("invalid project ID: %w", err)
+		return nil, err
 	}
-
-	project := &Project{}
-
-	if err := p.collection.FindOne(ctx, bson.M{"_id": projectID}).Decode(project); err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("Project not found for the provided ID")
-		}
-		return nil, fmt.Errorf("an error occurred while retrieving the project: %w", err)
-	}
-	println("--", project)
-	return project, nil
+	return projects, nil
 }
