@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 const (
@@ -14,6 +15,8 @@ const (
 	Label = "project"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUUID holds the string denoting the uuid field in the database.
+	FieldUUID = "uuid"
 	// FieldAccountID holds the string denoting the account_id field in the database.
 	FieldAccountID = "account_id"
 	// FieldClientID holds the string denoting the client_id field in the database.
@@ -51,6 +54,7 @@ const (
 // Columns holds all SQL columns for project fields.
 var Columns = []string{
 	FieldID,
+	FieldUUID,
 	FieldAccountID,
 	FieldClientID,
 	FieldManagerID,
@@ -79,8 +83,12 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultUUID holds the default value on creation for the "uuid" field.
+	DefaultUUID func() uuid.UUID
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// BudgetValidator is a validator for the "budget" field. It is called by the builders before save.
+	BudgetValidator func(float64) error
 	// DefaultDeleted holds the default value on creation for the "deleted" field.
 	DefaultDeleted bool
 	// DefaultStartDate holds the default value on creation for the "start_date" field.
@@ -136,6 +144,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUUID orders the results by the uuid field.
+func ByUUID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUUID, opts...).ToFunc()
 }
 
 // ByAccountID orders the results by the account_id field.

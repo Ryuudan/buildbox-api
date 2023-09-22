@@ -34,20 +34,6 @@ func (pu *ProjectUpdate) SetAccountID(s string) *ProjectUpdate {
 	return pu
 }
 
-// SetNillableAccountID sets the "account_id" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableAccountID(s *string) *ProjectUpdate {
-	if s != nil {
-		pu.SetAccountID(*s)
-	}
-	return pu
-}
-
-// ClearAccountID clears the value of the "account_id" field.
-func (pu *ProjectUpdate) ClearAccountID() *ProjectUpdate {
-	pu.mutation.ClearAccountID()
-	return pu
-}
-
 // SetClientID sets the "client_id" field.
 func (pu *ProjectUpdate) SetClientID(s string) *ProjectUpdate {
 	pu.mutation.SetClientID(s)
@@ -345,6 +331,11 @@ func (pu *ProjectUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
 	}
+	if v, ok := pu.mutation.Budget(); ok {
+		if err := project.BudgetValidator(v); err != nil {
+			return &ValidationError{Name: "budget", err: fmt.Errorf(`ent: validator failed for field "Project.budget": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -362,9 +353,6 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.AccountID(); ok {
 		_spec.SetField(project.FieldAccountID, field.TypeString, value)
-	}
-	if pu.mutation.AccountIDCleared() {
-		_spec.ClearField(project.FieldAccountID, field.TypeString)
 	}
 	if value, ok := pu.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeString, value)
@@ -470,20 +458,6 @@ type ProjectUpdateOne struct {
 // SetAccountID sets the "account_id" field.
 func (puo *ProjectUpdateOne) SetAccountID(s string) *ProjectUpdateOne {
 	puo.mutation.SetAccountID(s)
-	return puo
-}
-
-// SetNillableAccountID sets the "account_id" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableAccountID(s *string) *ProjectUpdateOne {
-	if s != nil {
-		puo.SetAccountID(*s)
-	}
-	return puo
-}
-
-// ClearAccountID clears the value of the "account_id" field.
-func (puo *ProjectUpdateOne) ClearAccountID() *ProjectUpdateOne {
-	puo.mutation.ClearAccountID()
 	return puo
 }
 
@@ -797,6 +771,11 @@ func (puo *ProjectUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
 	}
+	if v, ok := puo.mutation.Budget(); ok {
+		if err := project.BudgetValidator(v); err != nil {
+			return &ValidationError{Name: "budget", err: fmt.Errorf(`ent: validator failed for field "Project.budget": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -831,9 +810,6 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if value, ok := puo.mutation.AccountID(); ok {
 		_spec.SetField(project.FieldAccountID, field.TypeString, value)
-	}
-	if puo.mutation.AccountIDCleared() {
-		_spec.ClearField(project.FieldAccountID, field.TypeString)
 	}
 	if value, ok := puo.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeString, value)

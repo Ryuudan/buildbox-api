@@ -12,7 +12,7 @@ import (
 
 func PostgresConnect() (*ent.Client, error) {
 
-	port := os.Getenv("DB_PORT") // NOT WORKING
+	port := os.Getenv("DB_PORT")
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
 	pass := os.Getenv("DB_PASS")
@@ -27,12 +27,13 @@ func PostgresConnect() (*ent.Client, error) {
 		return nil, err
 	}
 
+	// Run the auto migration tool.
 	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
 	// Successfully connected to the database
-	fmt.Println("------------------- Sucessfully connected to the database! -------------------")
+	log.Printf("Sucessfully connected to the database!")
 
 	return client, nil
 }

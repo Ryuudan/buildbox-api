@@ -66,7 +66,6 @@ func main() {
 	})
 
 	API_ROUTES := chi.NewRouter()
-	// db := client.Database(os.Getenv("MONGODB_NAME"))
 	projects.Initialize(db_client.Project, API_ROUTES)
 	// materials.Initialize(db, API_ROUTES)
 	// documents.Initialize(db, API_ROUTES)

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/project"
+	"github.com/google/uuid"
 )
 
 // ProjectCreate is the builder for creating a Project entity.
@@ -20,17 +21,23 @@ type ProjectCreate struct {
 	hooks    []Hook
 }
 
-// SetAccountID sets the "account_id" field.
-func (pc *ProjectCreate) SetAccountID(s string) *ProjectCreate {
-	pc.mutation.SetAccountID(s)
+// SetUUID sets the "uuid" field.
+func (pc *ProjectCreate) SetUUID(u uuid.UUID) *ProjectCreate {
+	pc.mutation.SetUUID(u)
 	return pc
 }
 
-// SetNillableAccountID sets the "account_id" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableAccountID(s *string) *ProjectCreate {
-	if s != nil {
-		pc.SetAccountID(*s)
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableUUID(u *uuid.UUID) *ProjectCreate {
+	if u != nil {
+		pc.SetUUID(*u)
 	}
+	return pc
+}
+
+// SetAccountID sets the "account_id" field.
+func (pc *ProjectCreate) SetAccountID(s string) *ProjectCreate {
+	pc.mutation.SetAccountID(s)
 	return pc
 }
 
@@ -257,6 +264,10 @@ func (pc *ProjectCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *ProjectCreate) defaults() {
+	if _, ok := pc.mutation.UUID(); !ok {
+		v := project.DefaultUUID()
+		pc.mutation.SetUUID(v)
+	}
 	if _, ok := pc.mutation.Status(); !ok {
 		v := project.DefaultStatus
 		pc.mutation.SetStatus(v)
@@ -281,6 +292,12 @@ func (pc *ProjectCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *ProjectCreate) check() error {
+	if _, ok := pc.mutation.UUID(); !ok {
+		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "Project.uuid"`)}
+	}
+	if _, ok := pc.mutation.AccountID(); !ok {
+		return &ValidationError{Name: "account_id", err: errors.New(`ent: missing required field "Project.account_id"`)}
+	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Project.name"`)}
 	}
@@ -292,6 +309,11 @@ func (pc *ProjectCreate) check() error {
 	if v, ok := pc.mutation.Status(); ok {
 		if err := project.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
+		}
+	}
+	if v, ok := pc.mutation.Budget(); ok {
+		if err := project.BudgetValidator(v); err != nil {
+			return &ValidationError{Name: "budget", err: fmt.Errorf(`ent: validator failed for field "Project.budget": %w`, err)}
 		}
 	}
 	return nil
@@ -320,6 +342,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_node = &Project{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(project.Table, sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt))
 	)
+	if value, ok := pc.mutation.UUID(); ok {
+		_spec.SetField(project.FieldUUID, field.TypeUUID, value)
+		_node.UUID = value
+	}
 	if value, ok := pc.mutation.AccountID(); ok {
 		_spec.SetField(project.FieldAccountID, field.TypeString, value)
 		_node.AccountID = value
@@ -334,7 +360,7 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.CreatedBy(); ok {
 		_spec.SetField(project.FieldCreatedBy, field.TypeString, value)
-		_node.CreatedBy = &value
+		_node.CreatedBy = value
 	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
@@ -358,7 +384,7 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.Budget(); ok {
 		_spec.SetField(project.FieldBudget, field.TypeFloat64, value)
-		_node.Budget = &value
+		_node.Budget = value
 	}
 	if value, ok := pc.mutation.Deleted(); ok {
 		_spec.SetField(project.FieldDeleted, field.TypeBool, value)
@@ -370,7 +396,7 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.EndDate(); ok {
 		_spec.SetField(project.FieldEndDate, field.TypeTime, value)
-		_node.EndDate = value
+		_node.EndDate = &value
 	}
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)

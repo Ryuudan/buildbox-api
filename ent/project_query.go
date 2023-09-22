@@ -261,12 +261,12 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 // Example:
 //
 //	var v []struct {
-//		AccountID string `json:"account_id,omitempty"`
+//		UUID uuid.UUID `json:"uuid,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Project.Query().
-//		GroupBy(project.FieldAccountID).
+//		GroupBy(project.FieldUUID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pq *ProjectQuery) GroupBy(field string, fields ...string) *ProjectGroupBy {
@@ -284,11 +284,11 @@ func (pq *ProjectQuery) GroupBy(field string, fields ...string) *ProjectGroupBy 
 // Example:
 //
 //	var v []struct {
-//		AccountID string `json:"account_id,omitempty"`
+//		UUID uuid.UUID `json:"uuid,omitempty"`
 //	}
 //
 //	client.Project.Query().
-//		Select(project.FieldAccountID).
+//		Select(project.FieldUUID).
 //		Scan(ctx, &v)
 func (pq *ProjectQuery) Select(fields ...string) *ProjectSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)

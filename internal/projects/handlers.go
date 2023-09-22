@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Pyakz/buildbox-api/ent"
 	"github.com/Pyakz/buildbox-api/utils"
-	"github.com/go-playground/validator"
 )
 
 type ProjectHandler struct {
@@ -19,8 +19,9 @@ func NewProjectHandler(projectService ProjectService) *ProjectHandler {
 }
 
 func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
-	validate := validator.New()
-	var project Project
+	validate := utils.Validator()
+
+	var project ent.Project
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
@@ -34,19 +35,13 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if project.StartDate != nil && project.EndDate != nil && project.StartDate.After(*project.EndDate) {
-		validationErrors = append(validationErrors, utils.ValidationErrorDetails{
-			Field:   "startDate",
-			Message: "The project's start date should be before the end date.",
-		})
-	}
-
-	if project.Budget < 0 {
-		validationErrors = append(validationErrors, utils.ValidationErrorDetails{
-			Field:   "budget",
-			Message: "The project's budget must be a non-negative value.",
-		})
-	}
+	// this is sample validation error we can call on our own
+	// if somethingHappend  {
+	// 	validationErrors = append(validationErrors, utils.ValidationErrorDetails{
+	// 		Field:   "somthing",
+	// 		Message: "something",
+	// 	})
+	// }
 
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {

@@ -1,10 +1,12 @@
 package schema
 
 import (
+	"errors"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Project holds the schema definition for the Project entity.
@@ -17,8 +19,10 @@ func (Project) Fields() []ent.Field {
 	return []ent.Field{
 		// Accont ID is not optional
 		// this is for now, we will add authentication later
-		field.String("account_id").
-			Optional(),
+		field.UUID("uuid", uuid.UUID{}).
+			Immutable().
+			Default(uuid.New),
+		field.String("account_id"),
 		field.String("client_id").
 			Optional().
 			Nillable(),
@@ -26,16 +30,18 @@ func (Project) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.String("created_by").
-			Optional().
-			Nillable(),
+			Optional(),
 		field.String("name").
-			NotEmpty(),
+			NotEmpty().
+			StructTag(`json:"name,omitempty" validate:"required,min=1,max=100"`),
 		field.String("description").
 			Optional().
-			Nillable(),
+			Nillable().
+			StructTag(`json:"description,omitempty" validate:"omitempty,min=1,max=200"`),
 		field.String("notes").
 			Optional().
-			Nillable(),
+			Nillable().
+			StructTag(`json:"notes,omitempty" validate:"omitempty,min=1,max=200"`),
 		field.Enum("status").
 			Optional().
 			Values(
@@ -54,23 +60,35 @@ func (Project) Fields() []ent.Field {
 				"in_review",
 				"archived",
 				"in_negotiation",
-			).Default("planning"),
+			).
+			Default("planning").
+			StructTag(`json:"status,omitempty" validate:"omitempty,oneof=planning in_progress on_hold completed cancelled delayed under_review pending_approval in_testing emergency on_schedule behind_schedule in_review archived in_negotiation"`),
 		field.String("location").
 			Optional().
 			Nillable(),
 		field.Float("budget").
 			Optional().
-			Nillable(),
+			Min(0).
+			Positive().
+			StructTag(`json:"budget,omitempty" validate:"omitempty,gte=0"`).
+			Validate(func(f float64) error {
+				if f < 0 {
+					return errors.New("budget must be a non-negative value")
+				}
+				return nil
+			}),
 		field.Bool("deleted").
 			Optional().
 			Nillable().
 			Default(false),
 		field.Time("start_date").
 			Optional().
-			Default(time.Now),
+			Default(time.Now).
+			StructTag(`json:"start_date,omitempty" validate:"ltefield=EndDate"`),
 		field.Time("end_date").
 			Optional().
-			Nillable(),
+			Nillable().
+			StructTag(`json:"end_date,omitempty"`),
 		field.Time("updated_at").
 			Optional().
 			Default(time.Now),

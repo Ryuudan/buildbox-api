@@ -7,6 +7,8 @@ import (
 
 	"github.com/Pyakz/buildbox-api/ent/project"
 	"github.com/Pyakz/buildbox-api/ent/schema"
+	"github.com/Pyakz/buildbox-api/ent/user"
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -15,24 +17,61 @@ import (
 func init() {
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
+	// projectDescUUID is the schema descriptor for uuid field.
+	projectDescUUID := projectFields[0].Descriptor()
+	// project.DefaultUUID holds the default value on creation for the uuid field.
+	project.DefaultUUID = projectDescUUID.Default.(func() uuid.UUID)
 	// projectDescName is the schema descriptor for name field.
-	projectDescName := projectFields[4].Descriptor()
+	projectDescName := projectFields[5].Descriptor()
 	// project.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	project.NameValidator = projectDescName.Validators[0].(func(string) error)
+	// projectDescBudget is the schema descriptor for budget field.
+	projectDescBudget := projectFields[10].Descriptor()
+	// project.BudgetValidator is a validator for the "budget" field. It is called by the builders before save.
+	project.BudgetValidator = func() func(float64) error {
+		validators := projectDescBudget.Validators
+		fns := [...]func(float64) error{
+			validators[0].(func(float64) error),
+			validators[1].(func(float64) error),
+			validators[2].(func(float64) error),
+		}
+		return func(budget float64) error {
+			for _, fn := range fns {
+				if err := fn(budget); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// projectDescDeleted is the schema descriptor for deleted field.
-	projectDescDeleted := projectFields[10].Descriptor()
+	projectDescDeleted := projectFields[11].Descriptor()
 	// project.DefaultDeleted holds the default value on creation for the deleted field.
 	project.DefaultDeleted = projectDescDeleted.Default.(bool)
 	// projectDescStartDate is the schema descriptor for start_date field.
-	projectDescStartDate := projectFields[11].Descriptor()
+	projectDescStartDate := projectFields[12].Descriptor()
 	// project.DefaultStartDate holds the default value on creation for the start_date field.
 	project.DefaultStartDate = projectDescStartDate.Default.(func() time.Time)
 	// projectDescUpdatedAt is the schema descriptor for updated_at field.
-	projectDescUpdatedAt := projectFields[13].Descriptor()
+	projectDescUpdatedAt := projectFields[14].Descriptor()
 	// project.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	project.DefaultUpdatedAt = projectDescUpdatedAt.Default.(func() time.Time)
 	// projectDescCreatedAt is the schema descriptor for created_at field.
-	projectDescCreatedAt := projectFields[14].Descriptor()
+	projectDescCreatedAt := projectFields[15].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescUUID is the schema descriptor for uuid field.
+	userDescUUID := userFields[0].Descriptor()
+	// user.DefaultUUID holds the default value on creation for the uuid field.
+	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
+	// userDescUpdatedAt is the schema descriptor for updated_at field.
+	userDescUpdatedAt := userFields[2].Descriptor()
+	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[3].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }

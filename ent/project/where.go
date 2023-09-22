@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
@@ -52,6 +53,11 @@ func IDLT(id int) predicate.Project {
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldID, id))
+}
+
+// UUID applies equality check predicate on the "uuid" field. It's identical to UUIDEQ.
+func UUID(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldUUID, v))
 }
 
 // AccountID applies equality check predicate on the "account_id" field. It's identical to AccountIDEQ.
@@ -124,6 +130,46 @@ func CreatedAt(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// UUIDEQ applies the EQ predicate on the "uuid" field.
+func UUIDEQ(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldUUID, v))
+}
+
+// UUIDNEQ applies the NEQ predicate on the "uuid" field.
+func UUIDNEQ(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldUUID, v))
+}
+
+// UUIDIn applies the In predicate on the "uuid" field.
+func UUIDIn(vs ...uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldUUID, vs...))
+}
+
+// UUIDNotIn applies the NotIn predicate on the "uuid" field.
+func UUIDNotIn(vs ...uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldUUID, vs...))
+}
+
+// UUIDGT applies the GT predicate on the "uuid" field.
+func UUIDGT(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldUUID, v))
+}
+
+// UUIDGTE applies the GTE predicate on the "uuid" field.
+func UUIDGTE(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldUUID, v))
+}
+
+// UUIDLT applies the LT predicate on the "uuid" field.
+func UUIDLT(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldUUID, v))
+}
+
+// UUIDLTE applies the LTE predicate on the "uuid" field.
+func UUIDLTE(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldUUID, v))
+}
+
 // AccountIDEQ applies the EQ predicate on the "account_id" field.
 func AccountIDEQ(v string) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldAccountID, v))
@@ -177,16 +223,6 @@ func AccountIDHasPrefix(v string) predicate.Project {
 // AccountIDHasSuffix applies the HasSuffix predicate on the "account_id" field.
 func AccountIDHasSuffix(v string) predicate.Project {
 	return predicate.Project(sql.FieldHasSuffix(FieldAccountID, v))
-}
-
-// AccountIDIsNil applies the IsNil predicate on the "account_id" field.
-func AccountIDIsNil() predicate.Project {
-	return predicate.Project(sql.FieldIsNull(FieldAccountID))
-}
-
-// AccountIDNotNil applies the NotNil predicate on the "account_id" field.
-func AccountIDNotNil() predicate.Project {
-	return predicate.Project(sql.FieldNotNull(FieldAccountID))
 }
 
 // AccountIDEqualFold applies the EqualFold predicate on the "account_id" field.

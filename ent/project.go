@@ -10,13 +10,16 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/project"
+	"github.com/google/uuid"
 )
 
 // Project is the model entity for the Project schema.
 type Project struct {
-	config `json:"-"`
+	config `json:"-" validate:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// UUID holds the value of the "uuid" field.
+	UUID uuid.UUID `json:"uuid,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID string `json:"account_id,omitempty"`
 	// ClientID holds the value of the "client_id" field.
@@ -24,25 +27,25 @@ type Project struct {
 	// ManagerID holds the value of the "manager_id" field.
 	ManagerID *string `json:"manager_id,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *string `json:"created_by,omitempty"`
+	CreatedBy string `json:"created_by,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" validate:"required,min=1,max=100"`
 	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty" validate:"omitempty,min=1,max=200"`
 	// Notes holds the value of the "notes" field.
-	Notes *string `json:"notes,omitempty"`
+	Notes *string `json:"notes,omitempty" validate:"omitempty,min=1,max=200"`
 	// Status holds the value of the "status" field.
-	Status project.Status `json:"status,omitempty"`
+	Status project.Status `json:"status,omitempty" validate:"omitempty,oneof=planning in_progress on_hold completed cancelled delayed under_review pending_approval in_testing emergency on_schedule behind_schedule in_review archived in_negotiation"`
 	// Location holds the value of the "location" field.
 	Location *string `json:"location,omitempty"`
 	// Budget holds the value of the "budget" field.
-	Budget *float64 `json:"budget,omitempty"`
+	Budget float64 `json:"budget,omitempty" validate:"omitempty,gte=0"`
 	// Deleted holds the value of the "deleted" field.
 	Deleted *bool `json:"deleted,omitempty"`
 	// StartDate holds the value of the "start_date" field.
-	StartDate time.Time `json:"start_date,omitempty"`
+	StartDate time.Time `json:"start_date,omitempty" validate:"ltefield=EndDate"`
 	// EndDate holds the value of the "end_date" field.
-	EndDate time.Time `json:"end_date,omitempty"`
+	EndDate *time.Time `json:"end_date,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -65,6 +68,8 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case project.FieldStartDate, project.FieldEndDate, project.FieldUpdatedAt, project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case project.FieldUUID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -86,6 +91,12 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			pr.ID = int(value.Int64)
+		case project.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				pr.UUID = *value
+			}
 		case project.FieldAccountID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account_id", values[i])
@@ -110,8 +121,7 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field created_by", values[i])
 			} else if value.Valid {
-				pr.CreatedBy = new(string)
-				*pr.CreatedBy = value.String
+				pr.CreatedBy = value.String
 			}
 		case project.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -150,8 +160,7 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field budget", values[i])
 			} else if value.Valid {
-				pr.Budget = new(float64)
-				*pr.Budget = value.Float64
+				pr.Budget = value.Float64
 			}
 		case project.FieldDeleted:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -170,7 +179,8 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field end_date", values[i])
 			} else if value.Valid {
-				pr.EndDate = value.Time
+				pr.EndDate = new(time.Time)
+				*pr.EndDate = value.Time
 			}
 		case project.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -220,6 +230,9 @@ func (pr *Project) String() string {
 	var builder strings.Builder
 	builder.WriteString("Project(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
+	builder.WriteString("uuid=")
+	builder.WriteString(fmt.Sprintf("%v", pr.UUID))
+	builder.WriteString(", ")
 	builder.WriteString("account_id=")
 	builder.WriteString(pr.AccountID)
 	builder.WriteString(", ")
@@ -233,10 +246,8 @@ func (pr *Project) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := pr.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("created_by=")
+	builder.WriteString(pr.CreatedBy)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(pr.Name)
@@ -259,10 +270,8 @@ func (pr *Project) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := pr.Budget; v != nil {
-		builder.WriteString("budget=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("budget=")
+	builder.WriteString(fmt.Sprintf("%v", pr.Budget))
 	builder.WriteString(", ")
 	if v := pr.Deleted; v != nil {
 		builder.WriteString("deleted=")
@@ -272,8 +281,10 @@ func (pr *Project) String() string {
 	builder.WriteString("start_date=")
 	builder.WriteString(pr.StartDate.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("end_date=")
-	builder.WriteString(pr.EndDate.Format(time.ANSIC))
+	if v := pr.EndDate; v != nil {
+		builder.WriteString("end_date=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
