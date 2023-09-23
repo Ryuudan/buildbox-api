@@ -6,6 +6,8 @@ import (
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/internal/models"
+	"github.com/golang-jwt/jwt"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -36,10 +38,20 @@ func NewProjectService(client *generated.Client) ProjectService {
 // CreateProject creates a new project.
 func (s *projectService) CreateProject(ctx context.Context, newProject *generated.Project) (*generated.Project, error) {
 
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		// User claims not found in context, handle error accordingly
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	// newCase.AccountID = claims["account_id"].(int)
+	// newCase.CreatedBy = claims["user_id"].(string)
+	// newCase.Status = "active"
+
 	project, err := s.client.Create().
 		// accountID and createdBy can be found in claims
-		SetAccountID(1).
-		SetCreatedBy("id").
+		SetAccountID(int(claims["account_id"].(float64))).
+		SetCreatedBy(int(claims["user_id"].(float64))).
 		// temporary
 		SetClientID("4").
 		SetName(newProject.Name).

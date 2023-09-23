@@ -28,6 +28,12 @@ func (pc *ProjectCreate) SetAccountID(i int) *ProjectCreate {
 	return pc
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (pc *ProjectCreate) SetCreatedBy(i int) *ProjectCreate {
+	pc.mutation.SetCreatedBy(i)
+	return pc
+}
+
 // SetUUID sets the "uuid" field.
 func (pc *ProjectCreate) SetUUID(u uuid.UUID) *ProjectCreate {
 	pc.mutation.SetUUID(u)
@@ -66,20 +72,6 @@ func (pc *ProjectCreate) SetManagerID(s string) *ProjectCreate {
 func (pc *ProjectCreate) SetNillableManagerID(s *string) *ProjectCreate {
 	if s != nil {
 		pc.SetManagerID(*s)
-	}
-	return pc
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (pc *ProjectCreate) SetCreatedBy(s string) *ProjectCreate {
-	pc.mutation.SetCreatedBy(s)
-	return pc
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableCreatedBy(s *string) *ProjectCreate {
-	if s != nil {
-		pc.SetCreatedBy(*s)
 	}
 	return pc
 }
@@ -301,6 +293,9 @@ func (pc *ProjectCreate) check() error {
 	if _, ok := pc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account_id", err: errors.New(`generated: missing required field "Project.account_id"`)}
 	}
+	if _, ok := pc.mutation.CreatedBy(); !ok {
+		return &ValidationError{Name: "created_by", err: errors.New(`generated: missing required field "Project.created_by"`)}
+	}
 	if _, ok := pc.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Project.uuid"`)}
 	}
@@ -351,6 +346,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_node = &Project{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(project.Table, sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt))
 	)
+	if value, ok := pc.mutation.CreatedBy(); ok {
+		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
+		_node.CreatedBy = value
+	}
 	if value, ok := pc.mutation.UUID(); ok {
 		_spec.SetField(project.FieldUUID, field.TypeUUID, value)
 		_node.UUID = value
@@ -362,10 +361,6 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.ManagerID(); ok {
 		_spec.SetField(project.FieldManagerID, field.TypeString, value)
 		_node.ManagerID = &value
-	}
-	if value, ok := pc.mutation.CreatedBy(); ok {
-		_spec.SetField(project.FieldCreatedBy, field.TypeString, value)
-		_node.CreatedBy = value
 	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)

@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/internal/middlewares"
+	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -15,12 +17,16 @@ import (
 func InitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
 	log.Println("✅ Routes Initialized")
 
+	validity := middlewares.NewUserMiddleware(services.NewUserService(client))
+
 	v1 := chi.NewRouter()
 	v1.Use(utils.VersionMiddleware("1.0"))
 
 	v1.Group(func(private chi.Router) {
 		private.Use(httprate.LimitByIP(300, 1*time.Minute))
-		// Auth Middleware here
+		private.Use(middlewares.AuthMiddleware)
+		private.Use(validity.ValidUser)
+
 		V1Accounts(client, private)
 		V1Projects(client, private)
 	})

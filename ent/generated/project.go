@@ -21,14 +21,14 @@ type Project struct {
 	ID int `json:"id,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID int `json:"account_id,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy int `json:"created_by,omitempty"`
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// ClientID holds the value of the "client_id" field.
 	ClientID *string `json:"client_id,omitempty"`
 	// ManagerID holds the value of the "manager_id" field.
 	ManagerID *string `json:"manager_id,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy string `json:"created_by,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty" validate:"required,min=1,max=100"`
 	// Description holds the value of the "description" field.
@@ -88,9 +88,9 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case project.FieldBudget:
 			values[i] = new(sql.NullFloat64)
-		case project.FieldID, project.FieldAccountID:
+		case project.FieldID, project.FieldAccountID, project.FieldCreatedBy:
 			values[i] = new(sql.NullInt64)
-		case project.FieldClientID, project.FieldManagerID, project.FieldCreatedBy, project.FieldName, project.FieldDescription, project.FieldNotes, project.FieldStatus, project.FieldLocation:
+		case project.FieldClientID, project.FieldManagerID, project.FieldName, project.FieldDescription, project.FieldNotes, project.FieldStatus, project.FieldLocation:
 			values[i] = new(sql.NullString)
 		case project.FieldStartDate, project.FieldEndDate, project.FieldUpdatedAt, project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -123,6 +123,12 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.AccountID = int(value.Int64)
 			}
+		case project.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				pr.CreatedBy = int(value.Int64)
+			}
 		case project.FieldUUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field uuid", values[i])
@@ -142,12 +148,6 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.ManagerID = new(string)
 				*pr.ManagerID = value.String
-			}
-		case project.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				pr.CreatedBy = value.String
 			}
 		case project.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -265,6 +265,9 @@ func (pr *Project) String() string {
 	builder.WriteString("account_id=")
 	builder.WriteString(fmt.Sprintf("%v", pr.AccountID))
 	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(fmt.Sprintf("%v", pr.CreatedBy))
+	builder.WriteString(", ")
 	builder.WriteString("uuid=")
 	builder.WriteString(fmt.Sprintf("%v", pr.UUID))
 	builder.WriteString(", ")
@@ -277,9 +280,6 @@ func (pr *Project) String() string {
 		builder.WriteString("manager_id=")
 		builder.WriteString(*v)
 	}
-	builder.WriteString(", ")
-	builder.WriteString("created_by=")
-	builder.WriteString(pr.CreatedBy)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(pr.Name)

@@ -35,6 +35,19 @@ func (pu *ProjectUpdate) SetAccountID(i int) *ProjectUpdate {
 	return pu
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (pu *ProjectUpdate) SetCreatedBy(i int) *ProjectUpdate {
+	pu.mutation.ResetCreatedBy()
+	pu.mutation.SetCreatedBy(i)
+	return pu
+}
+
+// AddCreatedBy adds i to the "created_by" field.
+func (pu *ProjectUpdate) AddCreatedBy(i int) *ProjectUpdate {
+	pu.mutation.AddCreatedBy(i)
+	return pu
+}
+
 // SetClientID sets the "client_id" field.
 func (pu *ProjectUpdate) SetClientID(s string) *ProjectUpdate {
 	pu.mutation.SetClientID(s)
@@ -72,26 +85,6 @@ func (pu *ProjectUpdate) SetNillableManagerID(s *string) *ProjectUpdate {
 // ClearManagerID clears the value of the "manager_id" field.
 func (pu *ProjectUpdate) ClearManagerID() *ProjectUpdate {
 	pu.mutation.ClearManagerID()
-	return pu
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (pu *ProjectUpdate) SetCreatedBy(s string) *ProjectUpdate {
-	pu.mutation.SetCreatedBy(s)
-	return pu
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableCreatedBy(s *string) *ProjectUpdate {
-	if s != nil {
-		pu.SetCreatedBy(*s)
-	}
-	return pu
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (pu *ProjectUpdate) ClearCreatedBy() *ProjectUpdate {
-	pu.mutation.ClearCreatedBy()
 	return pu
 }
 
@@ -366,6 +359,12 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := pu.mutation.CreatedBy(); ok {
+		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.AddedCreatedBy(); ok {
+		_spec.AddField(project.FieldCreatedBy, field.TypeInt, value)
+	}
 	if value, ok := pu.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeString, value)
 	}
@@ -377,12 +376,6 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.ManagerIDCleared() {
 		_spec.ClearField(project.FieldManagerID, field.TypeString)
-	}
-	if value, ok := pu.mutation.CreatedBy(); ok {
-		_spec.SetField(project.FieldCreatedBy, field.TypeString, value)
-	}
-	if pu.mutation.CreatedByCleared() {
-		_spec.ClearField(project.FieldCreatedBy, field.TypeString)
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
@@ -502,6 +495,19 @@ func (puo *ProjectUpdateOne) SetAccountID(i int) *ProjectUpdateOne {
 	return puo
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (puo *ProjectUpdateOne) SetCreatedBy(i int) *ProjectUpdateOne {
+	puo.mutation.ResetCreatedBy()
+	puo.mutation.SetCreatedBy(i)
+	return puo
+}
+
+// AddCreatedBy adds i to the "created_by" field.
+func (puo *ProjectUpdateOne) AddCreatedBy(i int) *ProjectUpdateOne {
+	puo.mutation.AddCreatedBy(i)
+	return puo
+}
+
 // SetClientID sets the "client_id" field.
 func (puo *ProjectUpdateOne) SetClientID(s string) *ProjectUpdateOne {
 	puo.mutation.SetClientID(s)
@@ -539,26 +545,6 @@ func (puo *ProjectUpdateOne) SetNillableManagerID(s *string) *ProjectUpdateOne {
 // ClearManagerID clears the value of the "manager_id" field.
 func (puo *ProjectUpdateOne) ClearManagerID() *ProjectUpdateOne {
 	puo.mutation.ClearManagerID()
-	return puo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (puo *ProjectUpdateOne) SetCreatedBy(s string) *ProjectUpdateOne {
-	puo.mutation.SetCreatedBy(s)
-	return puo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableCreatedBy(s *string) *ProjectUpdateOne {
-	if s != nil {
-		puo.SetCreatedBy(*s)
-	}
-	return puo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (puo *ProjectUpdateOne) ClearCreatedBy() *ProjectUpdateOne {
-	puo.mutation.ClearCreatedBy()
 	return puo
 }
 
@@ -863,6 +849,12 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			}
 		}
 	}
+	if value, ok := puo.mutation.CreatedBy(); ok {
+		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.AddedCreatedBy(); ok {
+		_spec.AddField(project.FieldCreatedBy, field.TypeInt, value)
+	}
 	if value, ok := puo.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeString, value)
 	}
@@ -874,12 +866,6 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if puo.mutation.ManagerIDCleared() {
 		_spec.ClearField(project.FieldManagerID, field.TypeString)
-	}
-	if value, ok := puo.mutation.CreatedBy(); ok {
-		_spec.SetField(project.FieldCreatedBy, field.TypeString, value)
-	}
-	if puo.mutation.CreatedByCleared() {
-		_spec.ClearField(project.FieldCreatedBy, field.TypeString)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)

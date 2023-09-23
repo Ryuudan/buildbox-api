@@ -27,10 +27,10 @@ var (
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_by", Type: field.TypeInt},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "client_id", Type: field.TypeString, Nullable: true},
 		{Name: "manager_id", Type: field.TypeString, Nullable: true},
-		{Name: "created_by", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "notes", Type: field.TypeString, Nullable: true},

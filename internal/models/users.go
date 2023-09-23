@@ -29,3 +29,7 @@ type CustomClaims struct {
 	LastName  string    `json:"last_name"`
 	jwt.StandardClaims
 }
+
+var ContextKeyClaims = contextKey("user")
+
+type contextKey string

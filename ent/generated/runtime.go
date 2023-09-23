@@ -45,7 +45,7 @@ func init() {
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
 	// projectDescUUID is the schema descriptor for uuid field.
-	projectDescUUID := projectFields[1].Descriptor()
+	projectDescUUID := projectFields[2].Descriptor()
 	// project.DefaultUUID holds the default value on creation for the uuid field.
 	project.DefaultUUID = projectDescUUID.Default.(func() uuid.UUID)
 	// projectDescName is the schema descriptor for name field.

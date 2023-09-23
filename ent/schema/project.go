@@ -21,6 +21,7 @@ func (Project) Fields() []ent.Field {
 		// Accont ID is not optional
 		// this is for now, we will add authentication later
 		field.Int("account_id"),
+		field.Int("created_by"),
 		field.UUID("uuid", uuid.UUID{}).
 			Immutable().
 			Default(uuid.New),
@@ -30,8 +31,6 @@ func (Project) Fields() []ent.Field {
 		field.String("manager_id").
 			Optional().
 			Nillable(),
-		field.String("created_by").
-			Optional(),
 		field.String("name").
 			NotEmpty().
 			StructTag(`json:"name,omitempty" validate:"required,min=1,max=100"`),
