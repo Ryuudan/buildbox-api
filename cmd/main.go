@@ -9,9 +9,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/Pyakz/buildbox-api/db"
-	"github.com/Pyakz/buildbox-api/internal/accounts"
-	"github.com/Pyakz/buildbox-api/internal/projects"
+	"github.com/Pyakz/buildbox-api/database"
+	"github.com/Pyakz/buildbox-api/routes"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -29,7 +28,7 @@ func init() {
 
 func main() {
 
-	db_client, err := db.PostgresConnect()
+	db_client, err := database.PostgresConnect()
 
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
@@ -66,13 +65,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// TODO: Add proper versioning
-	// and code organization
-	v1_routes := chi.NewRouter()
-	v1_routes.Use(utils.VersionMiddleware("v1"))
-	projects.Initialize(db_client, v1_routes)
-	accounts.Initialize(db_client, v1_routes)
-	app.Mount("/api/v1", v1_routes)
+	routes.Initialize(app, db_client)
 
 	// Start server
 	server := http.Server{
