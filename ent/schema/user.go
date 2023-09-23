@@ -21,12 +21,13 @@ func (User) Fields() []ent.Field {
 		field.UUID("uuid", uuid.UUID{}).
 			Immutable().
 			Default(uuid.New),
-		field.String("firstName"),
-		field.String("middleName"),
-		field.String("lastName"),
-		field.Int("age"),
-
+		field.String("first_name"),
+		field.String("middle_name"),
+		field.String("last_name"),
+		field.Time("birthday").
+			Optional(),
 		field.String("email").
+			Unique().
 			Optional(),
 		field.String("password").
 			Optional(),

@@ -26,12 +26,19 @@ func NewAccountService(client *generated.Client) AccountService {
 }
 
 func (s *accountService) CreateAccount(ctx context.Context, newAccount *generated.Account) (*generated.Account, error) {
+
 	account, err := s.client.Create().
 		SetName(newAccount.Name).
+		SetEmail(newAccount.Email).
+		SetPhoneNumber(newAccount.PhoneNumber).
 		Save(ctx)
-
 	if err != nil {
-		return nil, err
+
+		if generated.IsConstraintError(err) {
+			return nil, errors.New("email already exists")
+		}
+
+		return nil, errors.New("something went wrong, please try again later")
 	}
 
 	return account, nil

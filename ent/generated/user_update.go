@@ -35,34 +35,41 @@ func (uu *UserUpdate) SetAccountID(i int) *UserUpdate {
 	return uu
 }
 
-// SetFirstName sets the "firstName" field.
+// SetFirstName sets the "first_name" field.
 func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
 	uu.mutation.SetFirstName(s)
 	return uu
 }
 
-// SetMiddleName sets the "middleName" field.
+// SetMiddleName sets the "middle_name" field.
 func (uu *UserUpdate) SetMiddleName(s string) *UserUpdate {
 	uu.mutation.SetMiddleName(s)
 	return uu
 }
 
-// SetLastName sets the "lastName" field.
+// SetLastName sets the "last_name" field.
 func (uu *UserUpdate) SetLastName(s string) *UserUpdate {
 	uu.mutation.SetLastName(s)
 	return uu
 }
 
-// SetAge sets the "age" field.
-func (uu *UserUpdate) SetAge(i int) *UserUpdate {
-	uu.mutation.ResetAge()
-	uu.mutation.SetAge(i)
+// SetBirthday sets the "birthday" field.
+func (uu *UserUpdate) SetBirthday(t time.Time) *UserUpdate {
+	uu.mutation.SetBirthday(t)
 	return uu
 }
 
-// AddAge adds i to the "age" field.
-func (uu *UserUpdate) AddAge(i int) *UserUpdate {
-	uu.mutation.AddAge(i)
+// SetNillableBirthday sets the "birthday" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableBirthday(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetBirthday(*t)
+	}
+	return uu
+}
+
+// ClearBirthday clears the value of the "birthday" field.
+func (uu *UserUpdate) ClearBirthday() *UserUpdate {
+	uu.mutation.ClearBirthday()
 	return uu
 }
 
@@ -198,11 +205,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+	if value, ok := uu.mutation.Birthday(); ok {
+		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
 	}
-	if value, ok := uu.mutation.AddedAge(); ok {
-		_spec.AddField(user.FieldAge, field.TypeInt, value)
+	if uu.mutation.BirthdayCleared() {
+		_spec.ClearField(user.FieldBirthday, field.TypeTime)
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -280,34 +287,41 @@ func (uuo *UserUpdateOne) SetAccountID(i int) *UserUpdateOne {
 	return uuo
 }
 
-// SetFirstName sets the "firstName" field.
+// SetFirstName sets the "first_name" field.
 func (uuo *UserUpdateOne) SetFirstName(s string) *UserUpdateOne {
 	uuo.mutation.SetFirstName(s)
 	return uuo
 }
 
-// SetMiddleName sets the "middleName" field.
+// SetMiddleName sets the "middle_name" field.
 func (uuo *UserUpdateOne) SetMiddleName(s string) *UserUpdateOne {
 	uuo.mutation.SetMiddleName(s)
 	return uuo
 }
 
-// SetLastName sets the "lastName" field.
+// SetLastName sets the "last_name" field.
 func (uuo *UserUpdateOne) SetLastName(s string) *UserUpdateOne {
 	uuo.mutation.SetLastName(s)
 	return uuo
 }
 
-// SetAge sets the "age" field.
-func (uuo *UserUpdateOne) SetAge(i int) *UserUpdateOne {
-	uuo.mutation.ResetAge()
-	uuo.mutation.SetAge(i)
+// SetBirthday sets the "birthday" field.
+func (uuo *UserUpdateOne) SetBirthday(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetBirthday(t)
 	return uuo
 }
 
-// AddAge adds i to the "age" field.
-func (uuo *UserUpdateOne) AddAge(i int) *UserUpdateOne {
-	uuo.mutation.AddAge(i)
+// SetNillableBirthday sets the "birthday" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableBirthday(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetBirthday(*t)
+	}
+	return uuo
+}
+
+// ClearBirthday clears the value of the "birthday" field.
+func (uuo *UserUpdateOne) ClearBirthday() *UserUpdateOne {
+	uuo.mutation.ClearBirthday()
 	return uuo
 }
 
@@ -473,11 +487,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+	if value, ok := uuo.mutation.Birthday(); ok {
+		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
 	}
-	if value, ok := uuo.mutation.AddedAge(); ok {
-		_spec.AddField(user.FieldAge, field.TypeInt, value)
+	if uuo.mutation.BirthdayCleared() {
+		_spec.ClearField(user.FieldBirthday, field.TypeTime)
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

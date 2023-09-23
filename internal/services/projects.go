@@ -29,7 +29,6 @@ type projectService struct {
 
 // NewEntProjectService creates a new instance of EntProjectService.
 func NewProjectService(client *generated.Client) ProjectService {
-
 	project := client.Project
 	return &projectService{client: project}
 }

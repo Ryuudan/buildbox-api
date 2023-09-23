@@ -21,7 +21,11 @@ type Account struct {
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty" validate:"required,min=1,max=100"`
+	Name string `json:"name,omitempty" validate:"required,min=1"`
+	// Email holds the value of the "email" field.
+	Email string `json:"email,omitempty" validate:"required,email"`
+	// PhoneNumber holds the value of the "phone_number" field.
+	PhoneNumber string `json:"phone_number,omitempty" validate:"required,phone"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -68,7 +72,7 @@ func (*Account) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case account.FieldID:
 			values[i] = new(sql.NullInt64)
-		case account.FieldName:
+		case account.FieldName, account.FieldEmail, account.FieldPhoneNumber:
 			values[i] = new(sql.NullString)
 		case account.FieldUpdatedAt, account.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -106,6 +110,18 @@ func (a *Account) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				a.Name = value.String
+			}
+		case account.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				a.Email = value.String
+			}
+		case account.FieldPhoneNumber:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field phone_number", values[i])
+			} else if value.Valid {
+				a.PhoneNumber = value.String
 			}
 		case account.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -170,6 +186,12 @@ func (a *Account) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(a.Name)
+	builder.WriteString(", ")
+	builder.WriteString("email=")
+	builder.WriteString(a.Email)
+	builder.WriteString(", ")
+	builder.WriteString("phone_number=")
+	builder.WriteString(a.PhoneNumber)
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(a.UpdatedAt.Format(time.ANSIC))

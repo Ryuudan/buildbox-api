@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
-	models "github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
@@ -16,6 +17,7 @@ type ProjectHandler struct {
 }
 
 func NewProjectHandler(projectService services.ProjectService, accountService services.AccountService) *ProjectHandler {
+	log.Println("✅ Projects Handler Initialized")
 	return &ProjectHandler{
 		projectService: projectService,
 		accountService: accountService,
@@ -25,7 +27,7 @@ func NewProjectHandler(projectService services.ProjectService, accountService se
 func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	validate := utils.Validator()
 
-	var project models.Project
+	var project generated.Project
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {

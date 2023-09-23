@@ -19,14 +19,14 @@ const (
 	FieldAccountID = "account_id"
 	// FieldUUID holds the string denoting the uuid field in the database.
 	FieldUUID = "uuid"
-	// FieldFirstName holds the string denoting the firstname field in the database.
+	// FieldFirstName holds the string denoting the first_name field in the database.
 	FieldFirstName = "first_name"
-	// FieldMiddleName holds the string denoting the middlename field in the database.
+	// FieldMiddleName holds the string denoting the middle_name field in the database.
 	FieldMiddleName = "middle_name"
-	// FieldLastName holds the string denoting the lastname field in the database.
+	// FieldLastName holds the string denoting the last_name field in the database.
 	FieldLastName = "last_name"
-	// FieldAge holds the string denoting the age field in the database.
-	FieldAge = "age"
+	// FieldBirthday holds the string denoting the birthday field in the database.
+	FieldBirthday = "birthday"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
@@ -56,7 +56,7 @@ var Columns = []string{
 	FieldFirstName,
 	FieldMiddleName,
 	FieldLastName,
-	FieldAge,
+	FieldBirthday,
 	FieldEmail,
 	FieldPassword,
 	FieldUpdatedAt,
@@ -100,24 +100,24 @@ func ByUUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUUID, opts...).ToFunc()
 }
 
-// ByFirstName orders the results by the firstName field.
+// ByFirstName orders the results by the first_name field.
 func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFirstName, opts...).ToFunc()
 }
 
-// ByMiddleName orders the results by the middleName field.
+// ByMiddleName orders the results by the middle_name field.
 func ByMiddleName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMiddleName, opts...).ToFunc()
 }
 
-// ByLastName orders the results by the lastName field.
+// ByLastName orders the results by the last_name field.
 func ByLastName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastName, opts...).ToFunc()
 }
 
-// ByAge orders the results by the age field.
-func ByAge(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAge, opts...).ToFunc()
+// ByBirthday orders the results by the birthday field.
+func ByBirthday(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBirthday, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.

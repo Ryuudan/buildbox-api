@@ -42,27 +42,35 @@ func (uc *UserCreate) SetNillableUUID(u *uuid.UUID) *UserCreate {
 	return uc
 }
 
-// SetFirstName sets the "firstName" field.
+// SetFirstName sets the "first_name" field.
 func (uc *UserCreate) SetFirstName(s string) *UserCreate {
 	uc.mutation.SetFirstName(s)
 	return uc
 }
 
-// SetMiddleName sets the "middleName" field.
+// SetMiddleName sets the "middle_name" field.
 func (uc *UserCreate) SetMiddleName(s string) *UserCreate {
 	uc.mutation.SetMiddleName(s)
 	return uc
 }
 
-// SetLastName sets the "lastName" field.
+// SetLastName sets the "last_name" field.
 func (uc *UserCreate) SetLastName(s string) *UserCreate {
 	uc.mutation.SetLastName(s)
 	return uc
 }
 
-// SetAge sets the "age" field.
-func (uc *UserCreate) SetAge(i int) *UserCreate {
-	uc.mutation.SetAge(i)
+// SetBirthday sets the "birthday" field.
+func (uc *UserCreate) SetBirthday(t time.Time) *UserCreate {
+	uc.mutation.SetBirthday(t)
+	return uc
+}
+
+// SetNillableBirthday sets the "birthday" field if the given value is not nil.
+func (uc *UserCreate) SetNillableBirthday(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetBirthday(*t)
+	}
 	return uc
 }
 
@@ -185,16 +193,13 @@ func (uc *UserCreate) check() error {
 		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "User.uuid"`)}
 	}
 	if _, ok := uc.mutation.FirstName(); !ok {
-		return &ValidationError{Name: "firstName", err: errors.New(`generated: missing required field "User.firstName"`)}
+		return &ValidationError{Name: "first_name", err: errors.New(`generated: missing required field "User.first_name"`)}
 	}
 	if _, ok := uc.mutation.MiddleName(); !ok {
-		return &ValidationError{Name: "middleName", err: errors.New(`generated: missing required field "User.middleName"`)}
+		return &ValidationError{Name: "middle_name", err: errors.New(`generated: missing required field "User.middle_name"`)}
 	}
 	if _, ok := uc.mutation.LastName(); !ok {
-		return &ValidationError{Name: "lastName", err: errors.New(`generated: missing required field "User.lastName"`)}
-	}
-	if _, ok := uc.mutation.Age(); !ok {
-		return &ValidationError{Name: "age", err: errors.New(`generated: missing required field "User.age"`)}
+		return &ValidationError{Name: "last_name", err: errors.New(`generated: missing required field "User.last_name"`)}
 	}
 	if _, ok := uc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`generated: missing required edge "User.account"`)}
@@ -241,9 +246,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 		_node.LastName = value
 	}
-	if value, ok := uc.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
-		_node.Age = value
+	if value, ok := uc.mutation.Birthday(); ok {
+		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
+		_node.Birthday = value
 	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

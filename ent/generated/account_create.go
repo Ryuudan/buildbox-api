@@ -43,6 +43,34 @@ func (ac *AccountCreate) SetName(s string) *AccountCreate {
 	return ac
 }
 
+// SetEmail sets the "email" field.
+func (ac *AccountCreate) SetEmail(s string) *AccountCreate {
+	ac.mutation.SetEmail(s)
+	return ac
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (ac *AccountCreate) SetNillableEmail(s *string) *AccountCreate {
+	if s != nil {
+		ac.SetEmail(*s)
+	}
+	return ac
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (ac *AccountCreate) SetPhoneNumber(s string) *AccountCreate {
+	ac.mutation.SetPhoneNumber(s)
+	return ac
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (ac *AccountCreate) SetNillablePhoneNumber(s *string) *AccountCreate {
+	if s != nil {
+		ac.SetPhoneNumber(*s)
+	}
+	return ac
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (ac *AccountCreate) SetUpdatedAt(t time.Time) *AccountCreate {
 	ac.mutation.SetUpdatedAt(t)
@@ -163,6 +191,16 @@ func (ac *AccountCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Account.name": %w`, err)}
 		}
 	}
+	if v, ok := ac.mutation.Email(); ok {
+		if err := account.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`generated: validator failed for field "Account.email": %w`, err)}
+		}
+	}
+	if v, ok := ac.mutation.PhoneNumber(); ok {
+		if err := account.PhoneNumberValidator(v); err != nil {
+			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`generated: validator failed for field "Account.phone_number": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -196,6 +234,14 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Name(); ok {
 		_spec.SetField(account.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := ac.mutation.Email(); ok {
+		_spec.SetField(account.FieldEmail, field.TypeString, value)
+		_node.Email = value
+	}
+	if value, ok := ac.mutation.PhoneNumber(); ok {
+		_spec.SetField(account.FieldPhoneNumber, field.TypeString, value)
+		_node.PhoneNumber = value
 	}
 	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.SetField(account.FieldUpdatedAt, field.TypeTime, value)

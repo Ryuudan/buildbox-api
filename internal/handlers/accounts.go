@@ -2,29 +2,33 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountHandler struct {
-	accountService  services.AccountService
-	projectServices services.ProjectService
+	accountService services.AccountService
+	userService    services.UserService
 }
 
-func NewAccountHandler(accountService services.AccountService, projectServices services.ProjectService) *AccountHandler {
+func NewAccountHandler(accountService services.AccountService, userService services.UserService) *AccountHandler {
+	log.Println("✅ Accounts Handler Initialized")
 	return &AccountHandler{
-		accountService:  accountService,
-		projectServices: projectServices,
+		accountService: accountService,
+		userService:    userService,
 	}
 }
 
 func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	validate := utils.Validator()
 
-	var account generated.Account
+	var account models.RegisterAccountStruct
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
@@ -38,13 +42,50 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, _ := a.userService.GetUserByEmail(r.Context(), account.Email)
+
+	if user != nil {
+		validationErrors = append(validationErrors, utils.ValidationErrorDetails{
+			Field:   "email",
+			Message: "email already exists, please try another one",
+		})
+	}
+
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
 		utils.CustomValidationError(w, r, validationErrors)
 		return
 	}
 
-	newAccount, err := a.accountService.CreateAccount(r.Context(), &account)
+	newAccount, err := a.accountService.CreateAccount(r.Context(), &generated.Account{
+		Name:        account.Name,
+		Email:       account.Email,
+		PhoneNumber: account.PhoneNumber,
+	})
+
+	if err != nil {
+		utils.RenderError(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	password, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
+
+	if err != nil {
+		utils.RenderError(w, r, "users", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Creater user for the account
+	newUser, err := a.userService.CreateUser(r.Context(), &generated.User{
+		AccountID:  newAccount.ID,
+		Email:      account.Email,
+		Password:   string(password),
+		FirstName:  account.FirstName,
+		LastName:   account.LastName,
+		MiddleName: account.MiddleName,
+	})
+
+	println(newUser)
 
 	if err != nil {
 		utils.RenderError(w, r, "accounts", http.StatusInternalServerError, err.Error())

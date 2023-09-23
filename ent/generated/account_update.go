@@ -36,6 +36,46 @@ func (au *AccountUpdate) SetName(s string) *AccountUpdate {
 	return au
 }
 
+// SetEmail sets the "email" field.
+func (au *AccountUpdate) SetEmail(s string) *AccountUpdate {
+	au.mutation.SetEmail(s)
+	return au
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (au *AccountUpdate) SetNillableEmail(s *string) *AccountUpdate {
+	if s != nil {
+		au.SetEmail(*s)
+	}
+	return au
+}
+
+// ClearEmail clears the value of the "email" field.
+func (au *AccountUpdate) ClearEmail() *AccountUpdate {
+	au.mutation.ClearEmail()
+	return au
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (au *AccountUpdate) SetPhoneNumber(s string) *AccountUpdate {
+	au.mutation.SetPhoneNumber(s)
+	return au
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (au *AccountUpdate) SetNillablePhoneNumber(s *string) *AccountUpdate {
+	if s != nil {
+		au.SetPhoneNumber(*s)
+	}
+	return au
+}
+
+// ClearPhoneNumber clears the value of the "phone_number" field.
+func (au *AccountUpdate) ClearPhoneNumber() *AccountUpdate {
+	au.mutation.ClearPhoneNumber()
+	return au
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (au *AccountUpdate) SetUpdatedAt(t time.Time) *AccountUpdate {
 	au.mutation.SetUpdatedAt(t)
@@ -167,6 +207,16 @@ func (au *AccountUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Account.name": %w`, err)}
 		}
 	}
+	if v, ok := au.mutation.Email(); ok {
+		if err := account.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`generated: validator failed for field "Account.email": %w`, err)}
+		}
+	}
+	if v, ok := au.mutation.PhoneNumber(); ok {
+		if err := account.PhoneNumberValidator(v); err != nil {
+			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`generated: validator failed for field "Account.phone_number": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -184,6 +234,18 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.Name(); ok {
 		_spec.SetField(account.FieldName, field.TypeString, value)
+	}
+	if value, ok := au.mutation.Email(); ok {
+		_spec.SetField(account.FieldEmail, field.TypeString, value)
+	}
+	if au.mutation.EmailCleared() {
+		_spec.ClearField(account.FieldEmail, field.TypeString)
+	}
+	if value, ok := au.mutation.PhoneNumber(); ok {
+		_spec.SetField(account.FieldPhoneNumber, field.TypeString, value)
+	}
+	if au.mutation.PhoneNumberCleared() {
+		_spec.ClearField(account.FieldPhoneNumber, field.TypeString)
 	}
 	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.SetField(account.FieldUpdatedAt, field.TypeTime, value)
@@ -307,6 +369,46 @@ type AccountUpdateOne struct {
 // SetName sets the "name" field.
 func (auo *AccountUpdateOne) SetName(s string) *AccountUpdateOne {
 	auo.mutation.SetName(s)
+	return auo
+}
+
+// SetEmail sets the "email" field.
+func (auo *AccountUpdateOne) SetEmail(s string) *AccountUpdateOne {
+	auo.mutation.SetEmail(s)
+	return auo
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (auo *AccountUpdateOne) SetNillableEmail(s *string) *AccountUpdateOne {
+	if s != nil {
+		auo.SetEmail(*s)
+	}
+	return auo
+}
+
+// ClearEmail clears the value of the "email" field.
+func (auo *AccountUpdateOne) ClearEmail() *AccountUpdateOne {
+	auo.mutation.ClearEmail()
+	return auo
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (auo *AccountUpdateOne) SetPhoneNumber(s string) *AccountUpdateOne {
+	auo.mutation.SetPhoneNumber(s)
+	return auo
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (auo *AccountUpdateOne) SetNillablePhoneNumber(s *string) *AccountUpdateOne {
+	if s != nil {
+		auo.SetPhoneNumber(*s)
+	}
+	return auo
+}
+
+// ClearPhoneNumber clears the value of the "phone_number" field.
+func (auo *AccountUpdateOne) ClearPhoneNumber() *AccountUpdateOne {
+	auo.mutation.ClearPhoneNumber()
 	return auo
 }
 
@@ -454,6 +556,16 @@ func (auo *AccountUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Account.name": %w`, err)}
 		}
 	}
+	if v, ok := auo.mutation.Email(); ok {
+		if err := account.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`generated: validator failed for field "Account.email": %w`, err)}
+		}
+	}
+	if v, ok := auo.mutation.PhoneNumber(); ok {
+		if err := account.PhoneNumberValidator(v); err != nil {
+			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`generated: validator failed for field "Account.phone_number": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -488,6 +600,18 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 	}
 	if value, ok := auo.mutation.Name(); ok {
 		_spec.SetField(account.FieldName, field.TypeString, value)
+	}
+	if value, ok := auo.mutation.Email(); ok {
+		_spec.SetField(account.FieldEmail, field.TypeString, value)
+	}
+	if auo.mutation.EmailCleared() {
+		_spec.ClearField(account.FieldEmail, field.TypeString)
+	}
+	if value, ok := auo.mutation.PhoneNumber(); ok {
+		_spec.SetField(account.FieldPhoneNumber, field.TypeString, value)
+	}
+	if auo.mutation.PhoneNumberCleared() {
+		_spec.ClearField(account.FieldPhoneNumber, field.TypeString)
 	}
 	if value, ok := auo.mutation.UpdatedAt(); ok {
 		_spec.SetField(account.FieldUpdatedAt, field.TypeTime, value)

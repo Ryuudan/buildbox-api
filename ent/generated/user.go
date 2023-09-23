@@ -23,14 +23,14 @@ type User struct {
 	AccountID int `json:"account_id,omitempty"`
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
-	// FirstName holds the value of the "firstName" field.
-	FirstName string `json:"firstName,omitempty"`
-	// MiddleName holds the value of the "middleName" field.
-	MiddleName string `json:"middleName,omitempty"`
-	// LastName holds the value of the "lastName" field.
-	LastName string `json:"lastName,omitempty"`
-	// Age holds the value of the "age" field.
-	Age int `json:"age,omitempty"`
+	// FirstName holds the value of the "first_name" field.
+	FirstName string `json:"first_name,omitempty"`
+	// MiddleName holds the value of the "middle_name" field.
+	MiddleName string `json:"middle_name,omitempty"`
+	// LastName holds the value of the "last_name" field.
+	LastName string `json:"last_name,omitempty"`
+	// Birthday holds the value of the "birthday" field.
+	Birthday time.Time `json:"birthday,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Password holds the value of the "password" field.
@@ -72,11 +72,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID, user.FieldAccountID, user.FieldAge:
+		case user.FieldID, user.FieldAccountID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldFirstName, user.FieldMiddleName, user.FieldLastName, user.FieldEmail, user.FieldPassword:
 			values[i] = new(sql.NullString)
-		case user.FieldUpdatedAt, user.FieldCreatedAt:
+		case user.FieldBirthday, user.FieldUpdatedAt, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case user.FieldUUID:
 			values[i] = new(uuid.UUID)
@@ -115,27 +115,27 @@ func (u *User) assignValues(columns []string, values []any) error {
 			}
 		case user.FieldFirstName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field firstName", values[i])
+				return fmt.Errorf("unexpected type %T for field first_name", values[i])
 			} else if value.Valid {
 				u.FirstName = value.String
 			}
 		case user.FieldMiddleName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field middleName", values[i])
+				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
 			} else if value.Valid {
 				u.MiddleName = value.String
 			}
 		case user.FieldLastName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field lastName", values[i])
+				return fmt.Errorf("unexpected type %T for field last_name", values[i])
 			} else if value.Valid {
 				u.LastName = value.String
 			}
-		case user.FieldAge:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field age", values[i])
+		case user.FieldBirthday:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field birthday", values[i])
 			} else if value.Valid {
-				u.Age = int(value.Int64)
+				u.Birthday = value.Time
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -208,17 +208,17 @@ func (u *User) String() string {
 	builder.WriteString("uuid=")
 	builder.WriteString(fmt.Sprintf("%v", u.UUID))
 	builder.WriteString(", ")
-	builder.WriteString("firstName=")
+	builder.WriteString("first_name=")
 	builder.WriteString(u.FirstName)
 	builder.WriteString(", ")
-	builder.WriteString("middleName=")
+	builder.WriteString("middle_name=")
 	builder.WriteString(u.MiddleName)
 	builder.WriteString(", ")
-	builder.WriteString("lastName=")
+	builder.WriteString("last_name=")
 	builder.WriteString(u.LastName)
 	builder.WriteString(", ")
-	builder.WriteString("age=")
-	builder.WriteString(fmt.Sprintf("%v", u.Age))
+	builder.WriteString("birthday=")
+	builder.WriteString(u.Birthday.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)

@@ -26,12 +26,20 @@ func init() {
 	accountDescName := accountFields[1].Descriptor()
 	// account.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	account.NameValidator = accountDescName.Validators[0].(func(string) error)
+	// accountDescEmail is the schema descriptor for email field.
+	accountDescEmail := accountFields[2].Descriptor()
+	// account.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	account.EmailValidator = accountDescEmail.Validators[0].(func(string) error)
+	// accountDescPhoneNumber is the schema descriptor for phone_number field.
+	accountDescPhoneNumber := accountFields[3].Descriptor()
+	// account.PhoneNumberValidator is a validator for the "phone_number" field. It is called by the builders before save.
+	account.PhoneNumberValidator = accountDescPhoneNumber.Validators[0].(func(string) error)
 	// accountDescUpdatedAt is the schema descriptor for updated_at field.
-	accountDescUpdatedAt := accountFields[2].Descriptor()
+	accountDescUpdatedAt := accountFields[4].Descriptor()
 	// account.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	account.DefaultUpdatedAt = accountDescUpdatedAt.Default.(func() time.Time)
 	// accountDescCreatedAt is the schema descriptor for created_at field.
-	accountDescCreatedAt := accountFields[3].Descriptor()
+	accountDescCreatedAt := accountFields[5].Descriptor()
 	// account.DefaultCreatedAt holds the default value on creation for the created_at field.
 	account.DefaultCreatedAt = accountDescCreatedAt.Default.(func() time.Time)
 	projectFields := schema.Project{}.Fields()

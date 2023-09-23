@@ -22,7 +22,16 @@ func (Account) Fields() []ent.Field {
 			Default(uuid.New),
 		field.String("name").
 			NotEmpty().
-			StructTag(`json:"name,omitempty" validate:"required,min=1,max=100"`),
+			StructTag(`json:"name,omitempty" validate:"required,min=1"`),
+		field.String("email").
+			Optional().
+			Unique().
+			NotEmpty().
+			StructTag(`json:"email,omitempty" validate:"required,email"`),
+		field.String("phone_number").
+			Optional().
+			NotEmpty().
+			StructTag(`json:"phone_number,omitempty" validate:"required,phone"`),
 		field.Time("updated_at").
 			Optional().
 			Default(time.Now),

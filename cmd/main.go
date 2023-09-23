@@ -15,7 +15,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/go-chi/httprate"
 )
 
 func init() {
@@ -44,7 +43,6 @@ func main() {
 	app.Use(middleware.Logger)
 	app.Use(middleware.Recoverer)
 	app.Use(middleware.Throttle(100))
-	app.Use(httprate.LimitByIP(200, 1*time.Minute))
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -65,9 +63,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// Routes
-	routers.Accounts(db_client, app)
-	routers.Projects(db_client, app)
+	routers.InitializeRoutes(db_client, app)
 
 	// Start server
 	server := http.Server{

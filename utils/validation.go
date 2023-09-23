@@ -174,6 +174,8 @@ func validationErrorMessage(err validator.FieldError) string {
 		return fmt.Sprintf("%s must be different from %s", field, err.Param())
 	case "nefield":
 		return fmt.Sprintf("%s must be different from %s", field, err.Param())
+	case "e164":
+		return fmt.Sprintf("%s must be a valid phone number", field)
 	default:
 		return fmt.Sprintf("Validation failed for %s field", field)
 	}

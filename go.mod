@@ -8,9 +8,11 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httprate v0.7.4
 	github.com/go-playground/validator/v10 v10.15.4
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.1
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/lib/pq v1.10.9
+	golang.org/x/crypto v0.7.0
 )
 
 require (
@@ -30,7 +32,6 @@ require (
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
