@@ -6,6 +6,7 @@ import (
 
 	"github.com/Pyakz/buildbox-api/ent"
 	"github.com/Pyakz/buildbox-api/utils"
+	"github.com/go-chi/chi/v5"
 )
 
 type ProjectHandler struct {
@@ -25,13 +26,13 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
-		utils.RenderError(w, "Invalid JSON format. Please check your request and try again.", http.StatusBadRequest, err.Error())
+		utils.RenderError(w, r, "projects", http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Struct level validation
 	if err := validate.Struct(project); err != nil {
-		utils.Validate(w, err)
+		utils.Validate(w, r, err)
 		return
 	}
 
@@ -45,14 +46,14 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
-		utils.CustomValidationError(w, validationErrors)
+		utils.CustomValidationError(w, r, validationErrors)
 		return
 	}
 
 	newProject, err := p.projectService.CreateProject(r.Context(), &project)
 
 	if err != nil {
-		utils.RenderError(w, "Oops! Something went wrong while creating the project. Please try again later.", http.StatusInternalServerError, err.Error())
+		utils.RenderError(w, r, "projects", http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -63,15 +64,26 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
 	projects, err := p.projectService.GetProjects(r.Context())
 	if err != nil {
-		// Handle the error, e.g., by sending an error response.
-		http.Error(w, "Failed to retrieve projects: "+err.Error(), http.StatusInternalServerError)
+		utils.RenderError(w, r, "projects", http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	utils.RenderJSON(w, http.StatusOK, projects)
 }
 
-func (p *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
-	utils.RenderJSON(w, http.StatusOK, []string{"Project 1", "Project 2", "Project 3"})
+func (p *ProjectHandler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
 
+	if err != nil {
+		utils.RenderError(w, r, "projects", http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	project, err := p.projectService.GetProjectByID(r.Context(), id)
+	if err != nil {
+		utils.RenderError(w, r, "projects", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.RenderJSON(w, http.StatusOK, project)
 }

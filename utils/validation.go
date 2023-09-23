@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -33,6 +34,7 @@ func Validator() *validator.Validate {
 	validate := validator.New()
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+
 		if name == "-" {
 			return ""
 		}
@@ -44,13 +46,15 @@ func Validator() *validator.Validate {
 	return validate
 }
 
-func CustomValidationError(w http.ResponseWriter, details []ValidationErrorDetails) {
+func CustomValidationError(w http.ResponseWriter, r *http.Request, details []ValidationErrorDetails) {
 
 	errorResponse := validationErrorResponse{
 		Error: validationError{
-			Code:    http.StatusBadRequest,
-			Type:    "validation_error",
-			Details: details,
+			Code:      http.StatusBadRequest,
+			Type:      "validation_error",
+			Path:      r.URL.Path,
+			TimeStamp: time.Now(),
+			Details:   details,
 		},
 	}
 
@@ -68,7 +72,7 @@ func CustomValidationError(w http.ResponseWriter, details []ValidationErrorDetai
 
 // ideal for form validation, or form errorrs
 // like setError in react-hooks-form
-func Validate(w http.ResponseWriter, err error) {
+func Validate(w http.ResponseWriter, r *http.Request, err error) {
 	var details []ValidationErrorDetails
 
 	for _, err := range err.(validator.ValidationErrors) {
@@ -80,9 +84,11 @@ func Validate(w http.ResponseWriter, err error) {
 
 	errorResponse := validationErrorResponse{
 		Error: validationError{
-			Code:    http.StatusBadRequest,
-			Type:    "validation_error",
-			Details: details,
+			Code:      http.StatusUnprocessableEntity,
+			Type:      "validation_error",
+			TimeStamp: time.Now(),
+			Path:      r.URL.Path,
+			Details:   details,
 		},
 	}
 
@@ -100,6 +106,8 @@ func Validate(w http.ResponseWriter, err error) {
 
 func validationErrorMessage(err validator.FieldError) string {
 	field := err.Field()
+	println(err.Field())
+	println(err.StructNamespace())
 
 	switch tag := err.Tag(); tag {
 	case "required":
@@ -166,8 +174,6 @@ func validationErrorMessage(err validator.FieldError) string {
 		return fmt.Sprintf("%s must be different from %s", field, err.Param())
 	case "nefield":
 		return fmt.Sprintf("%s must be different from %s", field, err.Param())
-	case "dateComparison":
-		return fmt.Sprintf("%s must be higher than %s", field, err.Param())
 	default:
 		return fmt.Sprintf("Validation failed for %s field", field)
 	}
@@ -179,9 +185,11 @@ type ValidationErrorDetails struct {
 }
 
 type validationError struct {
-	Code    int                      `json:"code"`
-	Type    string                   `json:"type"`
-	Details []ValidationErrorDetails `json:"details"`
+	Code      int                      `json:"code"`
+	Type      string                   `json:"type"`
+	TimeStamp time.Time                `json:"time_stamp"`
+	Path      string                   `json:"path"`
+	Details   []ValidationErrorDetails `json:"details"`
 }
 
 type validationErrorResponse struct {

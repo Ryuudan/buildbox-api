@@ -17,6 +17,7 @@ func Initialize(client *ent.ProjectClient, router chi.Router) {
 		v1.Use(utils.VersionMiddleware("v1"))
 		v1.Get("/projects", project.GetProjects)
 		v1.Post("/projects", project.CreateProject)
-		v1.Get("/projects/{id}", project.GetProject)
+		v1.Get("/projects/{id}", project.GetProjectByID)
+
 	})
 }

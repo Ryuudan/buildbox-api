@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/k0kubun/pp"
@@ -28,34 +29,6 @@ func RenderJSON(w http.ResponseWriter, status int, data interface{}) {
 	}
 }
 
-// RenderError writes an error response as JSON to the client.
-func RenderError(w http.ResponseWriter, errType string, code int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-
-	// Create a buffer to hold the JSON encoding.
-	var buf []byte
-	data := map[string]interface{}{
-		"error": map[string]interface{}{
-			"code":    code,
-			"type":    errType,
-			"message": message,
-		},
-	}
-
-	// Encode the data into the buffer.
-	buf, err := json.Marshal(data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Write the buffer's content to the response writer.
-	if _, err := w.Write(buf); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
 func VersionMiddleware(version string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
@@ -68,4 +41,13 @@ func VersionMiddleware(version string) func(http.Handler) http.Handler {
 
 func ConsoleLog(message interface{}) {
 	pp.Println(message)
+}
+
+// StringToInt returns the integer value of a string or an error if the conversion fails.
+func StringToInt(str string) (int, error) {
+	intValue, err := strconv.Atoi(str)
+	if err != nil {
+		return 0, err
+	}
+	return intValue, nil
 }

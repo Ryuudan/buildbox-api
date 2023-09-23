@@ -2,10 +2,12 @@ package projects
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Pyakz/buildbox-api/ent"
 	"github.com/Pyakz/buildbox-api/ent/project"
 	"github.com/Pyakz/buildbox-api/utils"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -13,6 +15,11 @@ import (
 type ProjectService interface {
 	CreateProject(ctx context.Context, newProject *ent.Project) (*ent.Project, error)
 	GetProjects(ctx context.Context) ([]*ent.Project, error)
+	UpdateProjectByID(ctx context.Context, id int, newPayload *ent.Project) (*ent.Project, error)
+	GetProjectByID(ctx context.Context, id int) (*ent.Project, error)
+	GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (*ent.Project, error)
+	DeleteManyProjectsByID(ctx context.Context, ids []int) ([]*ent.Project, error)
+	DeleteProjectByID(ctx context.Context, id int) (*ent.Project, error)
 }
 
 // EntProjectService is an implementation of ProjectService that uses the Ent client.
@@ -26,7 +33,6 @@ func NewProjectService(client *ent.ProjectClient) ProjectService {
 }
 
 // CreateProject creates a new project.
-// CreateProject creates a new project.
 func (s *projectService) CreateProject(ctx context.Context, newProject *ent.Project) (*ent.Project, error) {
 	project, err := s.client.Create().
 		// accountID and createdBy can be found in claims
@@ -37,7 +43,7 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *ent.Proj
 		SetClientID("4").
 		SetName(newProject.Name).
 		SetStartDate(newProject.StartDate).
-		SetStatus(newProject.Status).
+		SetNillableStatus(newProject.Status).
 		SetNillableEndDate(newProject.EndDate).
 		SetBudget(newProject.Budget).
 		SetNillableLocation(newProject.Location).
@@ -82,4 +88,87 @@ func (s *projectService) GetProjects(ctx context.Context) ([]*ent.Project, error
 
 	utils.ConsoleLog(projects)
 	return projects, nil
+}
+
+// UpdateProject updates an existing project.
+func (s *projectService) UpdateProjectByID(ctx context.Context, id int, newPayload *ent.Project) (*ent.Project, error) {
+	project, err := s.client.UpdateOneID(id).
+		SetName(newPayload.Name).
+		SetStartDate(newPayload.StartDate).
+		SetNillableStatus(newPayload.Status).
+		SetNillableEndDate(newPayload.EndDate).
+		SetBudget(newPayload.Budget).
+		SetNillableLocation(newPayload.Location).
+		SetNillableDescription(newPayload.Description).
+		SetNillableNotes(newPayload.Notes).
+		SetNillableManagerID(newPayload.ManagerID).
+		SetNillableDeleted(newPayload.Deleted).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return project, nil
+}
+
+// DeleteProjectById sets the 'deleted' field to true for a project.
+func (s *projectService) DeleteProjectByID(ctx context.Context, id int) (*ent.Project, error) {
+	deleted := true
+
+	project, err := s.client.UpdateOneID(id).
+		SetNillableDeleted(&deleted).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return project, nil
+}
+
+// DeleteManyProjects sets the 'deleted' field to true for multiple projects by their IDs.
+func (s *projectService) DeleteManyProjectsByID(ctx context.Context, ids []int) ([]*ent.Project, error) {
+	deleted := true
+
+	// Create a slice to store the updated projects.
+	var deletedProjects []*ent.Project
+
+	// Iterate through the project IDs and update each project.
+	for _, id := range ids {
+		project, err := s.client.UpdateOneID(id).
+			SetNillableDeleted(&deleted).
+			Save(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		deletedProjects = append(deletedProjects, project)
+	}
+
+	return deletedProjects, nil
+}
+
+// GetProjectByID retrieves a project by its ID.
+func (s *projectService) GetProjectByID(ctx context.Context, id int) (*ent.Project, error) {
+	project, err := s.client.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, errors.New("project not found")
+		}
+		return nil, errors.New("something went wrong, please try again later")
+	}
+	return project, nil
+}
+
+// GetProjectByUUID retrieves a project by its UUID.
+func (s *projectService) GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (*ent.Project, error) {
+	project, err := s.client.Query().
+		Where(project.UUIDEQ(uuid)).
+		First(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return project, nil
 }
