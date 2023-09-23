@@ -14,7 +14,6 @@ type UserService interface {
 	GetUserByEmail(ctx context.Context, email string) (*generated.User, error)
 	GetUserById(ctx context.Context, id int) (*generated.User, error)
 	GetUsersByAccountID(ctx context.Context, accountID int) ([]*generated.User, error)
-	
 }
 
 type userService struct {
