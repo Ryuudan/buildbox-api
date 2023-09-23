@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -12,16 +11,7 @@ import (
 
 func PostgresConnect() (*generated.Client, error) {
 
-	port := os.Getenv("DB_PORT")
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	pass := os.Getenv("DB_PASS")
-	dbname := os.Getenv("DB_NAME")
-
-	client, err := generated.Open("postgres", fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, pass, dbname,
-	))
+	client, err := generated.Open("postgres", os.Getenv("POSTGRES_CONNECTION_STRING"))
 
 	if err != nil {
 		return nil, err
