@@ -62,6 +62,7 @@ func (Project) Fields() []ent.Field {
 				"in_negotiation",
 			).
 			Default("planning").
+			Nillable().
 			StructTag(`json:"status,omitempty" validate:"omitempty,oneof=planning in_progress on_hold completed cancelled delayed under_review pending_approval in_testing emergency on_schedule behind_schedule in_review archived in_negotiation"`),
 		field.String("location").
 			Optional().
@@ -84,7 +85,7 @@ func (Project) Fields() []ent.Field {
 		field.Time("start_date").
 			Optional().
 			Default(time.Now).
-			StructTag(`json:"start_date,omitempty" validate:"ltefield=EndDate"`),
+			StructTag(`json:"start_date,omitempty" validate:"omitempty,ltefield=EndDate"`),
 		field.Time("end_date").
 			Optional().
 			Nillable().
