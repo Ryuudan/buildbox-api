@@ -1,27 +1,30 @@
-package accounts
+package handlers
 
 import (
 	"encoding/json"
 	"net/http"
 
-	models "github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
 )
 
 type AccountHandler struct {
-	accountService AccountService
+	accountService  services.AccountService
+	projectServices services.ProjectService
 }
 
-func NewAccountHandler(accountService AccountService) *AccountHandler {
+func NewAccountHandler(accountService services.AccountService, projectServices services.ProjectService) *AccountHandler {
 	return &AccountHandler{
-		accountService: accountService,
+		accountService:  accountService,
+		projectServices: projectServices,
 	}
 }
 
 func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	validate := utils.Validator()
 
-	var account models.Account
+	var account generated.Account
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {

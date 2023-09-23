@@ -23,7 +23,7 @@ func PostgresConnect() (*generated.Client, error) {
 	}
 
 	// Successfully connected to the database
-	log.Printf("Sucessfully connected to the database!")
+	log.Println("✅ Sucessfully connected to the Postgres Database!")
 
 	return client, nil
 }

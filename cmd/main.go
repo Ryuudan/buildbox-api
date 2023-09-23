@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Pyakz/buildbox-api/database"
-	"github.com/Pyakz/buildbox-api/routes"
+	"github.com/Pyakz/buildbox-api/internal/routers"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -65,7 +65,9 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	routes.Initialize(app, db_client)
+	// Routes
+	routers.Accounts(db_client, app)
+	routers.Projects(db_client, app)
 
 	// Start server
 	server := http.Server{
@@ -75,12 +77,12 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			log.Printf("Error starting server: %v", err)
+			log.Printf("❌ Error starting server: %v", err)
 			os.Exit(1)
 		}
 	}()
 
-	log.Printf("Server started on port %s", os.Getenv("PORT"))
+	log.Printf("✅ Server started on port %s", os.Getenv("PORT"))
 
 	// Graceful shutdown
 	sigChan := make(chan os.Signal, 1)
@@ -88,9 +90,10 @@ func main() {
 	<-sigChan
 
 	log.Println("Shutting down server...")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Error shutting down server: %v", err)
+		log.Printf("❌ Error shutting down server: %v", err)
 	}
 }

@@ -1,21 +1,21 @@
-package projects
+package handlers
 
 import (
 	"encoding/json"
 	"net/http"
 
 	models "github.com/Pyakz/buildbox-api/ent/generated"
-	"github.com/Pyakz/buildbox-api/internal/accounts"
+	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 )
 
 type ProjectHandler struct {
-	projectService ProjectService
-	accountService accounts.AccountService
+	projectService services.ProjectService
+	accountService services.AccountService
 }
 
-func NewProjectHandler(projectService ProjectService, accountService accounts.AccountService) *ProjectHandler {
+func NewProjectHandler(projectService services.ProjectService, accountService services.AccountService) *ProjectHandler {
 	return &ProjectHandler{
 		projectService: projectService,
 		accountService: accountService,

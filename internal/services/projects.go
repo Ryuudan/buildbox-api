@@ -1,4 +1,4 @@
-package projects
+package services
 
 import (
 	"context"
