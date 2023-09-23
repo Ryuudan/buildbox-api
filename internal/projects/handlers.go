@@ -4,25 +4,28 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Pyakz/buildbox-api/ent"
+	models "github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/internal/accounts"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 )
 
 type ProjectHandler struct {
 	projectService ProjectService
+	accountService accounts.AccountService
 }
 
-func NewProjectHandler(projectService ProjectService) *ProjectHandler {
+func NewProjectHandler(projectService ProjectService, accountService accounts.AccountService) *ProjectHandler {
 	return &ProjectHandler{
 		projectService: projectService,
+		accountService: accountService,
 	}
 }
 
 func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	validate := utils.Validator()
 
-	var project ent.Project
+	var project models.Project
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {

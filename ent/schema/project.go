@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -19,10 +20,10 @@ func (Project) Fields() []ent.Field {
 	return []ent.Field{
 		// Accont ID is not optional
 		// this is for now, we will add authentication later
+		field.Int("account_id"),
 		field.UUID("uuid", uuid.UUID{}).
 			Immutable().
 			Default(uuid.New),
-		field.String("account_id"),
 		field.String("client_id").
 			Optional().
 			Nillable(),
@@ -102,5 +103,11 @@ func (Project) Fields() []ent.Field {
 
 // Edges of the Project.
 func (Project) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("account", Account.Type).
+			Field("account_id").
+			Ref("projects").
+			Required().
+			Unique(),
+	}
 }

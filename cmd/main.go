@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Pyakz/buildbox-api/db"
+	"github.com/Pyakz/buildbox-api/internal/accounts"
 	"github.com/Pyakz/buildbox-api/internal/projects"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
@@ -65,14 +66,13 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	API_ROUTES := chi.NewRouter()
-	projects.Initialize(db_client.Project, API_ROUTES)
-	// materials.Initialize(db, API_ROUTES)
-	// documents.Initialize(db, API_ROUTES)
-	// employees.Initialize(db, API_ROUTES)
-
-	// every routes in API_ROUTES now starts at /api
-	app.Mount("/api", API_ROUTES)
+	// TODO: Add proper versioning
+	// and code organization
+	v1_routes := chi.NewRouter()
+	v1_routes.Use(utils.VersionMiddleware("v1"))
+	projects.Initialize(db_client, v1_routes)
+	accounts.Initialize(db_client, v1_routes)
+	app.Mount("/api/v1", v1_routes)
 
 	// Start server
 	server := http.Server{

@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/Pyakz/buildbox-api/ent"
+	"github.com/Pyakz/buildbox-api/ent/generated"
 	_ "github.com/lib/pq" // Import the pq driver
 )
 
-func PostgresConnect() (*ent.Client, error) {
+func PostgresConnect() (*generated.Client, error) {
 
 	port := os.Getenv("DB_PORT")
 	host := os.Getenv("DB_HOST")
@@ -18,7 +18,7 @@ func PostgresConnect() (*ent.Client, error) {
 	pass := os.Getenv("DB_PASS")
 	dbname := os.Getenv("DB_NAME")
 
-	client, err := ent.Open("postgres", fmt.Sprintf(
+	client, err := generated.Open("postgres", fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, pass, dbname,
 	))
