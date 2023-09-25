@@ -16,23 +16,23 @@ import (
 
 // User is the model entity for the User schema.
 type User struct {
-	config `json:"-"`
+	config `json:"-" validate:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID int `json:"account_id,omitempty"`
 	// FirstName holds the value of the "first_name" field.
-	FirstName string `json:"first_name,omitempty"`
-	// MiddleName holds the value of the "middle_name" field.
-	MiddleName string `json:"middle_name,omitempty"`
+	FirstName string `json:"first_name" validate:"required,min=1"`
 	// LastName holds the value of the "last_name" field.
-	LastName string `json:"last_name,omitempty"`
+	LastName string `json:"last_name" validate:"required,min=1"`
+	// MiddleName holds the value of the "middle_name" field.
+	MiddleName string `json:"middle_name" validate:"required,min=1"`
 	// Birthday holds the value of the "birthday" field.
-	Birthday time.Time `json:"birthday,omitempty"`
+	Birthday time.Time `json:"birthday" validate:"required"`
 	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty"`
+	Email string `json:"email" validate:"required,email"`
 	// Password holds the value of the "password" field.
-	Password string `json:"password,omitempty"`
+	Password string `json:"password" validate:"required,min=3"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -74,7 +74,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldID, user.FieldAccountID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldFirstName, user.FieldMiddleName, user.FieldLastName, user.FieldEmail, user.FieldPassword:
+		case user.FieldFirstName, user.FieldLastName, user.FieldMiddleName, user.FieldEmail, user.FieldPassword:
 			values[i] = new(sql.NullString)
 		case user.FieldBirthday, user.FieldUpdatedAt, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -113,17 +113,17 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.FirstName = value.String
 			}
-		case user.FieldMiddleName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
-			} else if value.Valid {
-				u.MiddleName = value.String
-			}
 		case user.FieldLastName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field last_name", values[i])
 			} else if value.Valid {
 				u.LastName = value.String
+			}
+		case user.FieldMiddleName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
+			} else if value.Valid {
+				u.MiddleName = value.String
 			}
 		case user.FieldBirthday:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -208,11 +208,11 @@ func (u *User) String() string {
 	builder.WriteString("first_name=")
 	builder.WriteString(u.FirstName)
 	builder.WriteString(", ")
-	builder.WriteString("middle_name=")
-	builder.WriteString(u.MiddleName)
-	builder.WriteString(", ")
 	builder.WriteString("last_name=")
 	builder.WriteString(u.LastName)
+	builder.WriteString(", ")
+	builder.WriteString("middle_name=")
+	builder.WriteString(u.MiddleName)
 	builder.WriteString(", ")
 	builder.WriteString("birthday=")
 	builder.WriteString(u.Birthday.Format(time.ANSIC))

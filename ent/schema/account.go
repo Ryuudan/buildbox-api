@@ -19,16 +19,17 @@ func (Account) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
 			NotEmpty().
-			StructTag(`json:"name,omitempty" validate:"required,min=1"`),
+			Comment("The name of the account, or company.").
+			StructTag(`json:"name" validate:"required,min=1"`),
 		field.String("email").
 			Optional().
 			Unique().
 			NotEmpty().
-			StructTag(`json:"email,omitempty" validate:"required,email"`),
+			StructTag(`json:"email" validate:"required,email"`),
 		field.String("phone_number").
 			Optional().
 			NotEmpty().
-			StructTag(`json:"phone_number,omitempty" validate:"required,phone"`),
+			StructTag(`json:"phone_number" validate:"required,phone"`),
 		field.Time("updated_at").
 			Optional().
 			Default(time.Now),

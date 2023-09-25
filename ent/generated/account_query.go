@@ -370,7 +370,7 @@ func (aq *AccountQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *Acc
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" validate:"required,min=1"`
+//		Name string `json:"name" validate:"required,min=1"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -393,7 +393,7 @@ func (aq *AccountQuery) GroupBy(field string, fields ...string) *AccountGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty" validate:"required,min=1"`
+//		Name string `json:"name" validate:"required,min=1"`
 //	}
 //
 //	client.Account.Query().

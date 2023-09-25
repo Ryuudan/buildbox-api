@@ -34,15 +34,15 @@ func (uc *UserCreate) SetFirstName(s string) *UserCreate {
 	return uc
 }
 
-// SetMiddleName sets the "middle_name" field.
-func (uc *UserCreate) SetMiddleName(s string) *UserCreate {
-	uc.mutation.SetMiddleName(s)
-	return uc
-}
-
 // SetLastName sets the "last_name" field.
 func (uc *UserCreate) SetLastName(s string) *UserCreate {
 	uc.mutation.SetLastName(s)
+	return uc
+}
+
+// SetMiddleName sets the "middle_name" field.
+func (uc *UserCreate) SetMiddleName(s string) *UserCreate {
+	uc.mutation.SetMiddleName(s)
 	return uc
 }
 
@@ -192,11 +192,11 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.FirstName(); !ok {
 		return &ValidationError{Name: "first_name", err: errors.New(`generated: missing required field "User.first_name"`)}
 	}
-	if _, ok := uc.mutation.MiddleName(); !ok {
-		return &ValidationError{Name: "middle_name", err: errors.New(`generated: missing required field "User.middle_name"`)}
-	}
 	if _, ok := uc.mutation.LastName(); !ok {
 		return &ValidationError{Name: "last_name", err: errors.New(`generated: missing required field "User.last_name"`)}
+	}
+	if _, ok := uc.mutation.MiddleName(); !ok {
+		return &ValidationError{Name: "middle_name", err: errors.New(`generated: missing required field "User.middle_name"`)}
 	}
 	if _, ok := uc.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "User.uuid"`)}
@@ -234,13 +234,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
 	}
-	if value, ok := uc.mutation.MiddleName(); ok {
-		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
-		_node.MiddleName = value
-	}
 	if value, ok := uc.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 		_node.LastName = value
+	}
+	if value, ok := uc.mutation.MiddleName(); ok {
+		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
+		_node.MiddleName = value
 	}
 	if value, ok := uc.mutation.Birthday(); ok {
 		_spec.SetField(user.FieldBirthday, field.TypeTime, value)

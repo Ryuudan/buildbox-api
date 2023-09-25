@@ -47,7 +47,7 @@ func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	validate := render.Validator()
 
-	var user models.CreateUserStruct
+	var user generated.User
 	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -67,17 +67,7 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	password, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		render.Error(w, r, "users", http.StatusBadRequest, err.Error())
-		return
-	}
-
-	newUser, err := u.userService.CreateUser(r.Context(), &generated.User{
-		AccountID: 1,
-		Email:     user.Email,
-		Password:  string(password),
-	})
+	newUser, err := u.userService.CreateUser(r.Context(), &user)
 
 	if err != nil {
 		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())

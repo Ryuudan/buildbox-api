@@ -41,15 +41,15 @@ func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
 	return uu
 }
 
-// SetMiddleName sets the "middle_name" field.
-func (uu *UserUpdate) SetMiddleName(s string) *UserUpdate {
-	uu.mutation.SetMiddleName(s)
-	return uu
-}
-
 // SetLastName sets the "last_name" field.
 func (uu *UserUpdate) SetLastName(s string) *UserUpdate {
 	uu.mutation.SetLastName(s)
+	return uu
+}
+
+// SetMiddleName sets the "middle_name" field.
+func (uu *UserUpdate) SetMiddleName(s string) *UserUpdate {
+	uu.mutation.SetMiddleName(s)
 	return uu
 }
 
@@ -199,11 +199,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.MiddleName(); ok {
-		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
-	}
 	if value, ok := uu.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.MiddleName(); ok {
+		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Birthday(); ok {
 		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
@@ -293,15 +293,15 @@ func (uuo *UserUpdateOne) SetFirstName(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetMiddleName sets the "middle_name" field.
-func (uuo *UserUpdateOne) SetMiddleName(s string) *UserUpdateOne {
-	uuo.mutation.SetMiddleName(s)
-	return uuo
-}
-
 // SetLastName sets the "last_name" field.
 func (uuo *UserUpdateOne) SetLastName(s string) *UserUpdateOne {
 	uuo.mutation.SetLastName(s)
+	return uuo
+}
+
+// SetMiddleName sets the "middle_name" field.
+func (uuo *UserUpdateOne) SetMiddleName(s string) *UserUpdateOne {
+	uuo.mutation.SetMiddleName(s)
 	return uuo
 }
 
@@ -481,11 +481,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.MiddleName(); ok {
-		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
-	}
 	if value, ok := uuo.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.MiddleName(); ok {
+		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Birthday(); ok {
 		_spec.SetField(user.FieldBirthday, field.TypeTime, value)

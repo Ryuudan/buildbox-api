@@ -18,12 +18,12 @@ type Account struct {
 	config `json:"-" validate:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty" validate:"required,min=1"`
+	// The name of the account, or company.
+	Name string `json:"name" validate:"required,min=1"`
 	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty" validate:"required,email"`
+	Email string `json:"email" validate:"required,email"`
 	// PhoneNumber holds the value of the "phone_number" field.
-	PhoneNumber string `json:"phone_number,omitempty" validate:"required,phone"`
+	PhoneNumber string `json:"phone_number" validate:"required,phone"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.

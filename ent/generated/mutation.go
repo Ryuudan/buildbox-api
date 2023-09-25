@@ -4295,8 +4295,8 @@ type UserMutation struct {
 	typ            string
 	id             *int
 	first_name     *string
-	middle_name    *string
 	last_name      *string
+	middle_name    *string
 	birthday       *time.Time
 	email          *string
 	password       *string
@@ -4481,42 +4481,6 @@ func (m *UserMutation) ResetFirstName() {
 	m.first_name = nil
 }
 
-// SetMiddleName sets the "middle_name" field.
-func (m *UserMutation) SetMiddleName(s string) {
-	m.middle_name = &s
-}
-
-// MiddleName returns the value of the "middle_name" field in the mutation.
-func (m *UserMutation) MiddleName() (r string, exists bool) {
-	v := m.middle_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMiddleName returns the old "middle_name" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldMiddleName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMiddleName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMiddleName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMiddleName: %w", err)
-	}
-	return oldValue.MiddleName, nil
-}
-
-// ResetMiddleName resets all changes to the "middle_name" field.
-func (m *UserMutation) ResetMiddleName() {
-	m.middle_name = nil
-}
-
 // SetLastName sets the "last_name" field.
 func (m *UserMutation) SetLastName(s string) {
 	m.last_name = &s
@@ -4551,6 +4515,42 @@ func (m *UserMutation) OldLastName(ctx context.Context) (v string, err error) {
 // ResetLastName resets all changes to the "last_name" field.
 func (m *UserMutation) ResetLastName() {
 	m.last_name = nil
+}
+
+// SetMiddleName sets the "middle_name" field.
+func (m *UserMutation) SetMiddleName(s string) {
+	m.middle_name = &s
+}
+
+// MiddleName returns the value of the "middle_name" field in the mutation.
+func (m *UserMutation) MiddleName() (r string, exists bool) {
+	v := m.middle_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMiddleName returns the old "middle_name" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldMiddleName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMiddleName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMiddleName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMiddleName: %w", err)
+	}
+	return oldValue.MiddleName, nil
+}
+
+// ResetMiddleName resets all changes to the "middle_name" field.
+func (m *UserMutation) ResetMiddleName() {
+	m.middle_name = nil
 }
 
 // SetBirthday sets the "birthday" field.
@@ -4902,11 +4902,11 @@ func (m *UserMutation) Fields() []string {
 	if m.first_name != nil {
 		fields = append(fields, user.FieldFirstName)
 	}
-	if m.middle_name != nil {
-		fields = append(fields, user.FieldMiddleName)
-	}
 	if m.last_name != nil {
 		fields = append(fields, user.FieldLastName)
+	}
+	if m.middle_name != nil {
+		fields = append(fields, user.FieldMiddleName)
 	}
 	if m.birthday != nil {
 		fields = append(fields, user.FieldBirthday)
@@ -4938,10 +4938,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.AccountID()
 	case user.FieldFirstName:
 		return m.FirstName()
-	case user.FieldMiddleName:
-		return m.MiddleName()
 	case user.FieldLastName:
 		return m.LastName()
+	case user.FieldMiddleName:
+		return m.MiddleName()
 	case user.FieldBirthday:
 		return m.Birthday()
 	case user.FieldEmail:
@@ -4967,10 +4967,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldAccountID(ctx)
 	case user.FieldFirstName:
 		return m.OldFirstName(ctx)
-	case user.FieldMiddleName:
-		return m.OldMiddleName(ctx)
 	case user.FieldLastName:
 		return m.OldLastName(ctx)
+	case user.FieldMiddleName:
+		return m.OldMiddleName(ctx)
 	case user.FieldBirthday:
 		return m.OldBirthday(ctx)
 	case user.FieldEmail:
@@ -5006,19 +5006,19 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFirstName(v)
 		return nil
-	case user.FieldMiddleName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMiddleName(v)
-		return nil
 	case user.FieldLastName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastName(v)
+		return nil
+	case user.FieldMiddleName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMiddleName(v)
 		return nil
 	case user.FieldBirthday:
 		v, ok := value.(time.Time)
@@ -5153,11 +5153,11 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldFirstName:
 		m.ResetFirstName()
 		return nil
-	case user.FieldMiddleName:
-		m.ResetMiddleName()
-		return nil
 	case user.FieldLastName:
 		m.ResetLastName()
+		return nil
+	case user.FieldMiddleName:
+		m.ResetMiddleName()
 		return nil
 	case user.FieldBirthday:
 		m.ResetBirthday()

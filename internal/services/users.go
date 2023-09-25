@@ -6,6 +6,9 @@ import (
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
+	"github.com/Pyakz/buildbox-api/internal/models"
+	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
@@ -26,13 +29,26 @@ func NewUserService(client *generated.UserClient) UserService {
 // CreateProject creates a new project.
 func (s *userService) CreateUser(ctx context.Context, newUser *generated.User) (*generated.User, error) {
 
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	password, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("failed to generate hashed password")
+	}
+
+	newUser.Password = string(password)
+
 	user, err := s.client.Create().
-		SetAccountID(newUser.AccountID).
+		SetAccountID(int(claims["account_id"].(float64))).
 		SetEmail(newUser.Email).
 		SetFirstName(newUser.FirstName).
 		SetLastName(newUser.LastName).
-		SetMiddleName(newUser.MiddleName).
+		SetBirthday(newUser.Birthday).
 		SetPassword(newUser.Password).
+		SetMiddleName(newUser.MiddleName).
 		Save(ctx)
 
 	if err != nil {

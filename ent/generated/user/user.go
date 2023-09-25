@@ -19,10 +19,10 @@ const (
 	FieldAccountID = "account_id"
 	// FieldFirstName holds the string denoting the first_name field in the database.
 	FieldFirstName = "first_name"
-	// FieldMiddleName holds the string denoting the middle_name field in the database.
-	FieldMiddleName = "middle_name"
 	// FieldLastName holds the string denoting the last_name field in the database.
 	FieldLastName = "last_name"
+	// FieldMiddleName holds the string denoting the middle_name field in the database.
+	FieldMiddleName = "middle_name"
 	// FieldBirthday holds the string denoting the birthday field in the database.
 	FieldBirthday = "birthday"
 	// FieldEmail holds the string denoting the email field in the database.
@@ -53,8 +53,8 @@ var Columns = []string{
 	FieldID,
 	FieldAccountID,
 	FieldFirstName,
-	FieldMiddleName,
 	FieldLastName,
+	FieldMiddleName,
 	FieldBirthday,
 	FieldEmail,
 	FieldPassword,
@@ -100,14 +100,14 @@ func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFirstName, opts...).ToFunc()
 }
 
-// ByMiddleName orders the results by the middle_name field.
-func ByMiddleName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMiddleName, opts...).ToFunc()
-}
-
 // ByLastName orders the results by the last_name field.
 func ByLastName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastName, opts...).ToFunc()
+}
+
+// ByMiddleName orders the results by the middle_name field.
+func ByMiddleName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMiddleName, opts...).ToFunc()
 }
 
 // ByBirthday orders the results by the birthday field.

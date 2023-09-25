@@ -18,15 +18,19 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("account_id"),
-		field.String("first_name"),
-		field.String("middle_name"),
-		field.String("last_name"),
+		field.String("first_name").
+			StructTag(`json:"first_name" validate:"required,min=1"`),
+		field.String("last_name").StructTag(`json:"last_name" validate:"required,min=1"`),
+		field.String("middle_name").StructTag(`json:"middle_name" validate:"required,min=1"`),
 		field.Time("birthday").
+			StructTag(`json:"birthday" validate:"required"`).
 			Optional(),
 		field.String("email").
 			Unique().
+			StructTag(`json:"email" validate:"required,email"`).
 			Optional(),
 		field.String("password").
+			StructTag(`json:"password" validate:"required,min=3"`).
 			Optional(),
 		field.Time("updated_at").
 			Optional().
