@@ -14,30 +14,43 @@ import (
 	"github.com/go-chi/httprate"
 )
 
-func InitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
-	log.Println("✅ Routes Initialized")
+func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
+	log.Println("✅ Private Routes Initialized")
 
-	validity := middlewares.NewUserMiddleware(services.NewUserService(client))
+	validity := middlewares.NewUserMiddleware(services.NewUserService(client.User))
 
-	v1 := chi.NewRouter()
-	v1.Use(utils.VersionMiddleware("1.0"))
+	private := chi.NewRouter()
 
-	v1.Group(func(private chi.Router) {
-		private.Use(httprate.LimitByIP(300, 1*time.Minute))
-		private.Use(middlewares.AuthMiddleware)
-		private.Use(validity.ValidUser)
+	private.Use(utils.VersionMiddleware("1.0"))
+	private.Use(httprate.LimitByIP(300, 1*time.Minute))
+	private.Use(middlewares.AuthMiddleware)
+	private.Use(validity.ValidUser)
 
-		V1Accounts(client, private)
-		V1Projects(client, private)
+	private.Group(func(v1 chi.Router) {
+		v1.Use(utils.VersionMiddleware("1.0"))
+		V1Accounts(client, v1)
+		V1Projects(client, v1)
+		V1Plans(client, v1)
 	})
 
-	v1.Group(func(public chi.Router) {
-		public.Use(httprate.LimitByIP(20, 1*time.Minute))
-		public.Use(middleware.Heartbeat("/"))
-		V1Public(client, public)
+	router.Mount("/api/v1", private)
+	return router
+}
+
+func PublicInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
+	log.Println("✅ Public Routes Initialized")
+
+	public := chi.NewRouter()
+
+	public.Use(httprate.LimitByIP(20, 1*time.Minute))
+	public.Use(middleware.Heartbeat("/"))
+
+	public.Group(func(v1 chi.Router) {
+		v1.Use(utils.VersionMiddleware("1.0"))
+		V1Public(client, v1)
+		V1PublicPlans(client, v1)
 	})
 
-	router.Mount("/api/v1", v1)
-
+	router.Mount("/public/v1", public)
 	return router
 }

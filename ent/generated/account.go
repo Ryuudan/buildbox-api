@@ -42,9 +42,11 @@ type AccountEdges struct {
 	Users []*User `json:"users,omitempty"`
 	// Projects holds the value of the projects edge.
 	Projects []*Project `json:"projects,omitempty"`
+	// Subscriptions holds the value of the subscriptions edge.
+	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -63,6 +65,15 @@ func (e AccountEdges) ProjectsOrErr() ([]*Project, error) {
 		return e.Projects, nil
 	}
 	return nil, &NotLoadedError{edge: "projects"}
+}
+
+// SubscriptionsOrErr returns the Subscriptions value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) SubscriptionsOrErr() ([]*Subscription, error) {
+	if e.loadedTypes[2] {
+		return e.Subscriptions, nil
+	}
+	return nil, &NotLoadedError{edge: "subscriptions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -156,6 +167,11 @@ func (a *Account) QueryUsers() *UserQuery {
 // QueryProjects queries the "projects" edge of the Account entity.
 func (a *Account) QueryProjects() *ProjectQuery {
 	return NewAccountClient(a.config).QueryProjects(a)
+}
+
+// QuerySubscriptions queries the "subscriptions" edge of the Account entity.
+func (a *Account) QuerySubscriptions() *SubscriptionQuery {
+	return NewAccountClient(a.config).QuerySubscriptions(a)
 }
 
 // Update returns a builder for updating this Account.

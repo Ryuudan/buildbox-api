@@ -14,6 +14,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
@@ -126,6 +127,21 @@ func (au *AccountUpdate) AddProjects(p ...*Project) *AccountUpdate {
 	return au.AddProjectIDs(ids...)
 }
 
+// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
+func (au *AccountUpdate) AddSubscriptionIDs(ids ...int) *AccountUpdate {
+	au.mutation.AddSubscriptionIDs(ids...)
+	return au
+}
+
+// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
+func (au *AccountUpdate) AddSubscriptions(s ...*Subscription) *AccountUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return au.AddSubscriptionIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (au *AccountUpdate) Mutation() *AccountMutation {
 	return au.mutation
@@ -171,6 +187,27 @@ func (au *AccountUpdate) RemoveProjects(p ...*Project) *AccountUpdate {
 		ids[i] = p[i].ID
 	}
 	return au.RemoveProjectIDs(ids...)
+}
+
+// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
+func (au *AccountUpdate) ClearSubscriptions() *AccountUpdate {
+	au.mutation.ClearSubscriptions()
+	return au
+}
+
+// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
+func (au *AccountUpdate) RemoveSubscriptionIDs(ids ...int) *AccountUpdate {
+	au.mutation.RemoveSubscriptionIDs(ids...)
+	return au
+}
+
+// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
+func (au *AccountUpdate) RemoveSubscriptions(s ...*Subscription) *AccountUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return au.RemoveSubscriptionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -346,6 +383,51 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.SubscriptionsTable,
+			Columns: []string{account.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !au.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.SubscriptionsTable,
+			Columns: []string{account.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.SubscriptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.SubscriptionsTable,
+			Columns: []string{account.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -462,6 +544,21 @@ func (auo *AccountUpdateOne) AddProjects(p ...*Project) *AccountUpdateOne {
 	return auo.AddProjectIDs(ids...)
 }
 
+// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
+func (auo *AccountUpdateOne) AddSubscriptionIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.AddSubscriptionIDs(ids...)
+	return auo
+}
+
+// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
+func (auo *AccountUpdateOne) AddSubscriptions(s ...*Subscription) *AccountUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auo.AddSubscriptionIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (auo *AccountUpdateOne) Mutation() *AccountMutation {
 	return auo.mutation
@@ -507,6 +604,27 @@ func (auo *AccountUpdateOne) RemoveProjects(p ...*Project) *AccountUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return auo.RemoveProjectIDs(ids...)
+}
+
+// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
+func (auo *AccountUpdateOne) ClearSubscriptions() *AccountUpdateOne {
+	auo.mutation.ClearSubscriptions()
+	return auo
+}
+
+// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
+func (auo *AccountUpdateOne) RemoveSubscriptionIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.RemoveSubscriptionIDs(ids...)
+	return auo
+}
+
+// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
+func (auo *AccountUpdateOne) RemoveSubscriptions(s ...*Subscription) *AccountUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auo.RemoveSubscriptionIDs(ids...)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -705,6 +823,51 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.SubscriptionsTable,
+			Columns: []string{account.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !auo.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.SubscriptionsTable,
+			Columns: []string{account.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.SubscriptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.SubscriptionsTable,
+			Columns: []string{account.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -9,8 +9,14 @@ import (
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
 
+// Plan is the predicate function for plan builders.
+type Plan func(*sql.Selector)
+
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
+
+// Subscription is the predicate function for subscription builders.
+type Subscription func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

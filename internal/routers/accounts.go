@@ -10,8 +10,8 @@ import (
 // These routes needs authentication
 func V1Accounts(client *generated.Client, router chi.Router) {
 
-	accountService := services.NewAccountService(client)
-	userService := services.NewUserService(client)
+	accountService := services.NewAccountService(client.Account)
+	userService := services.NewUserService(client.User)
 
 	account := handlers.NewAccountHandler(accountService, userService)
 

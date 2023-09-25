@@ -32,7 +32,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
-		utils.RenderError(w, r, "accounts", http.StatusBadRequest, err.Error())
+		utils.RenderError(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 

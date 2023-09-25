@@ -11,8 +11,8 @@ import (
 // and other public routes
 func V1Public(client *generated.Client, router chi.Router) {
 
-	accountService := services.NewAccountService(client)
-	userService := services.NewUserService(client)
+	accountService := services.NewAccountService(client.Account)
+	userService := services.NewUserService(client.User)
 
 	account := handlers.NewAccountHandler(accountService, userService)
 	user := handlers.NewUserHandler(userService)

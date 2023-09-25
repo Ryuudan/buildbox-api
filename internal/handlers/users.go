@@ -51,7 +51,7 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		utils.RenderError(w, r, "users", http.StatusBadRequest, err.Error())
+		utils.RenderError(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
@@ -127,6 +127,8 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Add Plan and Subscription data to the generated token
+	// so that we can directly access that using clains
 	accessToken, err := generateAccessToken(user)
 	if err != nil {
 		utils.RenderError(w, r, "auth", http.StatusInternalServerError, "Failed to generate access token.")
@@ -143,7 +145,7 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateAccessToken(user *generated.User) (string, error) {
-
+	// TODO: Add Plan and Subscription data to the generated token
 	claims := models.CustomClaims{
 		AccountID: user.AccountID,
 		UserID:    user.ID,

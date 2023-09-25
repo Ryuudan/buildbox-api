@@ -18,6 +18,7 @@ type ProjectHandler struct {
 
 func NewProjectHandler(projectService services.ProjectService, accountService services.AccountService) *ProjectHandler {
 	log.Println("✅ Projects Handler Initialized")
+
 	return &ProjectHandler{
 		projectService: projectService,
 		accountService: accountService,
@@ -31,7 +32,7 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []utils.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
-		utils.RenderError(w, r, "projects", http.StatusBadRequest, err.Error())
+		utils.RenderError(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 

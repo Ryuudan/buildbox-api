@@ -11,8 +11,8 @@ import (
 
 func V1Projects(client *generated.Client, router chi.Router) {
 
-	projectService := services.NewProjectService(client)
-	accountService := services.NewAccountService(client)
+	projectService := services.NewProjectService(client.Project)
+	accountService := services.NewAccountService(client.Account)
 	project := handlers.NewProjectHandler(projectService, accountService)
 
 	router.Route("/projects", func(r chi.Router) {

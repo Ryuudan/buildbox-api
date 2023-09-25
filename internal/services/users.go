@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -20,9 +19,8 @@ type userService struct {
 	client *generated.UserClient
 }
 
-func NewUserService(client *generated.Client) UserService {
-	account := client.User
-	return &userService{client: account}
+func NewUserService(client *generated.UserClient) UserService {
+	return &userService{client: client}
 }
 
 // CreateProject creates a new project.
@@ -46,9 +44,7 @@ func (s *userService) CreateUser(ctx context.Context, newUser *generated.User) (
 
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (*generated.User, error) {
 	user, err := s.client.Query().Where(
-		user.EmailEQ(
-			strings.ToLower(email),
-		),
+		user.EmailEQ(email),
 	).First(ctx)
 
 	if err != nil {

@@ -63,7 +63,8 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	routers.InitializeRoutes(db_client, app)
+	routers.PrivateInitializeRoutes(db_client, app)
+	routers.PublicInitializeRoutes(db_client, app)
 
 	// Start server
 	server := http.Server{

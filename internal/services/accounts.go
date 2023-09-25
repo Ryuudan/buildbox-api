@@ -20,9 +20,8 @@ type accountService struct {
 	client *generated.AccountClient
 }
 
-func NewAccountService(client *generated.Client) AccountService {
-	account := client.Account
-	return &accountService{client: account}
+func NewAccountService(client *generated.AccountClient) AccountService {
+	return &accountService{client: client}
 }
 
 func (s *accountService) CreateAccount(ctx context.Context, newAccount *generated.Account) (*generated.Account, error) {

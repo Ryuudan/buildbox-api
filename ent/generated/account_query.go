@@ -14,18 +14,20 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
 // AccountQuery is the builder for querying Account entities.
 type AccountQuery struct {
 	config
-	ctx          *QueryContext
-	order        []account.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Account
-	withUsers    *UserQuery
-	withProjects *ProjectQuery
+	ctx               *QueryContext
+	order             []account.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.Account
+	withUsers         *UserQuery
+	withProjects      *ProjectQuery
+	withSubscriptions *SubscriptionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +101,28 @@ func (aq *AccountQuery) QueryProjects() *ProjectQuery {
 			sqlgraph.From(account.Table, account.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, account.ProjectsTable, account.ProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubscriptions chains the current query on the "subscriptions" edge.
+func (aq *AccountQuery) QuerySubscriptions() *SubscriptionQuery {
+	query := (&SubscriptionClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, selector),
+			sqlgraph.To(subscription.Table, subscription.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.SubscriptionsTable, account.SubscriptionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +317,14 @@ func (aq *AccountQuery) Clone() *AccountQuery {
 		return nil
 	}
 	return &AccountQuery{
-		config:       aq.config,
-		ctx:          aq.ctx.Clone(),
-		order:        append([]account.OrderOption{}, aq.order...),
-		inters:       append([]Interceptor{}, aq.inters...),
-		predicates:   append([]predicate.Account{}, aq.predicates...),
-		withUsers:    aq.withUsers.Clone(),
-		withProjects: aq.withProjects.Clone(),
+		config:            aq.config,
+		ctx:               aq.ctx.Clone(),
+		order:             append([]account.OrderOption{}, aq.order...),
+		inters:            append([]Interceptor{}, aq.inters...),
+		predicates:        append([]predicate.Account{}, aq.predicates...),
+		withUsers:         aq.withUsers.Clone(),
+		withProjects:      aq.withProjects.Clone(),
+		withSubscriptions: aq.withSubscriptions.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -325,6 +350,17 @@ func (aq *AccountQuery) WithProjects(opts ...func(*ProjectQuery)) *AccountQuery 
 		opt(query)
 	}
 	aq.withProjects = query
+	return aq
+}
+
+// WithSubscriptions tells the query-builder to eager-load the nodes that are connected to
+// the "subscriptions" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AccountQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *AccountQuery {
+	query := (&SubscriptionClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withSubscriptions = query
 	return aq
 }
 
@@ -406,9 +442,10 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 	var (
 		nodes       = []*Account{}
 		_spec       = aq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			aq.withUsers != nil,
 			aq.withProjects != nil,
+			aq.withSubscriptions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -440,6 +477,13 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 		if err := aq.loadProjects(ctx, query, nodes,
 			func(n *Account) { n.Edges.Projects = []*Project{} },
 			func(n *Account, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withSubscriptions; query != nil {
+		if err := aq.loadSubscriptions(ctx, query, nodes,
+			func(n *Account) { n.Edges.Subscriptions = []*Subscription{} },
+			func(n *Account, e *Subscription) { n.Edges.Subscriptions = append(n.Edges.Subscriptions, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -491,6 +535,36 @@ func (aq *AccountQuery) loadProjects(ctx context.Context, query *ProjectQuery, n
 	}
 	query.Where(predicate.Project(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(account.ProjectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AccountID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "account_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *AccountQuery) loadSubscriptions(ctx context.Context, query *SubscriptionQuery, nodes []*Account, init func(*Account), assign func(*Account, *Subscription)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Account)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(subscription.FieldAccountID)
+	}
+	query.Where(predicate.Subscription(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(account.SubscriptionsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

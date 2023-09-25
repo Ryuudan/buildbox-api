@@ -30,9 +30,8 @@ type projectService struct {
 }
 
 // NewEntProjectService creates a new instance of EntProjectService.
-func NewProjectService(client *generated.Client) ProjectService {
-	project := client.Project
-	return &projectService{client: project}
+func NewProjectService(client *generated.ProjectClient) ProjectService {
+	return &projectService{client: client}
 }
 
 // CreateProject creates a new project.
@@ -40,20 +39,14 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
-		// User claims not found in context, handle error accordingly
 		return nil, errors.New("failed to get user claims from context")
 	}
 
-	// newCase.AccountID = claims["account_id"].(int)
-	// newCase.CreatedBy = claims["user_id"].(string)
-	// newCase.Status = "active"
-
 	project, err := s.client.Create().
-		// accountID and createdBy can be found in claims
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
 		// temporary
-		SetClientID("4").
+		SetClientID("random-client-id").
 		SetName(newProject.Name).
 		SetStartDate(newProject.StartDate).
 		SetNillableStatus(newProject.Status).
@@ -74,27 +67,13 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 }
 
 func (s *projectService) GetProjects(ctx context.Context) ([]*generated.Project, error) {
-	projects, err := s.client.Query().Select(
-		// return all fields
-		project.FieldID,
-		project.FieldUUID,
-		project.FieldAccountID,
-		project.FieldClientID,
-		project.FieldManagerID,
-		project.FieldCreatedBy,
-		project.FieldName,
-		project.FieldDescription,
-		project.FieldNotes,
-		project.FieldStatus,
-		project.FieldLocation,
-		project.FieldBudget,
-		project.FieldDeleted,
-		project.FieldStartDate,
-		project.FieldEndDate,
-		project.FieldUpdatedAt,
-		project.FieldCreatedAt,
-	).Where(
-		project.AccountIDEQ(1),
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		// User claims not found in context, handle error accordingly
+		return nil, errors.New("failed to get user claims from context")
+	}
+	projects, err := s.client.Query().Where(
+		project.AccountIDEQ(int(claims["account_id"].(float64))),
 	).All(ctx)
 
 	if err != nil {
