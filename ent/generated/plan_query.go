@@ -298,12 +298,12 @@ func (pq *PlanQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *PlanQu
 // Example:
 //
 //	var v []struct {
-//		UUID uuid.UUID `json:"uuid,omitempty"`
+//		Name string `json:"name" validate:"required,min=3"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Plan.Query().
-//		GroupBy(plan.FieldUUID).
+//		GroupBy(plan.FieldName).
 //		Aggregate(generated.Count()).
 //		Scan(ctx, &v)
 func (pq *PlanQuery) GroupBy(field string, fields ...string) *PlanGroupBy {
@@ -321,11 +321,11 @@ func (pq *PlanQuery) GroupBy(field string, fields ...string) *PlanGroupBy {
 // Example:
 //
 //	var v []struct {
-//		UUID uuid.UUID `json:"uuid,omitempty"`
+//		Name string `json:"name" validate:"required,min=3"`
 //	}
 //
 //	client.Plan.Query().
-//		Select(plan.FieldUUID).
+//		Select(plan.FieldName).
 //		Scan(ctx, &v)
 func (pq *PlanQuery) Select(fields ...string) *PlanSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)

@@ -10,7 +10,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
-	"github.com/Pyakz/buildbox-api/utils"
+	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -29,47 +29,47 @@ func NewUserHandler(userService services.UserService) *UserHandler {
 func (u *UserHandler) GetUsersByAccount(w http.ResponseWriter, r *http.Request) {
 	users, err := u.userService.GetUsersByAccountID(r.Context(), 1)
 	if err != nil {
-		utils.RenderError(w, r, "users", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RenderJSON(w, http.StatusOK, users)
+	render.JSON(w, http.StatusOK, users)
 }
 
 func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	user, err := u.userService.GetUserById(r.Context(), 1)
 	if err != nil {
-		utils.RenderError(w, r, "users", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RenderJSON(w, http.StatusOK, user)
+	render.JSON(w, http.StatusOK, user)
 }
 
 func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	validate := utils.Validator()
+	validate := render.Validator()
 
 	var user models.CreateUserStruct
-	var validationErrors []utils.ValidationErrorDetails
+	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		utils.RenderError(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
 	// Struct level validation
 	if err := validate.Struct(user); err != nil {
-		utils.Validate(w, r, err)
+		render.ValidationError(w, r, err)
 		return
 	}
 
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
-		utils.CustomValidationError(w, r, validationErrors)
+		render.CustomValidationError(w, r, validationErrors)
 		return
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		utils.RenderError(w, r, "users", http.StatusBadRequest, err.Error())
+		render.Error(w, r, "users", http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -80,33 +80,33 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.RenderError(w, r, "users", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.RenderJSON(w, http.StatusOK, newUser)
+	render.JSON(w, http.StatusOK, newUser)
 }
 
 func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	validate := utils.Validator()
+	validate := render.Validator()
 
 	var credentials models.UserLogin
 
 	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		utils.RenderError(w, r, "users", http.StatusBadRequest, err.Error())
+		render.Error(w, r, "users", http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Struct level validation
 	if err := validate.Struct(credentials); err != nil {
-		utils.Validate(w, r, err)
+		render.ValidationError(w, r, err)
 		return
 	}
 
 	user, err := u.userService.GetUserByEmail(r.Context(), credentials.Email)
 
 	if err != nil {
-		utils.CustomValidationError(w, r, []utils.ValidationErrorDetails{
+		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
 			{
 				Field:   "email",
 				Message: "Invalid email or password",
@@ -118,7 +118,7 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// Compare the provided password with the stored password using bcrypt
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
 	if err != nil {
-		utils.CustomValidationError(w, r, []utils.ValidationErrorDetails{
+		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
 			{
 				Field:   "password",
 				Message: "Invalid password, please try again.",
@@ -131,11 +131,11 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// so that we can directly access that using clains
 	accessToken, err := generateAccessToken(user)
 	if err != nil {
-		utils.RenderError(w, r, "auth", http.StatusInternalServerError, "Failed to generate access token.")
+		render.Error(w, r, "auth", http.StatusInternalServerError, "Failed to generate access token.")
 		return
 	}
 
-	utils.RenderJSON(w, http.StatusOK, struct {
+	render.JSON(w, http.StatusOK, struct {
 		Token string `json:"access_token"`
 		Code  int    `json:"code"`
 	}{

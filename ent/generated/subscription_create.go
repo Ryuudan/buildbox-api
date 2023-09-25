@@ -23,20 +23,6 @@ type SubscriptionCreate struct {
 	hooks    []Hook
 }
 
-// SetUUID sets the "uuid" field.
-func (sc *SubscriptionCreate) SetUUID(u uuid.UUID) *SubscriptionCreate {
-	sc.mutation.SetUUID(u)
-	return sc
-}
-
-// SetNillableUUID sets the "uuid" field if the given value is not nil.
-func (sc *SubscriptionCreate) SetNillableUUID(u *uuid.UUID) *SubscriptionCreate {
-	if u != nil {
-		sc.SetUUID(*u)
-	}
-	return sc
-}
-
 // SetAccountID sets the "account_id" field.
 func (sc *SubscriptionCreate) SetAccountID(i int) *SubscriptionCreate {
 	sc.mutation.SetAccountID(i)
@@ -133,6 +119,20 @@ func (sc *SubscriptionCreate) SetNillableCreatedAt(t *time.Time) *SubscriptionCr
 	return sc
 }
 
+// SetUUID sets the "uuid" field.
+func (sc *SubscriptionCreate) SetUUID(u uuid.UUID) *SubscriptionCreate {
+	sc.mutation.SetUUID(u)
+	return sc
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (sc *SubscriptionCreate) SetNillableUUID(u *uuid.UUID) *SubscriptionCreate {
+	if u != nil {
+		sc.SetUUID(*u)
+	}
+	return sc
+}
+
 // SetAccount sets the "account" edge to the Account entity.
 func (sc *SubscriptionCreate) SetAccount(a *Account) *SubscriptionCreate {
 	return sc.SetAccountID(a.ID)
@@ -178,10 +178,6 @@ func (sc *SubscriptionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (sc *SubscriptionCreate) defaults() {
-	if _, ok := sc.mutation.UUID(); !ok {
-		v := subscription.DefaultUUID()
-		sc.mutation.SetUUID(v)
-	}
 	if _, ok := sc.mutation.StartDate(); !ok {
 		v := subscription.DefaultStartDate()
 		sc.mutation.SetStartDate(v)
@@ -198,13 +194,14 @@ func (sc *SubscriptionCreate) defaults() {
 		v := subscription.DefaultCreatedAt()
 		sc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := sc.mutation.UUID(); !ok {
+		v := subscription.DefaultUUID()
+		sc.mutation.SetUUID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *SubscriptionCreate) check() error {
-	if _, ok := sc.mutation.UUID(); !ok {
-		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Subscription.uuid"`)}
-	}
 	if _, ok := sc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account_id", err: errors.New(`generated: missing required field "Subscription.account_id"`)}
 	}
@@ -221,6 +218,9 @@ func (sc *SubscriptionCreate) check() error {
 		if err := subscription.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`generated: validator failed for field "Subscription.status": %w`, err)}
 		}
+	}
+	if _, ok := sc.mutation.UUID(); !ok {
+		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Subscription.uuid"`)}
 	}
 	if _, ok := sc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`generated: missing required edge "Subscription.account"`)}
@@ -254,10 +254,6 @@ func (sc *SubscriptionCreate) createSpec() (*Subscription, *sqlgraph.CreateSpec)
 		_node = &Subscription{config: sc.config}
 		_spec = sqlgraph.NewCreateSpec(subscription.Table, sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt))
 	)
-	if value, ok := sc.mutation.UUID(); ok {
-		_spec.SetField(subscription.FieldUUID, field.TypeUUID, value)
-		_node.UUID = value
-	}
 	if value, ok := sc.mutation.StartDate(); ok {
 		_spec.SetField(subscription.FieldStartDate, field.TypeTime, value)
 		_node.StartDate = value
@@ -281,6 +277,10 @@ func (sc *SubscriptionCreate) createSpec() (*Subscription, *sqlgraph.CreateSpec)
 	if value, ok := sc.mutation.CreatedAt(); ok {
 		_spec.SetField(subscription.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := sc.mutation.UUID(); ok {
+		_spec.SetField(subscription.FieldUUID, field.TypeUUID, value)
+		_node.UUID = value
 	}
 	if nodes := sc.mutation.AccountIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

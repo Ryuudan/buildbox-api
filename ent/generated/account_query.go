@@ -370,12 +370,12 @@ func (aq *AccountQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *Acc
 // Example:
 //
 //	var v []struct {
-//		UUID uuid.UUID `json:"uuid,omitempty"`
+//		Name string `json:"name,omitempty" validate:"required,min=1"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Account.Query().
-//		GroupBy(account.FieldUUID).
+//		GroupBy(account.FieldName).
 //		Aggregate(generated.Count()).
 //		Scan(ctx, &v)
 func (aq *AccountQuery) GroupBy(field string, fields ...string) *AccountGroupBy {
@@ -393,11 +393,11 @@ func (aq *AccountQuery) GroupBy(field string, fields ...string) *AccountGroupBy 
 // Example:
 //
 //	var v []struct {
-//		UUID uuid.UUID `json:"uuid,omitempty"`
+//		Name string `json:"name,omitempty" validate:"required,min=1"`
 //	}
 //
 //	client.Account.Query().
-//		Select(account.FieldUUID).
+//		Select(account.FieldName).
 //		Scan(ctx, &v)
 func (aq *AccountQuery) Select(fields ...string) *AccountSelect {
 	aq.ctx.Fields = append(aq.ctx.Fields, fields...)

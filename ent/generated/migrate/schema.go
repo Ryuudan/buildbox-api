@@ -11,12 +11,12 @@ var (
 	// AccountsColumns holds the columns for the "accounts" table.
 	AccountsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "phone_number", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
 	}
 	// AccountsTable holds the schema information for the "accounts" table.
 	AccountsTable = &schema.Table{
@@ -27,12 +27,12 @@ var (
 	// PlansColumns holds the columns for the "plans" table.
 	PlansColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "price", Type: field.TypeFloat64, Default: 0},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
 	}
 	// PlansTable holds the schema information for the "plans" table.
 	PlansTable = &schema.Table{
@@ -44,9 +44,8 @@ var (
 	ProjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_by", Type: field.TypeInt},
-		{Name: "uuid", Type: field.TypeUUID},
-		{Name: "client_id", Type: field.TypeString, Nullable: true},
-		{Name: "manager_id", Type: field.TypeString, Nullable: true},
+		{Name: "client_id", Type: field.TypeInt, Nullable: true},
+		{Name: "manager_id", Type: field.TypeInt, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "notes", Type: field.TypeString, Nullable: true},
@@ -58,6 +57,7 @@ var (
 		{Name: "end_date", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
 	}
 	// ProjectsTable holds the schema information for the "projects" table.
@@ -77,13 +77,13 @@ var (
 	// SubscriptionsColumns holds the columns for the "subscriptions" table.
 	SubscriptionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "start_date", Type: field.TypeTime},
 		{Name: "end_date", Type: field.TypeTime, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "canceled", "expired"}, Default: "active"},
 		{Name: "discount", Type: field.TypeFloat64, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
 		{Name: "plan_id", Type: field.TypeInt},
 	}
@@ -110,7 +110,6 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "first_name", Type: field.TypeString},
 		{Name: "middle_name", Type: field.TypeString},
 		{Name: "last_name", Type: field.TypeString},
@@ -119,6 +118,7 @@ var (
 		{Name: "password", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
 	}
 	// UsersTable holds the schema information for the "users" table.

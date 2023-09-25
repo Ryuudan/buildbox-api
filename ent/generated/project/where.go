@@ -66,18 +66,13 @@ func CreatedBy(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedBy, v))
 }
 
-// UUID applies equality check predicate on the "uuid" field. It's identical to UUIDEQ.
-func UUID(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldUUID, v))
-}
-
 // ClientID applies equality check predicate on the "client_id" field. It's identical to ClientIDEQ.
-func ClientID(v string) predicate.Project {
+func ClientID(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldClientID, v))
 }
 
 // ManagerID applies equality check predicate on the "manager_id" field. It's identical to ManagerIDEQ.
-func ManagerID(v string) predicate.Project {
+func ManagerID(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldManagerID, v))
 }
 
@@ -129,6 +124,11 @@ func UpdatedAt(v time.Time) predicate.Project {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UUID applies equality check predicate on the "uuid" field. It's identical to UUIDEQ.
+func UUID(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldUUID, v))
 }
 
 // AccountIDEQ applies the EQ predicate on the "account_id" field.
@@ -191,99 +191,44 @@ func CreatedByLTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldCreatedBy, v))
 }
 
-// UUIDEQ applies the EQ predicate on the "uuid" field.
-func UUIDEQ(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldUUID, v))
-}
-
-// UUIDNEQ applies the NEQ predicate on the "uuid" field.
-func UUIDNEQ(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldNEQ(FieldUUID, v))
-}
-
-// UUIDIn applies the In predicate on the "uuid" field.
-func UUIDIn(vs ...uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldIn(FieldUUID, vs...))
-}
-
-// UUIDNotIn applies the NotIn predicate on the "uuid" field.
-func UUIDNotIn(vs ...uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldNotIn(FieldUUID, vs...))
-}
-
-// UUIDGT applies the GT predicate on the "uuid" field.
-func UUIDGT(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldUUID, v))
-}
-
-// UUIDGTE applies the GTE predicate on the "uuid" field.
-func UUIDGTE(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldUUID, v))
-}
-
-// UUIDLT applies the LT predicate on the "uuid" field.
-func UUIDLT(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldUUID, v))
-}
-
-// UUIDLTE applies the LTE predicate on the "uuid" field.
-func UUIDLTE(v uuid.UUID) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldUUID, v))
-}
-
 // ClientIDEQ applies the EQ predicate on the "client_id" field.
-func ClientIDEQ(v string) predicate.Project {
+func ClientIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldClientID, v))
 }
 
 // ClientIDNEQ applies the NEQ predicate on the "client_id" field.
-func ClientIDNEQ(v string) predicate.Project {
+func ClientIDNEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldNEQ(FieldClientID, v))
 }
 
 // ClientIDIn applies the In predicate on the "client_id" field.
-func ClientIDIn(vs ...string) predicate.Project {
+func ClientIDIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldIn(FieldClientID, vs...))
 }
 
 // ClientIDNotIn applies the NotIn predicate on the "client_id" field.
-func ClientIDNotIn(vs ...string) predicate.Project {
+func ClientIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldClientID, vs...))
 }
 
 // ClientIDGT applies the GT predicate on the "client_id" field.
-func ClientIDGT(v string) predicate.Project {
+func ClientIDGT(v int) predicate.Project {
 	return predicate.Project(sql.FieldGT(FieldClientID, v))
 }
 
 // ClientIDGTE applies the GTE predicate on the "client_id" field.
-func ClientIDGTE(v string) predicate.Project {
+func ClientIDGTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldGTE(FieldClientID, v))
 }
 
 // ClientIDLT applies the LT predicate on the "client_id" field.
-func ClientIDLT(v string) predicate.Project {
+func ClientIDLT(v int) predicate.Project {
 	return predicate.Project(sql.FieldLT(FieldClientID, v))
 }
 
 // ClientIDLTE applies the LTE predicate on the "client_id" field.
-func ClientIDLTE(v string) predicate.Project {
+func ClientIDLTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldClientID, v))
-}
-
-// ClientIDContains applies the Contains predicate on the "client_id" field.
-func ClientIDContains(v string) predicate.Project {
-	return predicate.Project(sql.FieldContains(FieldClientID, v))
-}
-
-// ClientIDHasPrefix applies the HasPrefix predicate on the "client_id" field.
-func ClientIDHasPrefix(v string) predicate.Project {
-	return predicate.Project(sql.FieldHasPrefix(FieldClientID, v))
-}
-
-// ClientIDHasSuffix applies the HasSuffix predicate on the "client_id" field.
-func ClientIDHasSuffix(v string) predicate.Project {
-	return predicate.Project(sql.FieldHasSuffix(FieldClientID, v))
 }
 
 // ClientIDIsNil applies the IsNil predicate on the "client_id" field.
@@ -296,69 +241,44 @@ func ClientIDNotNil() predicate.Project {
 	return predicate.Project(sql.FieldNotNull(FieldClientID))
 }
 
-// ClientIDEqualFold applies the EqualFold predicate on the "client_id" field.
-func ClientIDEqualFold(v string) predicate.Project {
-	return predicate.Project(sql.FieldEqualFold(FieldClientID, v))
-}
-
-// ClientIDContainsFold applies the ContainsFold predicate on the "client_id" field.
-func ClientIDContainsFold(v string) predicate.Project {
-	return predicate.Project(sql.FieldContainsFold(FieldClientID, v))
-}
-
 // ManagerIDEQ applies the EQ predicate on the "manager_id" field.
-func ManagerIDEQ(v string) predicate.Project {
+func ManagerIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldManagerID, v))
 }
 
 // ManagerIDNEQ applies the NEQ predicate on the "manager_id" field.
-func ManagerIDNEQ(v string) predicate.Project {
+func ManagerIDNEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldNEQ(FieldManagerID, v))
 }
 
 // ManagerIDIn applies the In predicate on the "manager_id" field.
-func ManagerIDIn(vs ...string) predicate.Project {
+func ManagerIDIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldIn(FieldManagerID, vs...))
 }
 
 // ManagerIDNotIn applies the NotIn predicate on the "manager_id" field.
-func ManagerIDNotIn(vs ...string) predicate.Project {
+func ManagerIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldManagerID, vs...))
 }
 
 // ManagerIDGT applies the GT predicate on the "manager_id" field.
-func ManagerIDGT(v string) predicate.Project {
+func ManagerIDGT(v int) predicate.Project {
 	return predicate.Project(sql.FieldGT(FieldManagerID, v))
 }
 
 // ManagerIDGTE applies the GTE predicate on the "manager_id" field.
-func ManagerIDGTE(v string) predicate.Project {
+func ManagerIDGTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldGTE(FieldManagerID, v))
 }
 
 // ManagerIDLT applies the LT predicate on the "manager_id" field.
-func ManagerIDLT(v string) predicate.Project {
+func ManagerIDLT(v int) predicate.Project {
 	return predicate.Project(sql.FieldLT(FieldManagerID, v))
 }
 
 // ManagerIDLTE applies the LTE predicate on the "manager_id" field.
-func ManagerIDLTE(v string) predicate.Project {
+func ManagerIDLTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldManagerID, v))
-}
-
-// ManagerIDContains applies the Contains predicate on the "manager_id" field.
-func ManagerIDContains(v string) predicate.Project {
-	return predicate.Project(sql.FieldContains(FieldManagerID, v))
-}
-
-// ManagerIDHasPrefix applies the HasPrefix predicate on the "manager_id" field.
-func ManagerIDHasPrefix(v string) predicate.Project {
-	return predicate.Project(sql.FieldHasPrefix(FieldManagerID, v))
-}
-
-// ManagerIDHasSuffix applies the HasSuffix predicate on the "manager_id" field.
-func ManagerIDHasSuffix(v string) predicate.Project {
-	return predicate.Project(sql.FieldHasSuffix(FieldManagerID, v))
 }
 
 // ManagerIDIsNil applies the IsNil predicate on the "manager_id" field.
@@ -369,16 +289,6 @@ func ManagerIDIsNil() predicate.Project {
 // ManagerIDNotNil applies the NotNil predicate on the "manager_id" field.
 func ManagerIDNotNil() predicate.Project {
 	return predicate.Project(sql.FieldNotNull(FieldManagerID))
-}
-
-// ManagerIDEqualFold applies the EqualFold predicate on the "manager_id" field.
-func ManagerIDEqualFold(v string) predicate.Project {
-	return predicate.Project(sql.FieldEqualFold(FieldManagerID, v))
-}
-
-// ManagerIDContainsFold applies the ContainsFold predicate on the "manager_id" field.
-func ManagerIDContainsFold(v string) predicate.Project {
-	return predicate.Project(sql.FieldContainsFold(FieldManagerID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -969,6 +879,46 @@ func CreatedAtIsNil() predicate.Project {
 // CreatedAtNotNil applies the NotNil predicate on the "created_at" field.
 func CreatedAtNotNil() predicate.Project {
 	return predicate.Project(sql.FieldNotNull(FieldCreatedAt))
+}
+
+// UUIDEQ applies the EQ predicate on the "uuid" field.
+func UUIDEQ(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldUUID, v))
+}
+
+// UUIDNEQ applies the NEQ predicate on the "uuid" field.
+func UUIDNEQ(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldUUID, v))
+}
+
+// UUIDIn applies the In predicate on the "uuid" field.
+func UUIDIn(vs ...uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldUUID, vs...))
+}
+
+// UUIDNotIn applies the NotIn predicate on the "uuid" field.
+func UUIDNotIn(vs ...uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldUUID, vs...))
+}
+
+// UUIDGT applies the GT predicate on the "uuid" field.
+func UUIDGT(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldUUID, v))
+}
+
+// UUIDGTE applies the GTE predicate on the "uuid" field.
+func UUIDGTE(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldUUID, v))
+}
+
+// UUIDLT applies the LT predicate on the "uuid" field.
+func UUIDLT(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldUUID, v))
+}
+
+// UUIDLTE applies the LTE predicate on the "uuid" field.
+func UUIDLTE(v uuid.UUID) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldUUID, v))
 }
 
 // HasAccount applies the HasEdge predicate on the "account" edge.

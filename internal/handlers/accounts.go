@@ -8,7 +8,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
-	"github.com/Pyakz/buildbox-api/utils"
+	"github.com/Pyakz/buildbox-api/utils/render"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,26 +26,26 @@ func NewAccountHandler(accountService services.AccountService, userService servi
 }
 
 func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	validate := utils.Validator()
+	validate := render.Validator()
 
 	var account models.RegisterAccountStruct
-	var validationErrors []utils.ValidationErrorDetails
+	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
-		utils.RenderError(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
 	// Struct level validation
 	if err := validate.Struct(account); err != nil {
-		utils.Validate(w, r, err)
+		render.ValidationError(w, r, err)
 		return
 	}
 
 	user, _ := a.userService.GetUserByEmail(r.Context(), account.Email)
 
 	if user != nil {
-		validationErrors = append(validationErrors, utils.ValidationErrorDetails{
+		validationErrors = append(validationErrors, render.ValidationErrorDetails{
 			Field:   "email",
 			Message: "email already exists, please try another one",
 		})
@@ -53,7 +53,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
-		utils.CustomValidationError(w, r, validationErrors)
+		render.CustomValidationError(w, r, validationErrors)
 		return
 	}
 
@@ -64,14 +64,14 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.RenderError(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		utils.RenderError(w, r, "users", http.StatusBadRequest, err.Error())
+		render.Error(w, r, "users", http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -88,20 +88,20 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	println(newUser)
 
 	if err != nil {
-		utils.RenderError(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	defer r.Body.Close()
-	utils.RenderJSON(w, http.StatusCreated, newAccount)
+	render.JSON(w, http.StatusCreated, newAccount)
 }
 
 func (a *AccountHandler) GetAccounts(w http.ResponseWriter, r *http.Request) {
 	accounts, err := a.accountService.GetAccounts(r.Context())
 	if err != nil {
-		utils.RenderError(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.RenderJSON(w, http.StatusOK, accounts)
+	render.JSON(w, http.StatusOK, accounts)
 }

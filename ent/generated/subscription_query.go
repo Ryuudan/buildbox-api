@@ -333,12 +333,12 @@ func (sq *SubscriptionQuery) WithPlan(opts ...func(*PlanQuery)) *SubscriptionQue
 // Example:
 //
 //	var v []struct {
-//		UUID uuid.UUID `json:"uuid,omitempty"`
+//		AccountID int `json:"account_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Subscription.Query().
-//		GroupBy(subscription.FieldUUID).
+//		GroupBy(subscription.FieldAccountID).
 //		Aggregate(generated.Count()).
 //		Scan(ctx, &v)
 func (sq *SubscriptionQuery) GroupBy(field string, fields ...string) *SubscriptionGroupBy {
@@ -356,11 +356,11 @@ func (sq *SubscriptionQuery) GroupBy(field string, fields ...string) *Subscripti
 // Example:
 //
 //	var v []struct {
-//		UUID uuid.UUID `json:"uuid,omitempty"`
+//		AccountID int `json:"account_id,omitempty"`
 //	}
 //
 //	client.Subscription.Query().
-//		Select(subscription.FieldUUID).
+//		Select(subscription.FieldAccountID).
 //		Scan(ctx, &v)
 func (sq *SubscriptionQuery) Select(fields ...string) *SubscriptionSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)

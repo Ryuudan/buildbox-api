@@ -37,10 +37,7 @@ func (p *planService) CreatePlan(ctx context.Context, plan *generated.Plan) (*ge
 }
 
 func (p *planService) GetPlans(ctx context.Context) ([]*generated.Plan, error) {
-	plans, err := p.client.Query().
-		Select(
-			plan.Columns...,
-		).All(ctx)
+	plans, err := p.client.Query().Select().All(ctx)
 
 	if err != nil {
 		return nil, err

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
+	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -22,13 +23,13 @@ func (u *UserMiddleware) ValidUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		claims, ok := r.Context().Value(models.ContextKeyClaims).(jwt.MapClaims)
 		if !ok {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 
 		_, err := u.userService.GetUserById(r.Context(), int(claims["user_id"].(float64)))
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 		next.ServeHTTP(w, r.WithContext(r.Context()))

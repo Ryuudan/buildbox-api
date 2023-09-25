@@ -34,44 +34,30 @@ func (pc *ProjectCreate) SetCreatedBy(i int) *ProjectCreate {
 	return pc
 }
 
-// SetUUID sets the "uuid" field.
-func (pc *ProjectCreate) SetUUID(u uuid.UUID) *ProjectCreate {
-	pc.mutation.SetUUID(u)
-	return pc
-}
-
-// SetNillableUUID sets the "uuid" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableUUID(u *uuid.UUID) *ProjectCreate {
-	if u != nil {
-		pc.SetUUID(*u)
-	}
-	return pc
-}
-
 // SetClientID sets the "client_id" field.
-func (pc *ProjectCreate) SetClientID(s string) *ProjectCreate {
-	pc.mutation.SetClientID(s)
+func (pc *ProjectCreate) SetClientID(i int) *ProjectCreate {
+	pc.mutation.SetClientID(i)
 	return pc
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableClientID(s *string) *ProjectCreate {
-	if s != nil {
-		pc.SetClientID(*s)
+func (pc *ProjectCreate) SetNillableClientID(i *int) *ProjectCreate {
+	if i != nil {
+		pc.SetClientID(*i)
 	}
 	return pc
 }
 
 // SetManagerID sets the "manager_id" field.
-func (pc *ProjectCreate) SetManagerID(s string) *ProjectCreate {
-	pc.mutation.SetManagerID(s)
+func (pc *ProjectCreate) SetManagerID(i int) *ProjectCreate {
+	pc.mutation.SetManagerID(i)
 	return pc
 }
 
 // SetNillableManagerID sets the "manager_id" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableManagerID(s *string) *ProjectCreate {
-	if s != nil {
-		pc.SetManagerID(*s)
+func (pc *ProjectCreate) SetNillableManagerID(i *int) *ProjectCreate {
+	if i != nil {
+		pc.SetManagerID(*i)
 	}
 	return pc
 }
@@ -222,6 +208,20 @@ func (pc *ProjectCreate) SetNillableCreatedAt(t *time.Time) *ProjectCreate {
 	return pc
 }
 
+// SetUUID sets the "uuid" field.
+func (pc *ProjectCreate) SetUUID(u uuid.UUID) *ProjectCreate {
+	pc.mutation.SetUUID(u)
+	return pc
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableUUID(u *uuid.UUID) *ProjectCreate {
+	if u != nil {
+		pc.SetUUID(*u)
+	}
+	return pc
+}
+
 // SetAccount sets the "account" edge to the Account entity.
 func (pc *ProjectCreate) SetAccount(a *Account) *ProjectCreate {
 	return pc.SetAccountID(a.ID)
@@ -262,10 +262,6 @@ func (pc *ProjectCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *ProjectCreate) defaults() {
-	if _, ok := pc.mutation.UUID(); !ok {
-		v := project.DefaultUUID()
-		pc.mutation.SetUUID(v)
-	}
 	if _, ok := pc.mutation.Status(); !ok {
 		v := project.DefaultStatus
 		pc.mutation.SetStatus(v)
@@ -286,6 +282,10 @@ func (pc *ProjectCreate) defaults() {
 		v := project.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := pc.mutation.UUID(); !ok {
+		v := project.DefaultUUID()
+		pc.mutation.SetUUID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -295,9 +295,6 @@ func (pc *ProjectCreate) check() error {
 	}
 	if _, ok := pc.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`generated: missing required field "Project.created_by"`)}
-	}
-	if _, ok := pc.mutation.UUID(); !ok {
-		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Project.uuid"`)}
 	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Project.name"`)}
@@ -316,6 +313,9 @@ func (pc *ProjectCreate) check() error {
 		if err := project.BudgetValidator(v); err != nil {
 			return &ValidationError{Name: "budget", err: fmt.Errorf(`generated: validator failed for field "Project.budget": %w`, err)}
 		}
+	}
+	if _, ok := pc.mutation.UUID(); !ok {
+		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Project.uuid"`)}
 	}
 	if _, ok := pc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`generated: missing required edge "Project.account"`)}
@@ -350,16 +350,12 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
 		_node.CreatedBy = value
 	}
-	if value, ok := pc.mutation.UUID(); ok {
-		_spec.SetField(project.FieldUUID, field.TypeUUID, value)
-		_node.UUID = value
-	}
 	if value, ok := pc.mutation.ClientID(); ok {
-		_spec.SetField(project.FieldClientID, field.TypeString, value)
+		_spec.SetField(project.FieldClientID, field.TypeInt, value)
 		_node.ClientID = &value
 	}
 	if value, ok := pc.mutation.ManagerID(); ok {
-		_spec.SetField(project.FieldManagerID, field.TypeString, value)
+		_spec.SetField(project.FieldManagerID, field.TypeInt, value)
 		_node.ManagerID = &value
 	}
 	if value, ok := pc.mutation.Name(); ok {
@@ -384,15 +380,15 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.Budget(); ok {
 		_spec.SetField(project.FieldBudget, field.TypeFloat64, value)
-		_node.Budget = value
+		_node.Budget = &value
 	}
 	if value, ok := pc.mutation.Deleted(); ok {
 		_spec.SetField(project.FieldDeleted, field.TypeBool, value)
-		_node.Deleted = &value
+		_node.Deleted = value
 	}
 	if value, ok := pc.mutation.StartDate(); ok {
 		_spec.SetField(project.FieldStartDate, field.TypeTime, value)
-		_node.StartDate = value
+		_node.StartDate = &value
 	}
 	if value, ok := pc.mutation.EndDate(); ok {
 		_spec.SetField(project.FieldEndDate, field.TypeTime, value)
@@ -405,6 +401,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := pc.mutation.UUID(); ok {
+		_spec.SetField(project.FieldUUID, field.TypeUUID, value)
+		_node.UUID = value
 	}
 	if nodes := pc.mutation.AccountIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

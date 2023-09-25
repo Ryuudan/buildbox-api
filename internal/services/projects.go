@@ -45,18 +45,17 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 	project, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		// temporary
-		SetClientID("random-client-id").
+		SetClientID(*newProject.ClientID).
 		SetName(newProject.Name).
-		SetStartDate(newProject.StartDate).
-		SetNillableStatus(newProject.Status).
+		SetStatus(*newProject.Status).
+		SetNillableStartDate(newProject.StartDate).
 		SetNillableEndDate(newProject.EndDate).
-		SetBudget(newProject.Budget).
+		SetNillableBudget(newProject.Budget).
 		SetNillableLocation(newProject.Location).
 		SetNillableDescription(newProject.Description).
 		SetNillableNotes(newProject.Notes).
 		SetNillableManagerID(newProject.ManagerID).
-		SetNillableDeleted(newProject.Deleted).
+		SetDeleted(newProject.Deleted).
 		Save(ctx)
 
 	if err != nil {
@@ -69,12 +68,12 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 func (s *projectService) GetProjects(ctx context.Context) ([]*generated.Project, error) {
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
-		// User claims not found in context, handle error accordingly
 		return nil, errors.New("failed to get user claims from context")
 	}
-	projects, err := s.client.Query().Where(
-		project.AccountIDEQ(int(claims["account_id"].(float64))),
-	).All(ctx)
+
+	projects, err := s.client.Query().
+		Where(project.AccountIDEQ(int(claims["account_id"].(float64)))).
+		All(ctx)
 
 	if err != nil {
 		return nil, err
@@ -87,15 +86,15 @@ func (s *projectService) GetProjects(ctx context.Context) ([]*generated.Project,
 func (s *projectService) UpdateProjectByID(ctx context.Context, id int, newPayload *generated.Project) (*generated.Project, error) {
 	project, err := s.client.UpdateOneID(id).
 		SetName(newPayload.Name).
-		SetStartDate(newPayload.StartDate).
-		SetNillableStatus(newPayload.Status).
-		SetNillableEndDate(newPayload.EndDate).
-		SetBudget(newPayload.Budget).
-		SetNillableLocation(newPayload.Location).
-		SetNillableDescription(newPayload.Description).
-		SetNillableNotes(newPayload.Notes).
-		SetNillableManagerID(newPayload.ManagerID).
-		SetNillableDeleted(newPayload.Deleted).
+		SetStartDate(*newPayload.StartDate).
+		SetStatus(*newPayload.Status).
+		SetEndDate(*newPayload.EndDate).
+		SetBudget(*newPayload.Budget).
+		SetLocation(*newPayload.Location).
+		SetDescription(*newPayload.Description).
+		SetNotes(*newPayload.Notes).
+		SetManagerID(*newPayload.ManagerID).
+		SetDeleted(newPayload.Deleted).
 		Save(ctx)
 
 	if err != nil {

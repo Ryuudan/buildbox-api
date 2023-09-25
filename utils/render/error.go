@@ -1,4 +1,4 @@
-package utils
+package render
 
 import (
 	"encoding/json"
@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-// RenderError writes an error response as JSON to the client.
-func RenderError(w http.ResponseWriter, r *http.Request, entity string, code int, message string) {
+func Error(w http.ResponseWriter, r *http.Request, entity string, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 

@@ -49,16 +49,23 @@ func (pu *ProjectUpdate) AddCreatedBy(i int) *ProjectUpdate {
 }
 
 // SetClientID sets the "client_id" field.
-func (pu *ProjectUpdate) SetClientID(s string) *ProjectUpdate {
-	pu.mutation.SetClientID(s)
+func (pu *ProjectUpdate) SetClientID(i int) *ProjectUpdate {
+	pu.mutation.ResetClientID()
+	pu.mutation.SetClientID(i)
 	return pu
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableClientID(s *string) *ProjectUpdate {
-	if s != nil {
-		pu.SetClientID(*s)
+func (pu *ProjectUpdate) SetNillableClientID(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetClientID(*i)
 	}
+	return pu
+}
+
+// AddClientID adds i to the "client_id" field.
+func (pu *ProjectUpdate) AddClientID(i int) *ProjectUpdate {
+	pu.mutation.AddClientID(i)
 	return pu
 }
 
@@ -69,16 +76,23 @@ func (pu *ProjectUpdate) ClearClientID() *ProjectUpdate {
 }
 
 // SetManagerID sets the "manager_id" field.
-func (pu *ProjectUpdate) SetManagerID(s string) *ProjectUpdate {
-	pu.mutation.SetManagerID(s)
+func (pu *ProjectUpdate) SetManagerID(i int) *ProjectUpdate {
+	pu.mutation.ResetManagerID()
+	pu.mutation.SetManagerID(i)
 	return pu
 }
 
 // SetNillableManagerID sets the "manager_id" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableManagerID(s *string) *ProjectUpdate {
-	if s != nil {
-		pu.SetManagerID(*s)
+func (pu *ProjectUpdate) SetNillableManagerID(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetManagerID(*i)
 	}
+	return pu
+}
+
+// AddManagerID adds i to the "manager_id" field.
+func (pu *ProjectUpdate) AddManagerID(i int) *ProjectUpdate {
+	pu.mutation.AddManagerID(i)
 	return pu
 }
 
@@ -366,16 +380,22 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddField(project.FieldCreatedBy, field.TypeInt, value)
 	}
 	if value, ok := pu.mutation.ClientID(); ok {
-		_spec.SetField(project.FieldClientID, field.TypeString, value)
+		_spec.SetField(project.FieldClientID, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.AddedClientID(); ok {
+		_spec.AddField(project.FieldClientID, field.TypeInt, value)
 	}
 	if pu.mutation.ClientIDCleared() {
-		_spec.ClearField(project.FieldClientID, field.TypeString)
+		_spec.ClearField(project.FieldClientID, field.TypeInt)
 	}
 	if value, ok := pu.mutation.ManagerID(); ok {
-		_spec.SetField(project.FieldManagerID, field.TypeString, value)
+		_spec.SetField(project.FieldManagerID, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.AddedManagerID(); ok {
+		_spec.AddField(project.FieldManagerID, field.TypeInt, value)
 	}
 	if pu.mutation.ManagerIDCleared() {
-		_spec.ClearField(project.FieldManagerID, field.TypeString)
+		_spec.ClearField(project.FieldManagerID, field.TypeInt)
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
@@ -509,16 +529,23 @@ func (puo *ProjectUpdateOne) AddCreatedBy(i int) *ProjectUpdateOne {
 }
 
 // SetClientID sets the "client_id" field.
-func (puo *ProjectUpdateOne) SetClientID(s string) *ProjectUpdateOne {
-	puo.mutation.SetClientID(s)
+func (puo *ProjectUpdateOne) SetClientID(i int) *ProjectUpdateOne {
+	puo.mutation.ResetClientID()
+	puo.mutation.SetClientID(i)
 	return puo
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableClientID(s *string) *ProjectUpdateOne {
-	if s != nil {
-		puo.SetClientID(*s)
+func (puo *ProjectUpdateOne) SetNillableClientID(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetClientID(*i)
 	}
+	return puo
+}
+
+// AddClientID adds i to the "client_id" field.
+func (puo *ProjectUpdateOne) AddClientID(i int) *ProjectUpdateOne {
+	puo.mutation.AddClientID(i)
 	return puo
 }
 
@@ -529,16 +556,23 @@ func (puo *ProjectUpdateOne) ClearClientID() *ProjectUpdateOne {
 }
 
 // SetManagerID sets the "manager_id" field.
-func (puo *ProjectUpdateOne) SetManagerID(s string) *ProjectUpdateOne {
-	puo.mutation.SetManagerID(s)
+func (puo *ProjectUpdateOne) SetManagerID(i int) *ProjectUpdateOne {
+	puo.mutation.ResetManagerID()
+	puo.mutation.SetManagerID(i)
 	return puo
 }
 
 // SetNillableManagerID sets the "manager_id" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableManagerID(s *string) *ProjectUpdateOne {
-	if s != nil {
-		puo.SetManagerID(*s)
+func (puo *ProjectUpdateOne) SetNillableManagerID(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetManagerID(*i)
 	}
+	return puo
+}
+
+// AddManagerID adds i to the "manager_id" field.
+func (puo *ProjectUpdateOne) AddManagerID(i int) *ProjectUpdateOne {
+	puo.mutation.AddManagerID(i)
 	return puo
 }
 
@@ -856,16 +890,22 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 		_spec.AddField(project.FieldCreatedBy, field.TypeInt, value)
 	}
 	if value, ok := puo.mutation.ClientID(); ok {
-		_spec.SetField(project.FieldClientID, field.TypeString, value)
+		_spec.SetField(project.FieldClientID, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.AddedClientID(); ok {
+		_spec.AddField(project.FieldClientID, field.TypeInt, value)
 	}
 	if puo.mutation.ClientIDCleared() {
-		_spec.ClearField(project.FieldClientID, field.TypeString)
+		_spec.ClearField(project.FieldClientID, field.TypeInt)
 	}
 	if value, ok := puo.mutation.ManagerID(); ok {
-		_spec.SetField(project.FieldManagerID, field.TypeString, value)
+		_spec.SetField(project.FieldManagerID, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.AddedManagerID(); ok {
+		_spec.AddField(project.FieldManagerID, field.TypeInt, value)
 	}
 	if puo.mutation.ManagerIDCleared() {
-		_spec.ClearField(project.FieldManagerID, field.TypeString)
+		_spec.ClearField(project.FieldManagerID, field.TypeInt)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)

@@ -17,9 +17,6 @@ type Account struct {
 // Fields of the Account.
 func (Account) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("uuid", uuid.UUID{}).
-			Immutable().
-			Default(uuid.New),
 		field.String("name").
 			NotEmpty().
 			StructTag(`json:"name,omitempty" validate:"required,min=1"`),
@@ -39,6 +36,9 @@ func (Account) Fields() []ent.Field {
 			Immutable().
 			Optional().
 			Default(time.Now),
+		field.UUID("uuid", uuid.UUID{}).
+			Immutable().
+			Default(uuid.New),
 	}
 }
 

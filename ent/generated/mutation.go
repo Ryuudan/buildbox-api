@@ -42,12 +42,12 @@ type AccountMutation struct {
 	op                   Op
 	typ                  string
 	id                   *int
-	uuid                 *uuid.UUID
 	name                 *string
 	email                *string
 	phone_number         *string
 	updated_at           *time.Time
 	created_at           *time.Time
+	uuid                 *uuid.UUID
 	clearedFields        map[string]struct{}
 	users                map[int]struct{}
 	removedusers         map[int]struct{}
@@ -159,42 +159,6 @@ func (m *AccountMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetUUID sets the "uuid" field.
-func (m *AccountMutation) SetUUID(u uuid.UUID) {
-	m.uuid = &u
-}
-
-// UUID returns the value of the "uuid" field in the mutation.
-func (m *AccountMutation) UUID() (r uuid.UUID, exists bool) {
-	v := m.uuid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUUID returns the old "uuid" field's value of the Account entity.
-// If the Account object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
-	}
-	return oldValue.UUID, nil
-}
-
-// ResetUUID resets all changes to the "uuid" field.
-func (m *AccountMutation) ResetUUID() {
-	m.uuid = nil
 }
 
 // SetName sets the "name" field.
@@ -429,6 +393,42 @@ func (m *AccountMutation) ResetCreatedAt() {
 	delete(m.clearedFields, account.FieldCreatedAt)
 }
 
+// SetUUID sets the "uuid" field.
+func (m *AccountMutation) SetUUID(u uuid.UUID) {
+	m.uuid = &u
+}
+
+// UUID returns the value of the "uuid" field in the mutation.
+func (m *AccountMutation) UUID() (r uuid.UUID, exists bool) {
+	v := m.uuid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUUID returns the old "uuid" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+	}
+	return oldValue.UUID, nil
+}
+
+// ResetUUID resets all changes to the "uuid" field.
+func (m *AccountMutation) ResetUUID() {
+	m.uuid = nil
+}
+
 // AddUserIDs adds the "users" edge to the User entity by ids.
 func (m *AccountMutation) AddUserIDs(ids ...int) {
 	if m.users == nil {
@@ -626,9 +626,6 @@ func (m *AccountMutation) Type() string {
 // AddedFields().
 func (m *AccountMutation) Fields() []string {
 	fields := make([]string, 0, 6)
-	if m.uuid != nil {
-		fields = append(fields, account.FieldUUID)
-	}
 	if m.name != nil {
 		fields = append(fields, account.FieldName)
 	}
@@ -644,6 +641,9 @@ func (m *AccountMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, account.FieldCreatedAt)
 	}
+	if m.uuid != nil {
+		fields = append(fields, account.FieldUUID)
+	}
 	return fields
 }
 
@@ -652,8 +652,6 @@ func (m *AccountMutation) Fields() []string {
 // schema.
 func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case account.FieldUUID:
-		return m.UUID()
 	case account.FieldName:
 		return m.Name()
 	case account.FieldEmail:
@@ -664,6 +662,8 @@ func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case account.FieldCreatedAt:
 		return m.CreatedAt()
+	case account.FieldUUID:
+		return m.UUID()
 	}
 	return nil, false
 }
@@ -673,8 +673,6 @@ func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case account.FieldUUID:
-		return m.OldUUID(ctx)
 	case account.FieldName:
 		return m.OldName(ctx)
 	case account.FieldEmail:
@@ -685,6 +683,8 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldUpdatedAt(ctx)
 	case account.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case account.FieldUUID:
+		return m.OldUUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Account field %s", name)
 }
@@ -694,13 +694,6 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *AccountMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case account.FieldUUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUUID(v)
-		return nil
 	case account.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -735,6 +728,13 @@ func (m *AccountMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case account.FieldUUID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUUID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Account field %s", name)
@@ -812,9 +812,6 @@ func (m *AccountMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *AccountMutation) ResetField(name string) error {
 	switch name {
-	case account.FieldUUID:
-		m.ResetUUID()
-		return nil
 	case account.FieldName:
 		m.ResetName()
 		return nil
@@ -829,6 +826,9 @@ func (m *AccountMutation) ResetField(name string) error {
 		return nil
 	case account.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case account.FieldUUID:
+		m.ResetUUID()
 		return nil
 	}
 	return fmt.Errorf("unknown Account field %s", name)
@@ -976,13 +976,13 @@ type PlanMutation struct {
 	op                   Op
 	typ                  string
 	id                   *int
-	uuid                 *uuid.UUID
 	name                 *string
 	description          *string
 	price                *float64
 	addprice             *float64
 	updated_at           *time.Time
 	created_at           *time.Time
+	uuid                 *uuid.UUID
 	clearedFields        map[string]struct{}
 	subscriptions        map[int]struct{}
 	removedsubscriptions map[int]struct{}
@@ -1088,42 +1088,6 @@ func (m *PlanMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetUUID sets the "uuid" field.
-func (m *PlanMutation) SetUUID(u uuid.UUID) {
-	m.uuid = &u
-}
-
-// UUID returns the value of the "uuid" field in the mutation.
-func (m *PlanMutation) UUID() (r uuid.UUID, exists bool) {
-	v := m.uuid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUUID returns the old "uuid" field's value of the Plan entity.
-// If the Plan object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
-	}
-	return oldValue.UUID, nil
-}
-
-// ResetUUID resets all changes to the "uuid" field.
-func (m *PlanMutation) ResetUUID() {
-	m.uuid = nil
 }
 
 // SetName sets the "name" field.
@@ -1365,6 +1329,42 @@ func (m *PlanMutation) ResetCreatedAt() {
 	delete(m.clearedFields, plan.FieldCreatedAt)
 }
 
+// SetUUID sets the "uuid" field.
+func (m *PlanMutation) SetUUID(u uuid.UUID) {
+	m.uuid = &u
+}
+
+// UUID returns the value of the "uuid" field in the mutation.
+func (m *PlanMutation) UUID() (r uuid.UUID, exists bool) {
+	v := m.uuid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUUID returns the old "uuid" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+	}
+	return oldValue.UUID, nil
+}
+
+// ResetUUID resets all changes to the "uuid" field.
+func (m *PlanMutation) ResetUUID() {
+	m.uuid = nil
+}
+
 // AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by ids.
 func (m *PlanMutation) AddSubscriptionIDs(ids ...int) {
 	if m.subscriptions == nil {
@@ -1454,9 +1454,6 @@ func (m *PlanMutation) Type() string {
 // AddedFields().
 func (m *PlanMutation) Fields() []string {
 	fields := make([]string, 0, 6)
-	if m.uuid != nil {
-		fields = append(fields, plan.FieldUUID)
-	}
 	if m.name != nil {
 		fields = append(fields, plan.FieldName)
 	}
@@ -1472,6 +1469,9 @@ func (m *PlanMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, plan.FieldCreatedAt)
 	}
+	if m.uuid != nil {
+		fields = append(fields, plan.FieldUUID)
+	}
 	return fields
 }
 
@@ -1480,8 +1480,6 @@ func (m *PlanMutation) Fields() []string {
 // schema.
 func (m *PlanMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case plan.FieldUUID:
-		return m.UUID()
 	case plan.FieldName:
 		return m.Name()
 	case plan.FieldDescription:
@@ -1492,6 +1490,8 @@ func (m *PlanMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case plan.FieldCreatedAt:
 		return m.CreatedAt()
+	case plan.FieldUUID:
+		return m.UUID()
 	}
 	return nil, false
 }
@@ -1501,8 +1501,6 @@ func (m *PlanMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *PlanMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case plan.FieldUUID:
-		return m.OldUUID(ctx)
 	case plan.FieldName:
 		return m.OldName(ctx)
 	case plan.FieldDescription:
@@ -1513,6 +1511,8 @@ func (m *PlanMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUpdatedAt(ctx)
 	case plan.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case plan.FieldUUID:
+		return m.OldUUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Plan field %s", name)
 }
@@ -1522,13 +1522,6 @@ func (m *PlanMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *PlanMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case plan.FieldUUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUUID(v)
-		return nil
 	case plan.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -1563,6 +1556,13 @@ func (m *PlanMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case plan.FieldUUID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUUID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Plan field %s", name)
@@ -1649,9 +1649,6 @@ func (m *PlanMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *PlanMutation) ResetField(name string) error {
 	switch name {
-	case plan.FieldUUID:
-		m.ResetUUID()
-		return nil
 	case plan.FieldName:
 		m.ResetName()
 		return nil
@@ -1666,6 +1663,9 @@ func (m *PlanMutation) ResetField(name string) error {
 		return nil
 	case plan.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case plan.FieldUUID:
+		m.ResetUUID()
 		return nil
 	}
 	return fmt.Errorf("unknown Plan field %s", name)
@@ -1763,9 +1763,10 @@ type ProjectMutation struct {
 	id             *int
 	created_by     *int
 	addcreated_by  *int
-	uuid           *uuid.UUID
-	client_id      *string
-	manager_id     *string
+	client_id      *int
+	addclient_id   *int
+	manager_id     *int
+	addmanager_id  *int
 	name           *string
 	description    *string
 	notes          *string
@@ -1778,6 +1779,7 @@ type ProjectMutation struct {
 	end_date       *time.Time
 	updated_at     *time.Time
 	created_at     *time.Time
+	uuid           *uuid.UUID
 	clearedFields  map[string]struct{}
 	account        *int
 	clearedaccount bool
@@ -1976,49 +1978,14 @@ func (m *ProjectMutation) ResetCreatedBy() {
 	m.addcreated_by = nil
 }
 
-// SetUUID sets the "uuid" field.
-func (m *ProjectMutation) SetUUID(u uuid.UUID) {
-	m.uuid = &u
-}
-
-// UUID returns the value of the "uuid" field in the mutation.
-func (m *ProjectMutation) UUID() (r uuid.UUID, exists bool) {
-	v := m.uuid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUUID returns the old "uuid" field's value of the Project entity.
-// If the Project object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
-	}
-	return oldValue.UUID, nil
-}
-
-// ResetUUID resets all changes to the "uuid" field.
-func (m *ProjectMutation) ResetUUID() {
-	m.uuid = nil
-}
-
 // SetClientID sets the "client_id" field.
-func (m *ProjectMutation) SetClientID(s string) {
-	m.client_id = &s
+func (m *ProjectMutation) SetClientID(i int) {
+	m.client_id = &i
+	m.addclient_id = nil
 }
 
 // ClientID returns the value of the "client_id" field in the mutation.
-func (m *ProjectMutation) ClientID() (r string, exists bool) {
+func (m *ProjectMutation) ClientID() (r int, exists bool) {
 	v := m.client_id
 	if v == nil {
 		return
@@ -2029,7 +1996,7 @@ func (m *ProjectMutation) ClientID() (r string, exists bool) {
 // OldClientID returns the old "client_id" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldClientID(ctx context.Context) (v *string, err error) {
+func (m *ProjectMutation) OldClientID(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldClientID is only allowed on UpdateOne operations")
 	}
@@ -2043,9 +2010,28 @@ func (m *ProjectMutation) OldClientID(ctx context.Context) (v *string, err error
 	return oldValue.ClientID, nil
 }
 
+// AddClientID adds i to the "client_id" field.
+func (m *ProjectMutation) AddClientID(i int) {
+	if m.addclient_id != nil {
+		*m.addclient_id += i
+	} else {
+		m.addclient_id = &i
+	}
+}
+
+// AddedClientID returns the value that was added to the "client_id" field in this mutation.
+func (m *ProjectMutation) AddedClientID() (r int, exists bool) {
+	v := m.addclient_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ClearClientID clears the value of the "client_id" field.
 func (m *ProjectMutation) ClearClientID() {
 	m.client_id = nil
+	m.addclient_id = nil
 	m.clearedFields[project.FieldClientID] = struct{}{}
 }
 
@@ -2058,16 +2044,18 @@ func (m *ProjectMutation) ClientIDCleared() bool {
 // ResetClientID resets all changes to the "client_id" field.
 func (m *ProjectMutation) ResetClientID() {
 	m.client_id = nil
+	m.addclient_id = nil
 	delete(m.clearedFields, project.FieldClientID)
 }
 
 // SetManagerID sets the "manager_id" field.
-func (m *ProjectMutation) SetManagerID(s string) {
-	m.manager_id = &s
+func (m *ProjectMutation) SetManagerID(i int) {
+	m.manager_id = &i
+	m.addmanager_id = nil
 }
 
 // ManagerID returns the value of the "manager_id" field in the mutation.
-func (m *ProjectMutation) ManagerID() (r string, exists bool) {
+func (m *ProjectMutation) ManagerID() (r int, exists bool) {
 	v := m.manager_id
 	if v == nil {
 		return
@@ -2078,7 +2066,7 @@ func (m *ProjectMutation) ManagerID() (r string, exists bool) {
 // OldManagerID returns the old "manager_id" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldManagerID(ctx context.Context) (v *string, err error) {
+func (m *ProjectMutation) OldManagerID(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldManagerID is only allowed on UpdateOne operations")
 	}
@@ -2092,9 +2080,28 @@ func (m *ProjectMutation) OldManagerID(ctx context.Context) (v *string, err erro
 	return oldValue.ManagerID, nil
 }
 
+// AddManagerID adds i to the "manager_id" field.
+func (m *ProjectMutation) AddManagerID(i int) {
+	if m.addmanager_id != nil {
+		*m.addmanager_id += i
+	} else {
+		m.addmanager_id = &i
+	}
+}
+
+// AddedManagerID returns the value that was added to the "manager_id" field in this mutation.
+func (m *ProjectMutation) AddedManagerID() (r int, exists bool) {
+	v := m.addmanager_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ClearManagerID clears the value of the "manager_id" field.
 func (m *ProjectMutation) ClearManagerID() {
 	m.manager_id = nil
+	m.addmanager_id = nil
 	m.clearedFields[project.FieldManagerID] = struct{}{}
 }
 
@@ -2107,6 +2114,7 @@ func (m *ProjectMutation) ManagerIDCleared() bool {
 // ResetManagerID resets all changes to the "manager_id" field.
 func (m *ProjectMutation) ResetManagerID() {
 	m.manager_id = nil
+	m.addmanager_id = nil
 	delete(m.clearedFields, project.FieldManagerID)
 }
 
@@ -2360,7 +2368,7 @@ func (m *ProjectMutation) Budget() (r float64, exists bool) {
 // OldBudget returns the old "budget" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldBudget(ctx context.Context) (v float64, err error) {
+func (m *ProjectMutation) OldBudget(ctx context.Context) (v *float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBudget is only allowed on UpdateOne operations")
 	}
@@ -2429,7 +2437,7 @@ func (m *ProjectMutation) Deleted() (r bool, exists bool) {
 // OldDeleted returns the old "deleted" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldDeleted(ctx context.Context) (v *bool, err error) {
+func (m *ProjectMutation) OldDeleted(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeleted is only allowed on UpdateOne operations")
 	}
@@ -2478,7 +2486,7 @@ func (m *ProjectMutation) StartDate() (r time.Time, exists bool) {
 // OldStartDate returns the old "start_date" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldStartDate(ctx context.Context) (v time.Time, err error) {
+func (m *ProjectMutation) OldStartDate(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStartDate is only allowed on UpdateOne operations")
 	}
@@ -2657,6 +2665,42 @@ func (m *ProjectMutation) ResetCreatedAt() {
 	delete(m.clearedFields, project.FieldCreatedAt)
 }
 
+// SetUUID sets the "uuid" field.
+func (m *ProjectMutation) SetUUID(u uuid.UUID) {
+	m.uuid = &u
+}
+
+// UUID returns the value of the "uuid" field in the mutation.
+func (m *ProjectMutation) UUID() (r uuid.UUID, exists bool) {
+	v := m.uuid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUUID returns the old "uuid" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+	}
+	return oldValue.UUID, nil
+}
+
+// ResetUUID resets all changes to the "uuid" field.
+func (m *ProjectMutation) ResetUUID() {
+	m.uuid = nil
+}
+
 // ClearAccount clears the "account" edge to the Account entity.
 func (m *ProjectMutation) ClearAccount() {
 	m.clearedaccount = true
@@ -2725,9 +2769,6 @@ func (m *ProjectMutation) Fields() []string {
 	if m.created_by != nil {
 		fields = append(fields, project.FieldCreatedBy)
 	}
-	if m.uuid != nil {
-		fields = append(fields, project.FieldUUID)
-	}
 	if m.client_id != nil {
 		fields = append(fields, project.FieldClientID)
 	}
@@ -2767,6 +2808,9 @@ func (m *ProjectMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
 	}
+	if m.uuid != nil {
+		fields = append(fields, project.FieldUUID)
+	}
 	return fields
 }
 
@@ -2779,8 +2823,6 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.AccountID()
 	case project.FieldCreatedBy:
 		return m.CreatedBy()
-	case project.FieldUUID:
-		return m.UUID()
 	case project.FieldClientID:
 		return m.ClientID()
 	case project.FieldManagerID:
@@ -2807,6 +2849,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case project.FieldCreatedAt:
 		return m.CreatedAt()
+	case project.FieldUUID:
+		return m.UUID()
 	}
 	return nil, false
 }
@@ -2820,8 +2864,6 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldAccountID(ctx)
 	case project.FieldCreatedBy:
 		return m.OldCreatedBy(ctx)
-	case project.FieldUUID:
-		return m.OldUUID(ctx)
 	case project.FieldClientID:
 		return m.OldClientID(ctx)
 	case project.FieldManagerID:
@@ -2848,6 +2890,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldUpdatedAt(ctx)
 	case project.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case project.FieldUUID:
+		return m.OldUUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Project field %s", name)
 }
@@ -2871,22 +2915,15 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedBy(v)
 		return nil
-	case project.FieldUUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUUID(v)
-		return nil
 	case project.FieldClientID:
-		v, ok := value.(string)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetClientID(v)
 		return nil
 	case project.FieldManagerID:
-		v, ok := value.(string)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2969,6 +3006,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
+	case project.FieldUUID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUUID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Project field %s", name)
 }
@@ -2979,6 +3023,12 @@ func (m *ProjectMutation) AddedFields() []string {
 	var fields []string
 	if m.addcreated_by != nil {
 		fields = append(fields, project.FieldCreatedBy)
+	}
+	if m.addclient_id != nil {
+		fields = append(fields, project.FieldClientID)
+	}
+	if m.addmanager_id != nil {
+		fields = append(fields, project.FieldManagerID)
 	}
 	if m.addbudget != nil {
 		fields = append(fields, project.FieldBudget)
@@ -2993,6 +3043,10 @@ func (m *ProjectMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case project.FieldCreatedBy:
 		return m.AddedCreatedBy()
+	case project.FieldClientID:
+		return m.AddedClientID()
+	case project.FieldManagerID:
+		return m.AddedManagerID()
 	case project.FieldBudget:
 		return m.AddedBudget()
 	}
@@ -3010,6 +3064,20 @@ func (m *ProjectMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddCreatedBy(v)
+		return nil
+	case project.FieldClientID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddClientID(v)
+		return nil
+	case project.FieldManagerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddManagerID(v)
 		return nil
 	case project.FieldBudget:
 		v, ok := value.(float64)
@@ -3126,9 +3194,6 @@ func (m *ProjectMutation) ResetField(name string) error {
 	case project.FieldCreatedBy:
 		m.ResetCreatedBy()
 		return nil
-	case project.FieldUUID:
-		m.ResetUUID()
-		return nil
 	case project.FieldClientID:
 		m.ResetClientID()
 		return nil
@@ -3167,6 +3232,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case project.FieldUUID:
+		m.ResetUUID()
 		return nil
 	}
 	return fmt.Errorf("unknown Project field %s", name)
@@ -3252,7 +3320,6 @@ type SubscriptionMutation struct {
 	op             Op
 	typ            string
 	id             *int
-	uuid           *uuid.UUID
 	start_date     *time.Time
 	end_date       *time.Time
 	status         *subscription.Status
@@ -3260,6 +3327,7 @@ type SubscriptionMutation struct {
 	adddiscount    *float64
 	updated_at     *time.Time
 	created_at     *time.Time
+	uuid           *uuid.UUID
 	clearedFields  map[string]struct{}
 	account        *int
 	clearedaccount bool
@@ -3366,42 +3434,6 @@ func (m *SubscriptionMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetUUID sets the "uuid" field.
-func (m *SubscriptionMutation) SetUUID(u uuid.UUID) {
-	m.uuid = &u
-}
-
-// UUID returns the value of the "uuid" field in the mutation.
-func (m *SubscriptionMutation) UUID() (r uuid.UUID, exists bool) {
-	v := m.uuid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUUID returns the old "uuid" field's value of the Subscription entity.
-// If the Subscription object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubscriptionMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
-	}
-	return oldValue.UUID, nil
-}
-
-// ResetUUID resets all changes to the "uuid" field.
-func (m *SubscriptionMutation) ResetUUID() {
-	m.uuid = nil
 }
 
 // SetAccountID sets the "account_id" field.
@@ -3765,6 +3797,42 @@ func (m *SubscriptionMutation) ResetCreatedAt() {
 	delete(m.clearedFields, subscription.FieldCreatedAt)
 }
 
+// SetUUID sets the "uuid" field.
+func (m *SubscriptionMutation) SetUUID(u uuid.UUID) {
+	m.uuid = &u
+}
+
+// UUID returns the value of the "uuid" field in the mutation.
+func (m *SubscriptionMutation) UUID() (r uuid.UUID, exists bool) {
+	v := m.uuid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUUID returns the old "uuid" field's value of the Subscription entity.
+// If the Subscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubscriptionMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+	}
+	return oldValue.UUID, nil
+}
+
+// ResetUUID resets all changes to the "uuid" field.
+func (m *SubscriptionMutation) ResetUUID() {
+	m.uuid = nil
+}
+
 // ClearAccount clears the "account" edge to the Account entity.
 func (m *SubscriptionMutation) ClearAccount() {
 	m.clearedaccount = true
@@ -3854,9 +3922,6 @@ func (m *SubscriptionMutation) Type() string {
 // AddedFields().
 func (m *SubscriptionMutation) Fields() []string {
 	fields := make([]string, 0, 9)
-	if m.uuid != nil {
-		fields = append(fields, subscription.FieldUUID)
-	}
 	if m.account != nil {
 		fields = append(fields, subscription.FieldAccountID)
 	}
@@ -3881,6 +3946,9 @@ func (m *SubscriptionMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, subscription.FieldCreatedAt)
 	}
+	if m.uuid != nil {
+		fields = append(fields, subscription.FieldUUID)
+	}
 	return fields
 }
 
@@ -3889,8 +3957,6 @@ func (m *SubscriptionMutation) Fields() []string {
 // schema.
 func (m *SubscriptionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case subscription.FieldUUID:
-		return m.UUID()
 	case subscription.FieldAccountID:
 		return m.AccountID()
 	case subscription.FieldPlanID:
@@ -3907,6 +3973,8 @@ func (m *SubscriptionMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case subscription.FieldCreatedAt:
 		return m.CreatedAt()
+	case subscription.FieldUUID:
+		return m.UUID()
 	}
 	return nil, false
 }
@@ -3916,8 +3984,6 @@ func (m *SubscriptionMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SubscriptionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case subscription.FieldUUID:
-		return m.OldUUID(ctx)
 	case subscription.FieldAccountID:
 		return m.OldAccountID(ctx)
 	case subscription.FieldPlanID:
@@ -3934,6 +4000,8 @@ func (m *SubscriptionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldUpdatedAt(ctx)
 	case subscription.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case subscription.FieldUUID:
+		return m.OldUUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Subscription field %s", name)
 }
@@ -3943,13 +4011,6 @@ func (m *SubscriptionMutation) OldField(ctx context.Context, name string) (ent.V
 // type.
 func (m *SubscriptionMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case subscription.FieldUUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUUID(v)
-		return nil
 	case subscription.FieldAccountID:
 		v, ok := value.(int)
 		if !ok {
@@ -4005,6 +4066,13 @@ func (m *SubscriptionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case subscription.FieldUUID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUUID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Subscription field %s", name)
@@ -4097,9 +4165,6 @@ func (m *SubscriptionMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SubscriptionMutation) ResetField(name string) error {
 	switch name {
-	case subscription.FieldUUID:
-		m.ResetUUID()
-		return nil
 	case subscription.FieldAccountID:
 		m.ResetAccountID()
 		return nil
@@ -4123,6 +4188,9 @@ func (m *SubscriptionMutation) ResetField(name string) error {
 		return nil
 	case subscription.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case subscription.FieldUUID:
+		m.ResetUUID()
 		return nil
 	}
 	return fmt.Errorf("unknown Subscription field %s", name)
@@ -4226,7 +4294,6 @@ type UserMutation struct {
 	op             Op
 	typ            string
 	id             *int
-	uuid           *uuid.UUID
 	first_name     *string
 	middle_name    *string
 	last_name      *string
@@ -4235,6 +4302,7 @@ type UserMutation struct {
 	password       *string
 	updated_at     *time.Time
 	created_at     *time.Time
+	uuid           *uuid.UUID
 	clearedFields  map[string]struct{}
 	account        *int
 	clearedaccount bool
@@ -4375,42 +4443,6 @@ func (m *UserMutation) OldAccountID(ctx context.Context) (v int, err error) {
 // ResetAccountID resets all changes to the "account_id" field.
 func (m *UserMutation) ResetAccountID() {
 	m.account = nil
-}
-
-// SetUUID sets the "uuid" field.
-func (m *UserMutation) SetUUID(u uuid.UUID) {
-	m.uuid = &u
-}
-
-// UUID returns the value of the "uuid" field in the mutation.
-func (m *UserMutation) UUID() (r uuid.UUID, exists bool) {
-	v := m.uuid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUUID returns the old "uuid" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
-	}
-	return oldValue.UUID, nil
-}
-
-// ResetUUID resets all changes to the "uuid" field.
-func (m *UserMutation) ResetUUID() {
-	m.uuid = nil
 }
 
 // SetFirstName sets the "first_name" field.
@@ -4766,6 +4798,42 @@ func (m *UserMutation) ResetCreatedAt() {
 	delete(m.clearedFields, user.FieldCreatedAt)
 }
 
+// SetUUID sets the "uuid" field.
+func (m *UserMutation) SetUUID(u uuid.UUID) {
+	m.uuid = &u
+}
+
+// UUID returns the value of the "uuid" field in the mutation.
+func (m *UserMutation) UUID() (r uuid.UUID, exists bool) {
+	v := m.uuid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUUID returns the old "uuid" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+	}
+	return oldValue.UUID, nil
+}
+
+// ResetUUID resets all changes to the "uuid" field.
+func (m *UserMutation) ResetUUID() {
+	m.uuid = nil
+}
+
 // ClearAccount clears the "account" edge to the Account entity.
 func (m *UserMutation) ClearAccount() {
 	m.clearedaccount = true
@@ -4831,9 +4899,6 @@ func (m *UserMutation) Fields() []string {
 	if m.account != nil {
 		fields = append(fields, user.FieldAccountID)
 	}
-	if m.uuid != nil {
-		fields = append(fields, user.FieldUUID)
-	}
 	if m.first_name != nil {
 		fields = append(fields, user.FieldFirstName)
 	}
@@ -4858,6 +4923,9 @@ func (m *UserMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
+	if m.uuid != nil {
+		fields = append(fields, user.FieldUUID)
+	}
 	return fields
 }
 
@@ -4868,8 +4936,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldAccountID:
 		return m.AccountID()
-	case user.FieldUUID:
-		return m.UUID()
 	case user.FieldFirstName:
 		return m.FirstName()
 	case user.FieldMiddleName:
@@ -4886,6 +4952,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
+	case user.FieldUUID:
+		return m.UUID()
 	}
 	return nil, false
 }
@@ -4897,8 +4965,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldAccountID:
 		return m.OldAccountID(ctx)
-	case user.FieldUUID:
-		return m.OldUUID(ctx)
 	case user.FieldFirstName:
 		return m.OldFirstName(ctx)
 	case user.FieldMiddleName:
@@ -4915,6 +4981,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUpdatedAt(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case user.FieldUUID:
+		return m.OldUUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -4930,13 +4998,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAccountID(v)
-		return nil
-	case user.FieldUUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUUID(v)
 		return nil
 	case user.FieldFirstName:
 		v, ok := value.(string)
@@ -4993,6 +5054,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case user.FieldUUID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUUID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -5082,9 +5150,6 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldAccountID:
 		m.ResetAccountID()
 		return nil
-	case user.FieldUUID:
-		m.ResetUUID()
-		return nil
 	case user.FieldFirstName:
 		m.ResetFirstName()
 		return nil
@@ -5108,6 +5173,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case user.FieldUUID:
+		m.ResetUUID()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

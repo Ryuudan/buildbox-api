@@ -1,4 +1,4 @@
-package utils
+package render
 
 import (
 	"encoding/json"
@@ -48,7 +48,7 @@ func Validator() *validator.Validate {
 
 func CustomValidationError(w http.ResponseWriter, r *http.Request, details []ValidationErrorDetails) {
 
-	errorResponse := validationErrorResponse{
+	errorResponse := ValidationErrorResponse{
 		Error: validationError{
 			Code:      http.StatusBadRequest,
 			Type:      "validation_error",
@@ -72,7 +72,7 @@ func CustomValidationError(w http.ResponseWriter, r *http.Request, details []Val
 
 // ideal for form validation, or form errorrs
 // like setError in react-hooks-form
-func Validate(w http.ResponseWriter, r *http.Request, err error) {
+func ValidationError(w http.ResponseWriter, r *http.Request, err error) {
 	var details []ValidationErrorDetails
 
 	for _, err := range err.(validator.ValidationErrors) {
@@ -82,7 +82,7 @@ func Validate(w http.ResponseWriter, r *http.Request, err error) {
 		details = append(details, ValidationErrorDetails{Field: field, Message: errorType})
 	}
 
-	errorResponse := validationErrorResponse{
+	errorResponse := ValidationErrorResponse{
 		Error: validationError{
 			Code:      http.StatusUnprocessableEntity,
 			Type:      "validation_error",
@@ -194,6 +194,6 @@ type validationError struct {
 	Details   []ValidationErrorDetails `json:"details"`
 }
 
-type validationErrorResponse struct {
+type ValidationErrorResponse struct {
 	Error validationError `json:"error"`
 }

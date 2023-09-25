@@ -7,9 +7,8 @@ import (
 	"net/http"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
-	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
-	"github.com/Pyakz/buildbox-api/utils"
+	"github.com/Pyakz/buildbox-api/utils/render"
 )
 
 type PlanHandler struct {
@@ -25,25 +24,25 @@ func NewPlanHandler(planService services.PlanService) *PlanHandler {
 
 func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 
-	validate := utils.Validator()
+	validate := render.Validator()
 
-	var plan models.CreatePlanRequest
-	var validationErrors []utils.ValidationErrorDetails
+	var plan generated.Plan
+	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&plan); err != nil {
-		utils.RenderError(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
 	// Struct level validation
 	if err := validate.Struct(plan); err != nil {
-		utils.Validate(w, r, err)
+		render.ValidationError(w, r, err)
 		return
 	}
 
 	existingName, _ := p.planService.GetPlanByName(r.Context(), plan.Name)
 	if existingName != nil {
-		validationErrors = append(validationErrors, utils.ValidationErrorDetails{
+		validationErrors = append(validationErrors, render.ValidationErrorDetails{
 			Field:   "name",
 			Message: fmt.Sprintf("Plan with name '%s' already exists", plan.Name),
 		})
@@ -51,32 +50,28 @@ func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
-		utils.CustomValidationError(w, r, validationErrors)
+		render.CustomValidationError(w, r, validationErrors)
 		return
 	}
 
-	newPlan, err := p.planService.CreatePlan(r.Context(), &generated.Plan{
-		Name:        plan.Name,
-		Description: plan.Description,
-		Price:       &plan.Price,
-	})
+	newPlan, err := p.planService.CreatePlan(r.Context(), &plan)
 
 	if err != nil {
-		utils.RenderError(w, r, "plans", http.StatusBadRequest, err.Error())
+		render.Error(w, r, "plans", http.StatusBadRequest, err.Error())
 		return
 	}
 
 	defer r.Body.Close()
-	utils.RenderJSON(w, http.StatusCreated, newPlan)
+	render.JSON(w, http.StatusCreated, newPlan)
 }
 
 func (p *PlanHandler) GetPlans(w http.ResponseWriter, r *http.Request) {
 	plans, err := p.planService.GetPlans(r.Context())
 
 	if err != nil {
-		utils.RenderError(w, r, "plans", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, "plans", http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.RenderJSON(w, http.StatusOK, plans)
+	render.JSON(w, http.StatusOK, plans)
 }

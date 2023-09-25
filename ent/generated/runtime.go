@@ -20,127 +20,112 @@ import (
 func init() {
 	accountFields := schema.Account{}.Fields()
 	_ = accountFields
-	// accountDescUUID is the schema descriptor for uuid field.
-	accountDescUUID := accountFields[0].Descriptor()
-	// account.DefaultUUID holds the default value on creation for the uuid field.
-	account.DefaultUUID = accountDescUUID.Default.(func() uuid.UUID)
 	// accountDescName is the schema descriptor for name field.
-	accountDescName := accountFields[1].Descriptor()
+	accountDescName := accountFields[0].Descriptor()
 	// account.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	account.NameValidator = accountDescName.Validators[0].(func(string) error)
 	// accountDescEmail is the schema descriptor for email field.
-	accountDescEmail := accountFields[2].Descriptor()
+	accountDescEmail := accountFields[1].Descriptor()
 	// account.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	account.EmailValidator = accountDescEmail.Validators[0].(func(string) error)
 	// accountDescPhoneNumber is the schema descriptor for phone_number field.
-	accountDescPhoneNumber := accountFields[3].Descriptor()
+	accountDescPhoneNumber := accountFields[2].Descriptor()
 	// account.PhoneNumberValidator is a validator for the "phone_number" field. It is called by the builders before save.
 	account.PhoneNumberValidator = accountDescPhoneNumber.Validators[0].(func(string) error)
 	// accountDescUpdatedAt is the schema descriptor for updated_at field.
-	accountDescUpdatedAt := accountFields[4].Descriptor()
+	accountDescUpdatedAt := accountFields[3].Descriptor()
 	// account.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	account.DefaultUpdatedAt = accountDescUpdatedAt.Default.(func() time.Time)
 	// accountDescCreatedAt is the schema descriptor for created_at field.
-	accountDescCreatedAt := accountFields[5].Descriptor()
+	accountDescCreatedAt := accountFields[4].Descriptor()
 	// account.DefaultCreatedAt holds the default value on creation for the created_at field.
 	account.DefaultCreatedAt = accountDescCreatedAt.Default.(func() time.Time)
+	// accountDescUUID is the schema descriptor for uuid field.
+	accountDescUUID := accountFields[5].Descriptor()
+	// account.DefaultUUID holds the default value on creation for the uuid field.
+	account.DefaultUUID = accountDescUUID.Default.(func() uuid.UUID)
 	planFields := schema.Plan{}.Fields()
 	_ = planFields
-	// planDescUUID is the schema descriptor for uuid field.
-	planDescUUID := planFields[0].Descriptor()
-	// plan.DefaultUUID holds the default value on creation for the uuid field.
-	plan.DefaultUUID = planDescUUID.Default.(func() uuid.UUID)
 	// planDescName is the schema descriptor for name field.
-	planDescName := planFields[1].Descriptor()
+	planDescName := planFields[0].Descriptor()
 	// plan.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	plan.NameValidator = planDescName.Validators[0].(func(string) error)
 	// planDescPrice is the schema descriptor for price field.
-	planDescPrice := planFields[3].Descriptor()
+	planDescPrice := planFields[2].Descriptor()
 	// plan.DefaultPrice holds the default value on creation for the price field.
 	plan.DefaultPrice = planDescPrice.Default.(float64)
 	// planDescUpdatedAt is the schema descriptor for updated_at field.
-	planDescUpdatedAt := planFields[4].Descriptor()
+	planDescUpdatedAt := planFields[3].Descriptor()
 	// plan.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	plan.DefaultUpdatedAt = planDescUpdatedAt.Default.(func() time.Time)
 	// planDescCreatedAt is the schema descriptor for created_at field.
-	planDescCreatedAt := planFields[5].Descriptor()
+	planDescCreatedAt := planFields[4].Descriptor()
 	// plan.DefaultCreatedAt holds the default value on creation for the created_at field.
 	plan.DefaultCreatedAt = planDescCreatedAt.Default.(func() time.Time)
+	// planDescUUID is the schema descriptor for uuid field.
+	planDescUUID := planFields[5].Descriptor()
+	// plan.DefaultUUID holds the default value on creation for the uuid field.
+	plan.DefaultUUID = planDescUUID.Default.(func() uuid.UUID)
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
-	// projectDescUUID is the schema descriptor for uuid field.
-	projectDescUUID := projectFields[2].Descriptor()
-	// project.DefaultUUID holds the default value on creation for the uuid field.
-	project.DefaultUUID = projectDescUUID.Default.(func() uuid.UUID)
 	// projectDescName is the schema descriptor for name field.
-	projectDescName := projectFields[5].Descriptor()
+	projectDescName := projectFields[4].Descriptor()
 	// project.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	project.NameValidator = projectDescName.Validators[0].(func(string) error)
 	// projectDescBudget is the schema descriptor for budget field.
-	projectDescBudget := projectFields[10].Descriptor()
+	projectDescBudget := projectFields[9].Descriptor()
 	// project.BudgetValidator is a validator for the "budget" field. It is called by the builders before save.
-	project.BudgetValidator = func() func(float64) error {
-		validators := projectDescBudget.Validators
-		fns := [...]func(float64) error{
-			validators[0].(func(float64) error),
-			validators[1].(func(float64) error),
-			validators[2].(func(float64) error),
-		}
-		return func(budget float64) error {
-			for _, fn := range fns {
-				if err := fn(budget); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
+	project.BudgetValidator = projectDescBudget.Validators[0].(func(float64) error)
 	// projectDescDeleted is the schema descriptor for deleted field.
-	projectDescDeleted := projectFields[11].Descriptor()
+	projectDescDeleted := projectFields[10].Descriptor()
 	// project.DefaultDeleted holds the default value on creation for the deleted field.
 	project.DefaultDeleted = projectDescDeleted.Default.(bool)
 	// projectDescStartDate is the schema descriptor for start_date field.
-	projectDescStartDate := projectFields[12].Descriptor()
+	projectDescStartDate := projectFields[11].Descriptor()
 	// project.DefaultStartDate holds the default value on creation for the start_date field.
 	project.DefaultStartDate = projectDescStartDate.Default.(func() time.Time)
 	// projectDescUpdatedAt is the schema descriptor for updated_at field.
-	projectDescUpdatedAt := projectFields[14].Descriptor()
+	projectDescUpdatedAt := projectFields[13].Descriptor()
 	// project.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	project.DefaultUpdatedAt = projectDescUpdatedAt.Default.(func() time.Time)
 	// projectDescCreatedAt is the schema descriptor for created_at field.
-	projectDescCreatedAt := projectFields[15].Descriptor()
+	projectDescCreatedAt := projectFields[14].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
+	// projectDescUUID is the schema descriptor for uuid field.
+	projectDescUUID := projectFields[15].Descriptor()
+	// project.DefaultUUID holds the default value on creation for the uuid field.
+	project.DefaultUUID = projectDescUUID.Default.(func() uuid.UUID)
 	subscriptionFields := schema.Subscription{}.Fields()
 	_ = subscriptionFields
-	// subscriptionDescUUID is the schema descriptor for uuid field.
-	subscriptionDescUUID := subscriptionFields[0].Descriptor()
-	// subscription.DefaultUUID holds the default value on creation for the uuid field.
-	subscription.DefaultUUID = subscriptionDescUUID.Default.(func() uuid.UUID)
 	// subscriptionDescStartDate is the schema descriptor for start_date field.
-	subscriptionDescStartDate := subscriptionFields[3].Descriptor()
+	subscriptionDescStartDate := subscriptionFields[2].Descriptor()
 	// subscription.DefaultStartDate holds the default value on creation for the start_date field.
 	subscription.DefaultStartDate = subscriptionDescStartDate.Default.(func() time.Time)
 	// subscriptionDescUpdatedAt is the schema descriptor for updated_at field.
-	subscriptionDescUpdatedAt := subscriptionFields[7].Descriptor()
+	subscriptionDescUpdatedAt := subscriptionFields[6].Descriptor()
 	// subscription.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	subscription.DefaultUpdatedAt = subscriptionDescUpdatedAt.Default.(func() time.Time)
 	// subscriptionDescCreatedAt is the schema descriptor for created_at field.
-	subscriptionDescCreatedAt := subscriptionFields[8].Descriptor()
+	subscriptionDescCreatedAt := subscriptionFields[7].Descriptor()
 	// subscription.DefaultCreatedAt holds the default value on creation for the created_at field.
 	subscription.DefaultCreatedAt = subscriptionDescCreatedAt.Default.(func() time.Time)
+	// subscriptionDescUUID is the schema descriptor for uuid field.
+	subscriptionDescUUID := subscriptionFields[8].Descriptor()
+	// subscription.DefaultUUID holds the default value on creation for the uuid field.
+	subscription.DefaultUUID = subscriptionDescUUID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescUUID is the schema descriptor for uuid field.
-	userDescUUID := userFields[1].Descriptor()
-	// user.DefaultUUID holds the default value on creation for the uuid field.
-	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[8].Descriptor()
+	userDescUpdatedAt := userFields[7].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[9].Descriptor()
+	userDescCreatedAt := userFields[8].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescUUID is the schema descriptor for uuid field.
+	userDescUUID := userFields[9].Descriptor()
+	// user.DefaultUUID holds the default value on creation for the uuid field.
+	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
 }

@@ -22,20 +22,6 @@ type PlanCreate struct {
 	hooks    []Hook
 }
 
-// SetUUID sets the "uuid" field.
-func (pc *PlanCreate) SetUUID(u uuid.UUID) *PlanCreate {
-	pc.mutation.SetUUID(u)
-	return pc
-}
-
-// SetNillableUUID sets the "uuid" field if the given value is not nil.
-func (pc *PlanCreate) SetNillableUUID(u *uuid.UUID) *PlanCreate {
-	if u != nil {
-		pc.SetUUID(*u)
-	}
-	return pc
-}
-
 // SetName sets the "name" field.
 func (pc *PlanCreate) SetName(s string) *PlanCreate {
 	pc.mutation.SetName(s)
@@ -98,6 +84,20 @@ func (pc *PlanCreate) SetNillableCreatedAt(t *time.Time) *PlanCreate {
 	return pc
 }
 
+// SetUUID sets the "uuid" field.
+func (pc *PlanCreate) SetUUID(u uuid.UUID) *PlanCreate {
+	pc.mutation.SetUUID(u)
+	return pc
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (pc *PlanCreate) SetNillableUUID(u *uuid.UUID) *PlanCreate {
+	if u != nil {
+		pc.SetUUID(*u)
+	}
+	return pc
+}
+
 // AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
 func (pc *PlanCreate) AddSubscriptionIDs(ids ...int) *PlanCreate {
 	pc.mutation.AddSubscriptionIDs(ids...)
@@ -148,10 +148,6 @@ func (pc *PlanCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PlanCreate) defaults() {
-	if _, ok := pc.mutation.UUID(); !ok {
-		v := plan.DefaultUUID()
-		pc.mutation.SetUUID(v)
-	}
 	if _, ok := pc.mutation.Price(); !ok {
 		v := plan.DefaultPrice
 		pc.mutation.SetPrice(v)
@@ -164,13 +160,14 @@ func (pc *PlanCreate) defaults() {
 		v := plan.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := pc.mutation.UUID(); !ok {
+		v := plan.DefaultUUID()
+		pc.mutation.SetUUID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PlanCreate) check() error {
-	if _, ok := pc.mutation.UUID(); !ok {
-		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Plan.uuid"`)}
-	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Plan.name"`)}
 	}
@@ -181,6 +178,9 @@ func (pc *PlanCreate) check() error {
 	}
 	if _, ok := pc.mutation.Price(); !ok {
 		return &ValidationError{Name: "price", err: errors.New(`generated: missing required field "Plan.price"`)}
+	}
+	if _, ok := pc.mutation.UUID(); !ok {
+		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Plan.uuid"`)}
 	}
 	return nil
 }
@@ -208,10 +208,6 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 		_node = &Plan{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(plan.Table, sqlgraph.NewFieldSpec(plan.FieldID, field.TypeInt))
 	)
-	if value, ok := pc.mutation.UUID(); ok {
-		_spec.SetField(plan.FieldUUID, field.TypeUUID, value)
-		_node.UUID = value
-	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(plan.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -231,6 +227,10 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(plan.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := pc.mutation.UUID(); ok {
+		_spec.SetField(plan.FieldUUID, field.TypeUUID, value)
+		_node.UUID = value
 	}
 	if nodes := pc.mutation.SubscriptionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

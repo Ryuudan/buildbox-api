@@ -17,9 +17,6 @@ type Subscription struct {
 // Fields of the Subscription.
 func (Subscription) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("uuid", uuid.UUID{}).
-			Immutable().
-			Default(uuid.New),
 		field.Int("account_id").
 			StructTag(`json:"account_id,omitempty"`),
 		field.Int("plan_id").
@@ -45,6 +42,9 @@ func (Subscription) Fields() []ent.Field {
 			Immutable().
 			Optional().
 			Default(time.Now),
+		field.UUID("uuid", uuid.UUID{}).
+			Immutable().
+			Default(uuid.New),
 	}
 }
 

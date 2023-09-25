@@ -15,21 +15,21 @@ import (
 
 // Plan is the model entity for the Plan schema.
 type Plan struct {
-	config `json:"-"`
+	config `json:"-" validate:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// UUID holds the value of the "uuid" field.
-	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name" validate:"required,min=3"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description" validate:"required,min=10"`
 	// Price holds the value of the "price" field.
-	Price *float64 `json:"price,omitempty"`
+	Price *float64 `json:"price,omitempty" validate:"omitempty,gte=0"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UUID holds the value of the "uuid" field.
+	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PlanQuery when eager-loading is set.
 	Edges        PlanEdges `json:"edges"`
@@ -90,12 +90,6 @@ func (pl *Plan) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			pl.ID = int(value.Int64)
-		case plan.FieldUUID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field uuid", values[i])
-			} else if value != nil {
-				pl.UUID = *value
-			}
 		case plan.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -126,6 +120,12 @@ func (pl *Plan) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				pl.CreatedAt = value.Time
+			}
+		case plan.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				pl.UUID = *value
 			}
 		default:
 			pl.selectValues.Set(columns[i], values[i])
@@ -168,9 +168,6 @@ func (pl *Plan) String() string {
 	var builder strings.Builder
 	builder.WriteString("Plan(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pl.ID))
-	builder.WriteString("uuid=")
-	builder.WriteString(fmt.Sprintf("%v", pl.UUID))
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(pl.Name)
 	builder.WriteString(", ")
@@ -187,6 +184,9 @@ func (pl *Plan) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pl.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("uuid=")
+	builder.WriteString(fmt.Sprintf("%v", pl.UUID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -23,34 +23,34 @@ type Project struct {
 	AccountID int `json:"account_id,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy int `json:"created_by,omitempty"`
-	// UUID holds the value of the "uuid" field.
-	UUID uuid.UUID `json:"uuid,omitempty"`
 	// ClientID holds the value of the "client_id" field.
-	ClientID *string `json:"client_id,omitempty"`
+	ClientID *int `json:"client_id"`
 	// ManagerID holds the value of the "manager_id" field.
-	ManagerID *string `json:"manager_id,omitempty"`
+	ManagerID *int `json:"manager_id"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty" validate:"required,min=1,max=100"`
+	Name string `json:"name" validate:"required,min=1,max=100"`
 	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty" validate:"omitempty,min=1,max=200"`
+	Description *string `json:"description" validate:"omitempty,min=1,max=300"`
 	// Notes holds the value of the "notes" field.
 	Notes *string `json:"notes,omitempty" validate:"omitempty,min=1,max=200"`
 	// Status holds the value of the "status" field.
-	Status *project.Status `json:"status,omitempty" validate:"omitempty,oneof=planning in_progress on_hold completed cancelled delayed under_review pending_approval in_testing emergency on_schedule behind_schedule in_review archived in_negotiation"`
+	Status *project.Status `json:"status,omitempty"`
 	// Location holds the value of the "location" field.
-	Location *string `json:"location,omitempty"`
+	Location *string `json:"location"`
 	// Budget holds the value of the "budget" field.
-	Budget float64 `json:"budget,omitempty" validate:"omitempty,gte=0"`
+	Budget *float64 `json:"budget" validate:"omitempty,gte=0"`
 	// Deleted holds the value of the "deleted" field.
-	Deleted *bool `json:"deleted,omitempty"`
+	Deleted bool `json:"deleted"`
 	// StartDate holds the value of the "start_date" field.
-	StartDate time.Time `json:"start_date,omitempty" validate:"omitempty,ltefield=EndDate"`
+	StartDate *time.Time `json:"start_date" validate:"omitempty,ltfield=EndDate"`
 	// EndDate holds the value of the "end_date" field.
-	EndDate *time.Time `json:"end_date,omitempty"`
+	EndDate *time.Time `json:"end_date"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UUID holds the value of the "uuid" field.
+	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
 	Edges        ProjectEdges `json:"edges"`
@@ -88,9 +88,9 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case project.FieldBudget:
 			values[i] = new(sql.NullFloat64)
-		case project.FieldID, project.FieldAccountID, project.FieldCreatedBy:
+		case project.FieldID, project.FieldAccountID, project.FieldCreatedBy, project.FieldClientID, project.FieldManagerID:
 			values[i] = new(sql.NullInt64)
-		case project.FieldClientID, project.FieldManagerID, project.FieldName, project.FieldDescription, project.FieldNotes, project.FieldStatus, project.FieldLocation:
+		case project.FieldName, project.FieldDescription, project.FieldNotes, project.FieldStatus, project.FieldLocation:
 			values[i] = new(sql.NullString)
 		case project.FieldStartDate, project.FieldEndDate, project.FieldUpdatedAt, project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -129,25 +129,19 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.CreatedBy = int(value.Int64)
 			}
-		case project.FieldUUID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field uuid", values[i])
-			} else if value != nil {
-				pr.UUID = *value
-			}
 		case project.FieldClientID:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field client_id", values[i])
 			} else if value.Valid {
-				pr.ClientID = new(string)
-				*pr.ClientID = value.String
+				pr.ClientID = new(int)
+				*pr.ClientID = int(value.Int64)
 			}
 		case project.FieldManagerID:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field manager_id", values[i])
 			} else if value.Valid {
-				pr.ManagerID = new(string)
-				*pr.ManagerID = value.String
+				pr.ManagerID = new(int)
+				*pr.ManagerID = int(value.Int64)
 			}
 		case project.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -187,20 +181,21 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field budget", values[i])
 			} else if value.Valid {
-				pr.Budget = value.Float64
+				pr.Budget = new(float64)
+				*pr.Budget = value.Float64
 			}
 		case project.FieldDeleted:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted", values[i])
 			} else if value.Valid {
-				pr.Deleted = new(bool)
-				*pr.Deleted = value.Bool
+				pr.Deleted = value.Bool
 			}
 		case project.FieldStartDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_date", values[i])
 			} else if value.Valid {
-				pr.StartDate = value.Time
+				pr.StartDate = new(time.Time)
+				*pr.StartDate = value.Time
 			}
 		case project.FieldEndDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -220,6 +215,12 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				pr.CreatedAt = value.Time
+			}
+		case project.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				pr.UUID = *value
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -268,17 +269,14 @@ func (pr *Project) String() string {
 	builder.WriteString("created_by=")
 	builder.WriteString(fmt.Sprintf("%v", pr.CreatedBy))
 	builder.WriteString(", ")
-	builder.WriteString("uuid=")
-	builder.WriteString(fmt.Sprintf("%v", pr.UUID))
-	builder.WriteString(", ")
 	if v := pr.ClientID; v != nil {
 		builder.WriteString("client_id=")
-		builder.WriteString(*v)
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	if v := pr.ManagerID; v != nil {
 		builder.WriteString("manager_id=")
-		builder.WriteString(*v)
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("name=")
@@ -304,16 +302,18 @@ func (pr *Project) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	builder.WriteString("budget=")
-	builder.WriteString(fmt.Sprintf("%v", pr.Budget))
-	builder.WriteString(", ")
-	if v := pr.Deleted; v != nil {
-		builder.WriteString("deleted=")
+	if v := pr.Budget; v != nil {
+		builder.WriteString("budget=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("start_date=")
-	builder.WriteString(pr.StartDate.Format(time.ANSIC))
+	builder.WriteString("deleted=")
+	builder.WriteString(fmt.Sprintf("%v", pr.Deleted))
+	builder.WriteString(", ")
+	if v := pr.StartDate; v != nil {
+		builder.WriteString("start_date=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	if v := pr.EndDate; v != nil {
 		builder.WriteString("end_date=")
@@ -325,6 +325,9 @@ func (pr *Project) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("uuid=")
+	builder.WriteString(fmt.Sprintf("%v", pr.UUID))
 	builder.WriteByte(')')
 	return builder.String()
 }

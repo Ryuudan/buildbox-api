@@ -18,9 +18,6 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("account_id"),
-		field.UUID("uuid", uuid.UUID{}).
-			Immutable().
-			Default(uuid.New),
 		field.String("first_name"),
 		field.String("middle_name"),
 		field.String("last_name"),
@@ -38,6 +35,9 @@ func (User) Fields() []ent.Field {
 			Immutable().
 			Optional().
 			Default(time.Now),
+		field.UUID("uuid", uuid.UUID{}).
+			Immutable().
+			Default(uuid.New),
 	}
 }
 

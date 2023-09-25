@@ -24,20 +24,6 @@ type AccountCreate struct {
 	hooks    []Hook
 }
 
-// SetUUID sets the "uuid" field.
-func (ac *AccountCreate) SetUUID(u uuid.UUID) *AccountCreate {
-	ac.mutation.SetUUID(u)
-	return ac
-}
-
-// SetNillableUUID sets the "uuid" field if the given value is not nil.
-func (ac *AccountCreate) SetNillableUUID(u *uuid.UUID) *AccountCreate {
-	if u != nil {
-		ac.SetUUID(*u)
-	}
-	return ac
-}
-
 // SetName sets the "name" field.
 func (ac *AccountCreate) SetName(s string) *AccountCreate {
 	ac.mutation.SetName(s)
@@ -96,6 +82,20 @@ func (ac *AccountCreate) SetCreatedAt(t time.Time) *AccountCreate {
 func (ac *AccountCreate) SetNillableCreatedAt(t *time.Time) *AccountCreate {
 	if t != nil {
 		ac.SetCreatedAt(*t)
+	}
+	return ac
+}
+
+// SetUUID sets the "uuid" field.
+func (ac *AccountCreate) SetUUID(u uuid.UUID) *AccountCreate {
+	ac.mutation.SetUUID(u)
+	return ac
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (ac *AccountCreate) SetNillableUUID(u *uuid.UUID) *AccountCreate {
+	if u != nil {
+		ac.SetUUID(*u)
 	}
 	return ac
 }
@@ -180,10 +180,6 @@ func (ac *AccountCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *AccountCreate) defaults() {
-	if _, ok := ac.mutation.UUID(); !ok {
-		v := account.DefaultUUID()
-		ac.mutation.SetUUID(v)
-	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		v := account.DefaultUpdatedAt()
 		ac.mutation.SetUpdatedAt(v)
@@ -192,13 +188,14 @@ func (ac *AccountCreate) defaults() {
 		v := account.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
 	}
+	if _, ok := ac.mutation.UUID(); !ok {
+		v := account.DefaultUUID()
+		ac.mutation.SetUUID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AccountCreate) check() error {
-	if _, ok := ac.mutation.UUID(); !ok {
-		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Account.uuid"`)}
-	}
 	if _, ok := ac.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Account.name"`)}
 	}
@@ -216,6 +213,9 @@ func (ac *AccountCreate) check() error {
 		if err := account.PhoneNumberValidator(v); err != nil {
 			return &ValidationError{Name: "phone_number", err: fmt.Errorf(`generated: validator failed for field "Account.phone_number": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.UUID(); !ok {
+		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Account.uuid"`)}
 	}
 	return nil
 }
@@ -243,10 +243,6 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		_node = &Account{config: ac.config}
 		_spec = sqlgraph.NewCreateSpec(account.Table, sqlgraph.NewFieldSpec(account.FieldID, field.TypeInt))
 	)
-	if value, ok := ac.mutation.UUID(); ok {
-		_spec.SetField(account.FieldUUID, field.TypeUUID, value)
-		_node.UUID = value
-	}
 	if value, ok := ac.mutation.Name(); ok {
 		_spec.SetField(account.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -266,6 +262,10 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.CreatedAt(); ok {
 		_spec.SetField(account.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := ac.mutation.UUID(); ok {
+		_spec.SetField(account.FieldUUID, field.TypeUUID, value)
+		_node.UUID = value
 	}
 	if nodes := ac.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
