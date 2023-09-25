@@ -13,6 +13,7 @@ import (
 
 type UserService interface {
 	CreateUser(ctx context.Context, newUser *generated.User) (*generated.User, error)
+	RegisterUser(ctx context.Context, newUser *generated.User) (*generated.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*generated.User, error)
 	GetUserById(ctx context.Context, id int) (*generated.User, error)
 	GetUsersByAccountID(ctx context.Context, accountID int) ([]*generated.User, error)
@@ -24,6 +25,33 @@ type userService struct {
 
 func NewUserService(client *generated.UserClient) UserService {
 	return &userService{client: client}
+}
+
+// This is when after an account is created, we need to create a user for that account.
+// notice that this doesn't have context claims to determine with account the user belongs to.
+func (s *userService) RegisterUser(ctx context.Context, newUser *generated.User) (*generated.User, error) {
+	password, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("failed to generate hashed password")
+	}
+
+	newUser.Password = string(password)
+
+	user, err := s.client.Create().
+		SetAccountID(newUser.AccountID).
+		SetEmail(newUser.Email).
+		SetFirstName(newUser.FirstName).
+		SetLastName(newUser.LastName).
+		SetBirthday(newUser.Birthday).
+		SetPassword(newUser.Password).
+		SetMiddleName(newUser.MiddleName).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // CreateProject creates a new project.

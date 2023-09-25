@@ -76,7 +76,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Creater user for the account
-	newUser, err := a.userService.CreateUser(r.Context(), &generated.User{
+	newUser, err := a.userService.RegisterUser(r.Context(), &generated.User{
 		AccountID:  newAccount.ID,
 		Email:      account.Email,
 		Password:   string(password),
