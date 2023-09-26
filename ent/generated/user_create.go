@@ -46,6 +46,14 @@ func (uc *UserCreate) SetMiddleName(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
+func (uc *UserCreate) SetNillableMiddleName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetMiddleName(*s)
+	}
+	return uc
+}
+
 // SetBirthday sets the "birthday" field.
 func (uc *UserCreate) SetBirthday(t time.Time) *UserCreate {
 	uc.mutation.SetBirthday(t)
@@ -66,25 +74,9 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (uc *UserCreate) SetNillableEmail(s *string) *UserCreate {
-	if s != nil {
-		uc.SetEmail(*s)
-	}
-	return uc
-}
-
 // SetPassword sets the "password" field.
 func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	uc.mutation.SetPassword(s)
-	return uc
-}
-
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (uc *UserCreate) SetNillablePassword(s *string) *UserCreate {
-	if s != nil {
-		uc.SetPassword(*s)
-	}
 	return uc
 }
 
@@ -195,8 +187,11 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.LastName(); !ok {
 		return &ValidationError{Name: "last_name", err: errors.New(`generated: missing required field "User.last_name"`)}
 	}
-	if _, ok := uc.mutation.MiddleName(); !ok {
-		return &ValidationError{Name: "middle_name", err: errors.New(`generated: missing required field "User.middle_name"`)}
+	if _, ok := uc.mutation.Email(); !ok {
+		return &ValidationError{Name: "email", err: errors.New(`generated: missing required field "User.email"`)}
+	}
+	if _, ok := uc.mutation.Password(); !ok {
+		return &ValidationError{Name: "password", err: errors.New(`generated: missing required field "User.password"`)}
 	}
 	if _, ok := uc.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "User.uuid"`)}
@@ -240,11 +235,11 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.MiddleName(); ok {
 		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
-		_node.MiddleName = value
+		_node.MiddleName = &value
 	}
 	if value, ok := uc.mutation.Birthday(); ok {
 		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
-		_node.Birthday = value
+		_node.Birthday = &value
 	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

@@ -311,6 +311,16 @@ func MiddleNameHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldMiddleName, v))
 }
 
+// MiddleNameIsNil applies the IsNil predicate on the "middle_name" field.
+func MiddleNameIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldMiddleName))
+}
+
+// MiddleNameNotNil applies the NotNil predicate on the "middle_name" field.
+func MiddleNameNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldMiddleName))
+}
+
 // MiddleNameEqualFold applies the EqualFold predicate on the "middle_name" field.
 func MiddleNameEqualFold(v string) predicate.User {
 	return predicate.User(sql.FieldEqualFold(FieldMiddleName, v))
@@ -426,16 +436,6 @@ func EmailHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldEmail, v))
 }
 
-// EmailIsNil applies the IsNil predicate on the "email" field.
-func EmailIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldEmail))
-}
-
-// EmailNotNil applies the NotNil predicate on the "email" field.
-func EmailNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldEmail))
-}
-
 // EmailEqualFold applies the EqualFold predicate on the "email" field.
 func EmailEqualFold(v string) predicate.User {
 	return predicate.User(sql.FieldEqualFold(FieldEmail, v))
@@ -499,16 +499,6 @@ func PasswordHasPrefix(v string) predicate.User {
 // PasswordHasSuffix applies the HasSuffix predicate on the "password" field.
 func PasswordHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldPassword, v))
-}
-
-// PasswordIsNil applies the IsNil predicate on the "password" field.
-func PasswordIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldPassword))
-}
-
-// PasswordNotNil applies the NotNil predicate on the "password" field.
-func PasswordNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldPassword))
 }
 
 // PasswordEqualFold applies the EqualFold predicate on the "password" field.

@@ -82,7 +82,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		Password:   string(password),
 		FirstName:  account.FirstName,
 		LastName:   account.LastName,
-		MiddleName: account.MiddleName,
+		MiddleName: &account.MiddleName,
 	})
 
 	println(newUser)

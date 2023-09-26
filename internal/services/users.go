@@ -42,9 +42,9 @@ func (s *userService) RegisterUser(ctx context.Context, newUser *generated.User)
 		SetEmail(newUser.Email).
 		SetFirstName(newUser.FirstName).
 		SetLastName(newUser.LastName).
-		SetBirthday(newUser.Birthday).
 		SetPassword(newUser.Password).
-		SetMiddleName(newUser.MiddleName).
+		SetNillableMiddleName(newUser.MiddleName).
+		SetNillableBirthday(newUser.Birthday).
 		Save(ctx)
 
 	if err != nil {
@@ -74,9 +74,9 @@ func (s *userService) CreateUser(ctx context.Context, newUser *generated.User) (
 		SetEmail(newUser.Email).
 		SetFirstName(newUser.FirstName).
 		SetLastName(newUser.LastName).
-		SetBirthday(newUser.Birthday).
 		SetPassword(newUser.Password).
-		SetMiddleName(newUser.MiddleName).
+		SetNillableMiddleName(newUser.MiddleName).
+		SetNillableBirthday(newUser.Birthday).
 		Save(ctx)
 
 	if err != nil {

@@ -53,6 +53,20 @@ func (uu *UserUpdate) SetMiddleName(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableMiddleName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetMiddleName(*s)
+	}
+	return uu
+}
+
+// ClearMiddleName clears the value of the "middle_name" field.
+func (uu *UserUpdate) ClearMiddleName() *UserUpdate {
+	uu.mutation.ClearMiddleName()
+	return uu
+}
+
 // SetBirthday sets the "birthday" field.
 func (uu *UserUpdate) SetBirthday(t time.Time) *UserUpdate {
 	uu.mutation.SetBirthday(t)
@@ -79,37 +93,9 @@ func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	return uu
 }
 
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableEmail(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetEmail(*s)
-	}
-	return uu
-}
-
-// ClearEmail clears the value of the "email" field.
-func (uu *UserUpdate) ClearEmail() *UserUpdate {
-	uu.mutation.ClearEmail()
-	return uu
-}
-
 // SetPassword sets the "password" field.
 func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	uu.mutation.SetPassword(s)
-	return uu
-}
-
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (uu *UserUpdate) SetNillablePassword(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetPassword(*s)
-	}
-	return uu
-}
-
-// ClearPassword clears the value of the "password" field.
-func (uu *UserUpdate) ClearPassword() *UserUpdate {
-	uu.mutation.ClearPassword()
 	return uu
 }
 
@@ -205,6 +191,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.MiddleName(); ok {
 		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
 	}
+	if uu.mutation.MiddleNameCleared() {
+		_spec.ClearField(user.FieldMiddleName, field.TypeString)
+	}
 	if value, ok := uu.mutation.Birthday(); ok {
 		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
 	}
@@ -214,14 +203,8 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if uu.mutation.EmailCleared() {
-		_spec.ClearField(user.FieldEmail, field.TypeString)
-	}
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
-	}
-	if uu.mutation.PasswordCleared() {
-		_spec.ClearField(user.FieldPassword, field.TypeString)
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -305,6 +288,20 @@ func (uuo *UserUpdateOne) SetMiddleName(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableMiddleName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetMiddleName(*s)
+	}
+	return uuo
+}
+
+// ClearMiddleName clears the value of the "middle_name" field.
+func (uuo *UserUpdateOne) ClearMiddleName() *UserUpdateOne {
+	uuo.mutation.ClearMiddleName()
+	return uuo
+}
+
 // SetBirthday sets the "birthday" field.
 func (uuo *UserUpdateOne) SetBirthday(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetBirthday(t)
@@ -331,37 +328,9 @@ func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableEmail(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetEmail(*s)
-	}
-	return uuo
-}
-
-// ClearEmail clears the value of the "email" field.
-func (uuo *UserUpdateOne) ClearEmail() *UserUpdateOne {
-	uuo.mutation.ClearEmail()
-	return uuo
-}
-
 // SetPassword sets the "password" field.
 func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	uuo.mutation.SetPassword(s)
-	return uuo
-}
-
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillablePassword(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetPassword(*s)
-	}
-	return uuo
-}
-
-// ClearPassword clears the value of the "password" field.
-func (uuo *UserUpdateOne) ClearPassword() *UserUpdateOne {
-	uuo.mutation.ClearPassword()
 	return uuo
 }
 
@@ -487,6 +456,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.MiddleName(); ok {
 		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
 	}
+	if uuo.mutation.MiddleNameCleared() {
+		_spec.ClearField(user.FieldMiddleName, field.TypeString)
+	}
 	if value, ok := uuo.mutation.Birthday(); ok {
 		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
 	}
@@ -496,14 +468,8 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if uuo.mutation.EmailCleared() {
-		_spec.ClearField(user.FieldEmail, field.TypeString)
-	}
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
-	}
-	if uuo.mutation.PasswordCleared() {
-		_spec.ClearField(user.FieldPassword, field.TypeString)
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

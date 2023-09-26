@@ -26,9 +26,9 @@ type User struct {
 	// LastName holds the value of the "last_name" field.
 	LastName string `json:"last_name" validate:"required,min=1"`
 	// MiddleName holds the value of the "middle_name" field.
-	MiddleName string `json:"middle_name" validate:"required,min=1"`
+	MiddleName *string `json:"middle_name" validate:"omitempty,min=1"`
 	// Birthday holds the value of the "birthday" field.
-	Birthday time.Time `json:"birthday" validate:"required"`
+	Birthday *time.Time `json:"birthday" validate:"required"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email" validate:"required,email"`
 	// Password holds the value of the "password" field.
@@ -123,13 +123,15 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
 			} else if value.Valid {
-				u.MiddleName = value.String
+				u.MiddleName = new(string)
+				*u.MiddleName = value.String
 			}
 		case user.FieldBirthday:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field birthday", values[i])
 			} else if value.Valid {
-				u.Birthday = value.Time
+				u.Birthday = new(time.Time)
+				*u.Birthday = value.Time
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -211,11 +213,15 @@ func (u *User) String() string {
 	builder.WriteString("last_name=")
 	builder.WriteString(u.LastName)
 	builder.WriteString(", ")
-	builder.WriteString("middle_name=")
-	builder.WriteString(u.MiddleName)
+	if v := u.MiddleName; v != nil {
+		builder.WriteString("middle_name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("birthday=")
-	builder.WriteString(u.Birthday.Format(time.ANSIC))
+	if v := u.Birthday; v != nil {
+		builder.WriteString("birthday=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)

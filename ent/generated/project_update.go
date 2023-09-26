@@ -108,46 +108,6 @@ func (pu *ProjectUpdate) SetName(s string) *ProjectUpdate {
 	return pu
 }
 
-// SetDescription sets the "description" field.
-func (pu *ProjectUpdate) SetDescription(s string) *ProjectUpdate {
-	pu.mutation.SetDescription(s)
-	return pu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableDescription(s *string) *ProjectUpdate {
-	if s != nil {
-		pu.SetDescription(*s)
-	}
-	return pu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (pu *ProjectUpdate) ClearDescription() *ProjectUpdate {
-	pu.mutation.ClearDescription()
-	return pu
-}
-
-// SetNotes sets the "notes" field.
-func (pu *ProjectUpdate) SetNotes(s string) *ProjectUpdate {
-	pu.mutation.SetNotes(s)
-	return pu
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableNotes(s *string) *ProjectUpdate {
-	if s != nil {
-		pu.SetNotes(*s)
-	}
-	return pu
-}
-
-// ClearNotes clears the value of the "notes" field.
-func (pu *ProjectUpdate) ClearNotes() *ProjectUpdate {
-	pu.mutation.ClearNotes()
-	return pu
-}
-
 // SetStatus sets the "status" field.
 func (pu *ProjectUpdate) SetStatus(pr project.Status) *ProjectUpdate {
 	pu.mutation.SetStatus(pr)
@@ -215,23 +175,43 @@ func (pu *ProjectUpdate) ClearBudget() *ProjectUpdate {
 	return pu
 }
 
-// SetDeleted sets the "deleted" field.
-func (pu *ProjectUpdate) SetDeleted(b bool) *ProjectUpdate {
-	pu.mutation.SetDeleted(b)
+// SetDescription sets the "description" field.
+func (pu *ProjectUpdate) SetDescription(s string) *ProjectUpdate {
+	pu.mutation.SetDescription(s)
 	return pu
 }
 
-// SetNillableDeleted sets the "deleted" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableDeleted(b *bool) *ProjectUpdate {
-	if b != nil {
-		pu.SetDeleted(*b)
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableDescription(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetDescription(*s)
 	}
 	return pu
 }
 
-// ClearDeleted clears the value of the "deleted" field.
-func (pu *ProjectUpdate) ClearDeleted() *ProjectUpdate {
-	pu.mutation.ClearDeleted()
+// ClearDescription clears the value of the "description" field.
+func (pu *ProjectUpdate) ClearDescription() *ProjectUpdate {
+	pu.mutation.ClearDescription()
+	return pu
+}
+
+// SetNotes sets the "notes" field.
+func (pu *ProjectUpdate) SetNotes(s string) *ProjectUpdate {
+	pu.mutation.SetNotes(s)
+	return pu
+}
+
+// SetNillableNotes sets the "notes" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableNotes(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetNotes(*s)
+	}
+	return pu
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (pu *ProjectUpdate) ClearNotes() *ProjectUpdate {
+	pu.mutation.ClearNotes()
 	return pu
 }
 
@@ -275,6 +255,26 @@ func (pu *ProjectUpdate) ClearEndDate() *ProjectUpdate {
 	return pu
 }
 
+// SetDeleted sets the "deleted" field.
+func (pu *ProjectUpdate) SetDeleted(b bool) *ProjectUpdate {
+	pu.mutation.SetDeleted(b)
+	return pu
+}
+
+// SetNillableDeleted sets the "deleted" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableDeleted(b *bool) *ProjectUpdate {
+	if b != nil {
+		pu.SetDeleted(*b)
+	}
+	return pu
+}
+
+// ClearDeleted clears the value of the "deleted" field.
+func (pu *ProjectUpdate) ClearDeleted() *ProjectUpdate {
+	pu.mutation.ClearDeleted()
+	return pu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (pu *ProjectUpdate) SetUpdatedAt(t time.Time) *ProjectUpdate {
 	pu.mutation.SetUpdatedAt(t)
@@ -286,12 +286,6 @@ func (pu *ProjectUpdate) SetNillableUpdatedAt(t *time.Time) *ProjectUpdate {
 	if t != nil {
 		pu.SetUpdatedAt(*t)
 	}
-	return pu
-}
-
-// ClearUpdatedAt clears the value of the "updated_at" field.
-func (pu *ProjectUpdate) ClearUpdatedAt() *ProjectUpdate {
-	pu.mutation.ClearUpdatedAt()
 	return pu
 }
 
@@ -400,18 +394,6 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
 	}
-	if value, ok := pu.mutation.Description(); ok {
-		_spec.SetField(project.FieldDescription, field.TypeString, value)
-	}
-	if pu.mutation.DescriptionCleared() {
-		_spec.ClearField(project.FieldDescription, field.TypeString)
-	}
-	if value, ok := pu.mutation.Notes(); ok {
-		_spec.SetField(project.FieldNotes, field.TypeString, value)
-	}
-	if pu.mutation.NotesCleared() {
-		_spec.ClearField(project.FieldNotes, field.TypeString)
-	}
 	if value, ok := pu.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
 	}
@@ -433,11 +415,17 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if pu.mutation.BudgetCleared() {
 		_spec.ClearField(project.FieldBudget, field.TypeFloat64)
 	}
-	if value, ok := pu.mutation.Deleted(); ok {
-		_spec.SetField(project.FieldDeleted, field.TypeBool, value)
+	if value, ok := pu.mutation.Description(); ok {
+		_spec.SetField(project.FieldDescription, field.TypeString, value)
 	}
-	if pu.mutation.DeletedCleared() {
-		_spec.ClearField(project.FieldDeleted, field.TypeBool)
+	if pu.mutation.DescriptionCleared() {
+		_spec.ClearField(project.FieldDescription, field.TypeString)
+	}
+	if value, ok := pu.mutation.Notes(); ok {
+		_spec.SetField(project.FieldNotes, field.TypeString, value)
+	}
+	if pu.mutation.NotesCleared() {
+		_spec.ClearField(project.FieldNotes, field.TypeString)
 	}
 	if value, ok := pu.mutation.StartDate(); ok {
 		_spec.SetField(project.FieldStartDate, field.TypeTime, value)
@@ -451,14 +439,14 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if pu.mutation.EndDateCleared() {
 		_spec.ClearField(project.FieldEndDate, field.TypeTime)
 	}
+	if value, ok := pu.mutation.Deleted(); ok {
+		_spec.SetField(project.FieldDeleted, field.TypeBool, value)
+	}
+	if pu.mutation.DeletedCleared() {
+		_spec.ClearField(project.FieldDeleted, field.TypeBool)
+	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if pu.mutation.UpdatedAtCleared() {
-		_spec.ClearField(project.FieldUpdatedAt, field.TypeTime)
-	}
-	if pu.mutation.CreatedAtCleared() {
-		_spec.ClearField(project.FieldCreatedAt, field.TypeTime)
 	}
 	if pu.mutation.AccountCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -588,46 +576,6 @@ func (puo *ProjectUpdateOne) SetName(s string) *ProjectUpdateOne {
 	return puo
 }
 
-// SetDescription sets the "description" field.
-func (puo *ProjectUpdateOne) SetDescription(s string) *ProjectUpdateOne {
-	puo.mutation.SetDescription(s)
-	return puo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableDescription(s *string) *ProjectUpdateOne {
-	if s != nil {
-		puo.SetDescription(*s)
-	}
-	return puo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (puo *ProjectUpdateOne) ClearDescription() *ProjectUpdateOne {
-	puo.mutation.ClearDescription()
-	return puo
-}
-
-// SetNotes sets the "notes" field.
-func (puo *ProjectUpdateOne) SetNotes(s string) *ProjectUpdateOne {
-	puo.mutation.SetNotes(s)
-	return puo
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableNotes(s *string) *ProjectUpdateOne {
-	if s != nil {
-		puo.SetNotes(*s)
-	}
-	return puo
-}
-
-// ClearNotes clears the value of the "notes" field.
-func (puo *ProjectUpdateOne) ClearNotes() *ProjectUpdateOne {
-	puo.mutation.ClearNotes()
-	return puo
-}
-
 // SetStatus sets the "status" field.
 func (puo *ProjectUpdateOne) SetStatus(pr project.Status) *ProjectUpdateOne {
 	puo.mutation.SetStatus(pr)
@@ -695,23 +643,43 @@ func (puo *ProjectUpdateOne) ClearBudget() *ProjectUpdateOne {
 	return puo
 }
 
-// SetDeleted sets the "deleted" field.
-func (puo *ProjectUpdateOne) SetDeleted(b bool) *ProjectUpdateOne {
-	puo.mutation.SetDeleted(b)
+// SetDescription sets the "description" field.
+func (puo *ProjectUpdateOne) SetDescription(s string) *ProjectUpdateOne {
+	puo.mutation.SetDescription(s)
 	return puo
 }
 
-// SetNillableDeleted sets the "deleted" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableDeleted(b *bool) *ProjectUpdateOne {
-	if b != nil {
-		puo.SetDeleted(*b)
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableDescription(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetDescription(*s)
 	}
 	return puo
 }
 
-// ClearDeleted clears the value of the "deleted" field.
-func (puo *ProjectUpdateOne) ClearDeleted() *ProjectUpdateOne {
-	puo.mutation.ClearDeleted()
+// ClearDescription clears the value of the "description" field.
+func (puo *ProjectUpdateOne) ClearDescription() *ProjectUpdateOne {
+	puo.mutation.ClearDescription()
+	return puo
+}
+
+// SetNotes sets the "notes" field.
+func (puo *ProjectUpdateOne) SetNotes(s string) *ProjectUpdateOne {
+	puo.mutation.SetNotes(s)
+	return puo
+}
+
+// SetNillableNotes sets the "notes" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableNotes(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetNotes(*s)
+	}
+	return puo
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (puo *ProjectUpdateOne) ClearNotes() *ProjectUpdateOne {
+	puo.mutation.ClearNotes()
 	return puo
 }
 
@@ -755,6 +723,26 @@ func (puo *ProjectUpdateOne) ClearEndDate() *ProjectUpdateOne {
 	return puo
 }
 
+// SetDeleted sets the "deleted" field.
+func (puo *ProjectUpdateOne) SetDeleted(b bool) *ProjectUpdateOne {
+	puo.mutation.SetDeleted(b)
+	return puo
+}
+
+// SetNillableDeleted sets the "deleted" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableDeleted(b *bool) *ProjectUpdateOne {
+	if b != nil {
+		puo.SetDeleted(*b)
+	}
+	return puo
+}
+
+// ClearDeleted clears the value of the "deleted" field.
+func (puo *ProjectUpdateOne) ClearDeleted() *ProjectUpdateOne {
+	puo.mutation.ClearDeleted()
+	return puo
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (puo *ProjectUpdateOne) SetUpdatedAt(t time.Time) *ProjectUpdateOne {
 	puo.mutation.SetUpdatedAt(t)
@@ -766,12 +754,6 @@ func (puo *ProjectUpdateOne) SetNillableUpdatedAt(t *time.Time) *ProjectUpdateOn
 	if t != nil {
 		puo.SetUpdatedAt(*t)
 	}
-	return puo
-}
-
-// ClearUpdatedAt clears the value of the "updated_at" field.
-func (puo *ProjectUpdateOne) ClearUpdatedAt() *ProjectUpdateOne {
-	puo.mutation.ClearUpdatedAt()
 	return puo
 }
 
@@ -910,18 +892,6 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
 	}
-	if value, ok := puo.mutation.Description(); ok {
-		_spec.SetField(project.FieldDescription, field.TypeString, value)
-	}
-	if puo.mutation.DescriptionCleared() {
-		_spec.ClearField(project.FieldDescription, field.TypeString)
-	}
-	if value, ok := puo.mutation.Notes(); ok {
-		_spec.SetField(project.FieldNotes, field.TypeString, value)
-	}
-	if puo.mutation.NotesCleared() {
-		_spec.ClearField(project.FieldNotes, field.TypeString)
-	}
 	if value, ok := puo.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
 	}
@@ -943,11 +913,17 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if puo.mutation.BudgetCleared() {
 		_spec.ClearField(project.FieldBudget, field.TypeFloat64)
 	}
-	if value, ok := puo.mutation.Deleted(); ok {
-		_spec.SetField(project.FieldDeleted, field.TypeBool, value)
+	if value, ok := puo.mutation.Description(); ok {
+		_spec.SetField(project.FieldDescription, field.TypeString, value)
 	}
-	if puo.mutation.DeletedCleared() {
-		_spec.ClearField(project.FieldDeleted, field.TypeBool)
+	if puo.mutation.DescriptionCleared() {
+		_spec.ClearField(project.FieldDescription, field.TypeString)
+	}
+	if value, ok := puo.mutation.Notes(); ok {
+		_spec.SetField(project.FieldNotes, field.TypeString, value)
+	}
+	if puo.mutation.NotesCleared() {
+		_spec.ClearField(project.FieldNotes, field.TypeString)
 	}
 	if value, ok := puo.mutation.StartDate(); ok {
 		_spec.SetField(project.FieldStartDate, field.TypeTime, value)
@@ -961,14 +937,14 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if puo.mutation.EndDateCleared() {
 		_spec.ClearField(project.FieldEndDate, field.TypeTime)
 	}
+	if value, ok := puo.mutation.Deleted(); ok {
+		_spec.SetField(project.FieldDeleted, field.TypeBool, value)
+	}
+	if puo.mutation.DeletedCleared() {
+		_spec.ClearField(project.FieldDeleted, field.TypeBool)
+	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if puo.mutation.UpdatedAtCleared() {
-		_spec.ClearField(project.FieldUpdatedAt, field.TypeTime)
-	}
-	if puo.mutation.CreatedAtCleared() {
-		_spec.ClearField(project.FieldCreatedAt, field.TypeTime)
 	}
 	if puo.mutation.AccountCleared() {
 		edge := &sqlgraph.EdgeSpec{

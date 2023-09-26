@@ -21,17 +21,19 @@ func (User) Fields() []ent.Field {
 		field.String("first_name").
 			StructTag(`json:"first_name" validate:"required,min=1"`),
 		field.String("last_name").StructTag(`json:"last_name" validate:"required,min=1"`),
-		field.String("middle_name").StructTag(`json:"middle_name" validate:"required,min=1"`),
+		field.String("middle_name").
+			Optional().
+			Nillable().
+			StructTag(`json:"middle_name" validate:"omitempty,min=1"`),
 		field.Time("birthday").
 			StructTag(`json:"birthday" validate:"required"`).
+			Nillable().
 			Optional(),
 		field.String("email").
 			Unique().
-			StructTag(`json:"email" validate:"required,email"`).
-			Optional(),
+			StructTag(`json:"email" validate:"required,email"`),
 		field.String("password").
-			StructTag(`json:"password" validate:"required,min=3"`).
-			Optional(),
+			StructTag(`json:"password" validate:"required,min=3"`),
 		field.Time("updated_at").
 			Optional().
 			Default(time.Now),

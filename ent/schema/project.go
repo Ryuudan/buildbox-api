@@ -14,32 +14,23 @@ type Project struct {
 	ent.Schema
 }
 
-// Fields of the project.
 func (Project) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("account_id"),
 		field.Int("created_by"),
 		field.Int("client_id").
-			Optional().
 			StructTag(`json:"client_id"`).
+			Optional().
 			Nillable(),
 		field.Int("manager_id").
-			Optional().
 			StructTag(`json:"manager_id"`).
+			Optional().
 			Nillable(),
 		field.String("name").
-			NotEmpty().
-			StructTag(`json:"name" validate:"required,min=1,max=100"`),
-		field.String("description").
-			Optional().
-			Nillable().
-			StructTag(`json:"description" validate:"omitempty,min=1,max=300"`),
-		field.String("notes").
-			Optional().
-			Nillable().
-			StructTag(`json:"notes,omitempty" validate:"omitempty,min=1,max=200"`),
+			StructTag(`json:"name" validate:"required,min=1,max=100"`).
+			NotEmpty(),
 		field.Enum("status").
-			Optional().
+			Default("planning").
 			Values(
 				"planning",
 				"in_progress",
@@ -57,40 +48,47 @@ func (Project) Fields() []ent.Field {
 				"archived",
 				"in_negotiation",
 			).
-			Default("planning").
+			StructTag(`json:"status" validate:"omitempty,oneof=planning in_progress on_hold completed cancelled delayed under_review pending_approval in_testing emergency on_schedule behind_schedule in_review archived in_negotiation"`).
+			Optional().
 			Nillable(),
 		field.String("location").
-			Optional().
 			StructTag(`json:"location"`).
+			Optional().
 			Nillable(),
 		field.Float("budget").
+			StructTag(`json:"budget" validate:"omitempty,gte=0"`).
 			Optional().
 			Min(0).
-			StructTag(`json:"budget" validate:"omitempty,gte=0"`).
 			Nillable(),
-		field.Bool("deleted").
+		field.String("description").
+			StructTag(`json:"description" validate:"omitempty,min=1,max=300"`).
 			Optional().
-			StructTag(`json:"deleted"`).
-			Default(false),
+			Nillable(),
+		field.String("notes").
+			StructTag(`json:"notes" validate:"omitempty,min=1,max=200"`).
+			Optional().
+			Nillable(),
 		field.Time("start_date").
-			Optional().
-			Nillable().
+			Default(time.Now).
 			StructTag(`json:"start_date" validate:"omitempty,ltfield=EndDate"`).
-			Default(time.Now),
+			Optional().
+			Nillable(),
 		field.Time("end_date").
+			StructTag(`json:"end_date"`).
 			Optional().
-			Nillable().
-			StructTag(`json:"end_date"`),
-		field.Time("updated_at").
-			Optional().
-			Default(time.Now),
-		field.Time("created_at").
-			Immutable().
-			Optional().
-			Default(time.Now),
+			Nillable(),
 		field.UUID("uuid", uuid.UUID{}).
 			Immutable().
 			Default(uuid.New),
+		field.Bool("deleted").
+			StructTag(`json:"deleted"`).
+			Optional().
+			Default(false),
+		field.Time("updated_at").
+			Default(time.Now),
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable(),
 	}
 }
 

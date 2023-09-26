@@ -26,28 +26,28 @@ const (
 	FieldManagerID = "manager_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldNotes holds the string denoting the notes field in the database.
-	FieldNotes = "notes"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldLocation holds the string denoting the location field in the database.
 	FieldLocation = "location"
 	// FieldBudget holds the string denoting the budget field in the database.
 	FieldBudget = "budget"
-	// FieldDeleted holds the string denoting the deleted field in the database.
-	FieldDeleted = "deleted"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
+	// FieldNotes holds the string denoting the notes field in the database.
+	FieldNotes = "notes"
 	// FieldStartDate holds the string denoting the start_date field in the database.
 	FieldStartDate = "start_date"
 	// FieldEndDate holds the string denoting the end_date field in the database.
 	FieldEndDate = "end_date"
+	// FieldUUID holds the string denoting the uuid field in the database.
+	FieldUUID = "uuid"
+	// FieldDeleted holds the string denoting the deleted field in the database.
+	FieldDeleted = "deleted"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// FieldUUID holds the string denoting the uuid field in the database.
-	FieldUUID = "uuid"
 	// EdgeAccount holds the string denoting the account edge name in mutations.
 	EdgeAccount = "account"
 	// Table holds the table name of the project in the database.
@@ -69,17 +69,17 @@ var Columns = []string{
 	FieldClientID,
 	FieldManagerID,
 	FieldName,
-	FieldDescription,
-	FieldNotes,
 	FieldStatus,
 	FieldLocation,
 	FieldBudget,
-	FieldDeleted,
+	FieldDescription,
+	FieldNotes,
 	FieldStartDate,
 	FieldEndDate,
+	FieldUUID,
+	FieldDeleted,
 	FieldUpdatedAt,
 	FieldCreatedAt,
-	FieldUUID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -97,16 +97,16 @@ var (
 	NameValidator func(string) error
 	// BudgetValidator is a validator for the "budget" field. It is called by the builders before save.
 	BudgetValidator func(float64) error
-	// DefaultDeleted holds the default value on creation for the "deleted" field.
-	DefaultDeleted bool
 	// DefaultStartDate holds the default value on creation for the "start_date" field.
 	DefaultStartDate func() time.Time
+	// DefaultUUID holds the default value on creation for the "uuid" field.
+	DefaultUUID func() uuid.UUID
+	// DefaultDeleted holds the default value on creation for the "deleted" field.
+	DefaultDeleted bool
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
-	// DefaultUUID holds the default value on creation for the "uuid" field.
-	DefaultUUID func() uuid.UUID
 )
 
 // Status defines the type for the "status" enum field.
@@ -181,16 +181,6 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByNotes orders the results by the notes field.
-func ByNotes(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNotes, opts...).ToFunc()
-}
-
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
@@ -206,9 +196,14 @@ func ByBudget(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBudget, opts...).ToFunc()
 }
 
-// ByDeleted orders the results by the deleted field.
-func ByDeleted(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDeleted, opts...).ToFunc()
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByNotes orders the results by the notes field.
+func ByNotes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotes, opts...).ToFunc()
 }
 
 // ByStartDate orders the results by the start_date field.
@@ -221,6 +216,16 @@ func ByEndDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEndDate, opts...).ToFunc()
 }
 
+// ByUUID orders the results by the uuid field.
+func ByUUID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUUID, opts...).ToFunc()
+}
+
+// ByDeleted orders the results by the deleted field.
+func ByDeleted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeleted, opts...).ToFunc()
+}
+
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
@@ -229,11 +234,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUUID orders the results by the uuid field.
-func ByUUID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUUID, opts...).ToFunc()
 }
 
 // ByAccountField orders the results by account field.

@@ -29,28 +29,28 @@ type Project struct {
 	ManagerID *int `json:"manager_id"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name" validate:"required,min=1,max=100"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description" validate:"omitempty,min=1,max=300"`
-	// Notes holds the value of the "notes" field.
-	Notes *string `json:"notes,omitempty" validate:"omitempty,min=1,max=200"`
 	// Status holds the value of the "status" field.
-	Status *project.Status `json:"status,omitempty"`
+	Status *project.Status `json:"status" validate:"omitempty,oneof=planning in_progress on_hold completed cancelled delayed under_review pending_approval in_testing emergency on_schedule behind_schedule in_review archived in_negotiation"`
 	// Location holds the value of the "location" field.
 	Location *string `json:"location"`
 	// Budget holds the value of the "budget" field.
 	Budget *float64 `json:"budget" validate:"omitempty,gte=0"`
-	// Deleted holds the value of the "deleted" field.
-	Deleted bool `json:"deleted"`
+	// Description holds the value of the "description" field.
+	Description *string `json:"description" validate:"omitempty,min=1,max=300"`
+	// Notes holds the value of the "notes" field.
+	Notes *string `json:"notes" validate:"omitempty,min=1,max=200"`
 	// StartDate holds the value of the "start_date" field.
 	StartDate *time.Time `json:"start_date" validate:"omitempty,ltfield=EndDate"`
 	// EndDate holds the value of the "end_date" field.
 	EndDate *time.Time `json:"end_date"`
+	// UUID holds the value of the "uuid" field.
+	UUID uuid.UUID `json:"uuid,omitempty"`
+	// Deleted holds the value of the "deleted" field.
+	Deleted bool `json:"deleted"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UUID holds the value of the "uuid" field.
-	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
 	Edges        ProjectEdges `json:"edges"`
@@ -90,7 +90,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case project.FieldID, project.FieldAccountID, project.FieldCreatedBy, project.FieldClientID, project.FieldManagerID:
 			values[i] = new(sql.NullInt64)
-		case project.FieldName, project.FieldDescription, project.FieldNotes, project.FieldStatus, project.FieldLocation:
+		case project.FieldName, project.FieldStatus, project.FieldLocation, project.FieldDescription, project.FieldNotes:
 			values[i] = new(sql.NullString)
 		case project.FieldStartDate, project.FieldEndDate, project.FieldUpdatedAt, project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -149,20 +149,6 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Name = value.String
 			}
-		case project.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				pr.Description = new(string)
-				*pr.Description = value.String
-			}
-		case project.FieldNotes:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field notes", values[i])
-			} else if value.Valid {
-				pr.Notes = new(string)
-				*pr.Notes = value.String
-			}
 		case project.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
@@ -184,11 +170,19 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				pr.Budget = new(float64)
 				*pr.Budget = value.Float64
 			}
-		case project.FieldDeleted:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field deleted", values[i])
+		case project.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				pr.Deleted = value.Bool
+				pr.Description = new(string)
+				*pr.Description = value.String
+			}
+		case project.FieldNotes:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field notes", values[i])
+			} else if value.Valid {
+				pr.Notes = new(string)
+				*pr.Notes = value.String
 			}
 		case project.FieldStartDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -204,6 +198,18 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				pr.EndDate = new(time.Time)
 				*pr.EndDate = value.Time
 			}
+		case project.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				pr.UUID = *value
+			}
+		case project.FieldDeleted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted", values[i])
+			} else if value.Valid {
+				pr.Deleted = value.Bool
+			}
 		case project.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -215,12 +221,6 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				pr.CreatedAt = value.Time
-			}
-		case project.FieldUUID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field uuid", values[i])
-			} else if value != nil {
-				pr.UUID = *value
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -282,16 +282,6 @@ func (pr *Project) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(pr.Name)
 	builder.WriteString(", ")
-	if v := pr.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := pr.Notes; v != nil {
-		builder.WriteString("notes=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
 	if v := pr.Status; v != nil {
 		builder.WriteString("status=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
@@ -307,8 +297,15 @@ func (pr *Project) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("deleted=")
-	builder.WriteString(fmt.Sprintf("%v", pr.Deleted))
+	if v := pr.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := pr.Notes; v != nil {
+		builder.WriteString("notes=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	if v := pr.StartDate; v != nil {
 		builder.WriteString("start_date=")
@@ -320,14 +317,17 @@ func (pr *Project) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
+	builder.WriteString("uuid=")
+	builder.WriteString(fmt.Sprintf("%v", pr.UUID))
+	builder.WriteString(", ")
+	builder.WriteString("deleted=")
+	builder.WriteString(fmt.Sprintf("%v", pr.Deleted))
+	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("uuid=")
-	builder.WriteString(fmt.Sprintf("%v", pr.UUID))
 	builder.WriteByte(')')
 	return builder.String()
 }

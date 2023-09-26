@@ -47,7 +47,7 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 		SetCreatedBy(int(claims["user_id"].(float64))).
 		SetClientID(*newProject.ClientID).
 		SetName(newProject.Name).
-		SetStatus(*newProject.Status).
+		SetNillableStatus(newProject.Status).
 		SetNillableStartDate(newProject.StartDate).
 		SetNillableEndDate(newProject.EndDate).
 		SetNillableBudget(newProject.Budget).

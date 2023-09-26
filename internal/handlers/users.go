@@ -61,6 +61,15 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	existingUser, _ := u.userService.GetUserByEmail(r.Context(), user.Email)
+
+	if existingUser != nil {
+		validationErrors = append(validationErrors, render.ValidationErrorDetails{
+			Field:   "email",
+			Message: "email already exists, please try another one",
+		})
+	}
+
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
 		render.CustomValidationError(w, r, validationErrors)
