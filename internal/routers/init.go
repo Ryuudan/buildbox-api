@@ -30,8 +30,8 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 		v1.Use(utils.VersionMiddleware("1.0"))
 		V1Accounts(client, v1)
 		V1Projects(client, v1)
-		V1Plans(client, v1)
 		V1Users(client, v1)
+		V1Plans(client, v1)
 	})
 
 	router.Mount("/api/v1", private)

@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils/render"
@@ -13,15 +16,20 @@ import (
 )
 
 type AccountHandler struct {
-	accountService services.AccountService
-	userService    services.UserService
+	accountService      services.AccountService
+	userService         services.UserService
+	planService         services.PlanService
+	subscriptionService services.SubscriptionService
 }
 
-func NewAccountHandler(accountService services.AccountService, userService services.UserService) *AccountHandler {
+// TODO: make a separate fuction for Creation of Demo accounts
+func NewAccountHandler(accountService services.AccountService, userService services.UserService, planService services.PlanService, subscriptionService services.SubscriptionService) *AccountHandler {
 	log.Println("✅ Accounts Handler Initialized")
 	return &AccountHandler{
-		accountService: accountService,
-		userService:    userService,
+		accountService:      accountService,
+		userService:         userService,
+		planService:         planService,
+		subscriptionService: subscriptionService,
 	}
 }
 
@@ -51,10 +59,24 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// If there are validation errors, return a custom validation error response
+	plan, err := a.planService.GetPlanByID(r.Context(), account.PlanID)
+
+	if err != nil {
+		validationErrors = append(validationErrors, render.ValidationErrorDetails{
+			Field:   "plan_id",
+			Message: "Plan does not exist, please try another one",
+		})
+	}
+
 	if len(validationErrors) > 0 {
 		render.CustomValidationError(w, r, validationErrors)
 		return
+	}
+
+	if strings.ToLower(plan.Name) == "demo" {
+		account.BillingCycle = "monthly"
+		// TODO: make sure to change the discount to 0 when it is a demo account
+		// TODO: make sure to make the accounts settings based on demo account
 	}
 
 	newAccount, err := a.accountService.CreateAccount(r.Context(), &generated.Account{
@@ -68,10 +90,27 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	newSubscription, err := a.subscriptionService.CreateSubscription(r.Context(), &generated.Subscription{
+		PlanID:       plan.ID,
+		AccountID:    newAccount.ID,
+		Status:       "active",
+		StartDate:    time.Now(),
+		EndDate:      CalculateEndDate(plan.Name, account.BillingCycle),
+		BillingCycle: account.BillingCycle,
+		Discount:     0, // TODO: make sure this is based on right conditions like when its yearly or any other conditions
+	})
+
+	if err != nil {
+		render.Error(w, r, "subscription", http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	println(newSubscription)
+
 	password, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		render.Error(w, r, "users", http.StatusBadRequest, err.Error())
+		render.Error(w, r, "password", http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -104,4 +143,23 @@ func (a *AccountHandler) GetAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, http.StatusOK, accounts)
+}
+
+func CalculateEndDate(planName string, billingCycle subscription.BillingCycle) time.Time {
+	var duration time.Duration
+
+	switch billingCycle {
+	case "monthly":
+		duration = time.Hour * 24 * 30
+	case "yearly":
+		duration = time.Hour * 24 * 365
+	default:
+		duration = time.Hour * 24 * 30 // Default to 30 days for unsupported cases
+	}
+
+	if strings.ToLower(planName) == "demo" {
+		duration = time.Hour * 24 * 30
+	}
+
+	return time.Now().Add(duration)
 }

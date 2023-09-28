@@ -31,13 +31,14 @@ func (s *accountService) CreateAccount(ctx context.Context, newAccount *generate
 		SetEmail(newAccount.Email).
 		SetPhoneNumber(newAccount.PhoneNumber).
 		Save(ctx)
+
 	if err != nil {
 
 		if generated.IsConstraintError(err) {
 			return nil, errors.New("email already exists")
 		}
 
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, errors.New(err.Error())
 	}
 
 	return account, nil

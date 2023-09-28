@@ -333,7 +333,7 @@ func (sq *SubscriptionQuery) WithPlan(opts ...func(*PlanQuery)) *SubscriptionQue
 // Example:
 //
 //	var v []struct {
-//		AccountID int `json:"account_id,omitempty"`
+//		AccountID int `json:"account_id"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -356,7 +356,7 @@ func (sq *SubscriptionQuery) GroupBy(field string, fields ...string) *Subscripti
 // Example:
 //
 //	var v []struct {
-//		AccountID int `json:"account_id,omitempty"`
+//		AccountID int `json:"account_id"`
 //	}
 //
 //	client.Subscription.Query().

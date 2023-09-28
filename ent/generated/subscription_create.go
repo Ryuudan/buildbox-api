@@ -77,6 +77,20 @@ func (sc *SubscriptionCreate) SetNillableStatus(s *subscription.Status) *Subscri
 	return sc
 }
 
+// SetBillingCycle sets the "billing_cycle" field.
+func (sc *SubscriptionCreate) SetBillingCycle(value subscription.BillingCycle) *SubscriptionCreate {
+	sc.mutation.SetBillingCycle(value)
+	return sc
+}
+
+// SetNillableBillingCycle sets the "billing_cycle" field if the given value is not nil.
+func (sc *SubscriptionCreate) SetNillableBillingCycle(value *subscription.BillingCycle) *SubscriptionCreate {
+	if value != nil {
+		sc.SetBillingCycle(*value)
+	}
+	return sc
+}
+
 // SetDiscount sets the "discount" field.
 func (sc *SubscriptionCreate) SetDiscount(f float64) *SubscriptionCreate {
 	sc.mutation.SetDiscount(f)
@@ -186,6 +200,10 @@ func (sc *SubscriptionCreate) defaults() {
 		v := subscription.DefaultStatus
 		sc.mutation.SetStatus(v)
 	}
+	if _, ok := sc.mutation.BillingCycle(); !ok {
+		v := subscription.DefaultBillingCycle
+		sc.mutation.SetBillingCycle(v)
+	}
 	if _, ok := sc.mutation.UpdatedAt(); !ok {
 		v := subscription.DefaultUpdatedAt()
 		sc.mutation.SetUpdatedAt(v)
@@ -217,6 +235,14 @@ func (sc *SubscriptionCreate) check() error {
 	if v, ok := sc.mutation.Status(); ok {
 		if err := subscription.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`generated: validator failed for field "Subscription.status": %w`, err)}
+		}
+	}
+	if _, ok := sc.mutation.BillingCycle(); !ok {
+		return &ValidationError{Name: "billing_cycle", err: errors.New(`generated: missing required field "Subscription.billing_cycle"`)}
+	}
+	if v, ok := sc.mutation.BillingCycle(); ok {
+		if err := subscription.BillingCycleValidator(v); err != nil {
+			return &ValidationError{Name: "billing_cycle", err: fmt.Errorf(`generated: validator failed for field "Subscription.billing_cycle": %w`, err)}
 		}
 	}
 	if _, ok := sc.mutation.UUID(); !ok {
@@ -265,6 +291,10 @@ func (sc *SubscriptionCreate) createSpec() (*Subscription, *sqlgraph.CreateSpec)
 	if value, ok := sc.mutation.Status(); ok {
 		_spec.SetField(subscription.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := sc.mutation.BillingCycle(); ok {
+		_spec.SetField(subscription.FieldBillingCycle, field.TypeEnum, value)
+		_node.BillingCycle = value
 	}
 	if value, ok := sc.mutation.Discount(); ok {
 		_spec.SetField(subscription.FieldDiscount, field.TypeFloat64, value)

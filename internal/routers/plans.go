@@ -26,5 +26,7 @@ func V1PublicPlans(client *generated.Client, router chi.Router) {
 
 	router.Route("/plans", func(r chi.Router) {
 		r.Get("/", planHandler.GetPlans)
+		r.Post("/", planHandler.CreatePlan)
+
 	})
 }

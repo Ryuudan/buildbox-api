@@ -3285,6 +3285,7 @@ type SubscriptionMutation struct {
 	start_date     *time.Time
 	end_date       *time.Time
 	status         *subscription.Status
+	billing_cycle  *subscription.BillingCycle
 	discount       *float64
 	adddiscount    *float64
 	updated_at     *time.Time
@@ -3591,6 +3592,42 @@ func (m *SubscriptionMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetBillingCycle sets the "billing_cycle" field.
+func (m *SubscriptionMutation) SetBillingCycle(sc subscription.BillingCycle) {
+	m.billing_cycle = &sc
+}
+
+// BillingCycle returns the value of the "billing_cycle" field in the mutation.
+func (m *SubscriptionMutation) BillingCycle() (r subscription.BillingCycle, exists bool) {
+	v := m.billing_cycle
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBillingCycle returns the old "billing_cycle" field's value of the Subscription entity.
+// If the Subscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubscriptionMutation) OldBillingCycle(ctx context.Context) (v subscription.BillingCycle, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBillingCycle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBillingCycle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBillingCycle: %w", err)
+	}
+	return oldValue.BillingCycle, nil
+}
+
+// ResetBillingCycle resets all changes to the "billing_cycle" field.
+func (m *SubscriptionMutation) ResetBillingCycle() {
+	m.billing_cycle = nil
+}
+
 // SetDiscount sets the "discount" field.
 func (m *SubscriptionMutation) SetDiscount(f float64) {
 	m.discount = &f
@@ -3883,7 +3920,7 @@ func (m *SubscriptionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SubscriptionMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.account != nil {
 		fields = append(fields, subscription.FieldAccountID)
 	}
@@ -3898,6 +3935,9 @@ func (m *SubscriptionMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, subscription.FieldStatus)
+	}
+	if m.billing_cycle != nil {
+		fields = append(fields, subscription.FieldBillingCycle)
 	}
 	if m.discount != nil {
 		fields = append(fields, subscription.FieldDiscount)
@@ -3929,6 +3969,8 @@ func (m *SubscriptionMutation) Field(name string) (ent.Value, bool) {
 		return m.EndDate()
 	case subscription.FieldStatus:
 		return m.Status()
+	case subscription.FieldBillingCycle:
+		return m.BillingCycle()
 	case subscription.FieldDiscount:
 		return m.Discount()
 	case subscription.FieldUpdatedAt:
@@ -3956,6 +3998,8 @@ func (m *SubscriptionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldEndDate(ctx)
 	case subscription.FieldStatus:
 		return m.OldStatus(ctx)
+	case subscription.FieldBillingCycle:
+		return m.OldBillingCycle(ctx)
 	case subscription.FieldDiscount:
 		return m.OldDiscount(ctx)
 	case subscription.FieldUpdatedAt:
@@ -4007,6 +4051,13 @@ func (m *SubscriptionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case subscription.FieldBillingCycle:
+		v, ok := value.(subscription.BillingCycle)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBillingCycle(v)
 		return nil
 	case subscription.FieldDiscount:
 		v, ok := value.(float64)
@@ -4141,6 +4192,9 @@ func (m *SubscriptionMutation) ResetField(name string) error {
 		return nil
 	case subscription.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case subscription.FieldBillingCycle:
+		m.ResetBillingCycle()
 		return nil
 	case subscription.FieldDiscount:
 		m.ResetDiscount()

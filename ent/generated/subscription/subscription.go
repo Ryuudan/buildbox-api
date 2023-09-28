@@ -26,6 +26,8 @@ const (
 	FieldEndDate = "end_date"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldBillingCycle holds the string denoting the billing_cycle field in the database.
+	FieldBillingCycle = "billing_cycle"
 	// FieldDiscount holds the string denoting the discount field in the database.
 	FieldDiscount = "discount"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -64,6 +66,7 @@ var Columns = []string{
 	FieldStartDate,
 	FieldEndDate,
 	FieldStatus,
+	FieldBillingCycle,
 	FieldDiscount,
 	FieldUpdatedAt,
 	FieldCreatedAt,
@@ -118,6 +121,32 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// BillingCycle defines the type for the "billing_cycle" enum field.
+type BillingCycle string
+
+// BillingCycleMonthly is the default value of the BillingCycle enum.
+const DefaultBillingCycle = BillingCycleMonthly
+
+// BillingCycle values.
+const (
+	BillingCycleMonthly BillingCycle = "monthly"
+	BillingCycleYearly  BillingCycle = "yearly"
+)
+
+func (bc BillingCycle) String() string {
+	return string(bc)
+}
+
+// BillingCycleValidator is a validator for the "billing_cycle" field enum values. It is called by the builders before save.
+func BillingCycleValidator(bc BillingCycle) error {
+	switch bc {
+	case BillingCycleMonthly, BillingCycleYearly:
+		return nil
+	default:
+		return fmt.Errorf("subscription: invalid enum value for billing_cycle field: %q", bc)
+	}
+}
+
 // OrderOption defines the ordering options for the Subscription queries.
 type OrderOption func(*sql.Selector)
 
@@ -149,6 +178,11 @@ func ByEndDate(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByBillingCycle orders the results by the billing_cycle field.
+func ByBillingCycle(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBillingCycle, opts...).ToFunc()
 }
 
 // ByDiscount orders the results by the discount field.

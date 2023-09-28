@@ -74,6 +74,7 @@ func (s *subscriptionService) CreateSubscription(ctx context.Context, newSub *ge
 		SetEndDate(newSub.EndDate).
 		SetDiscount(newSub.Discount).
 		SetStatus(newSub.Status).
+		SetBillingCycle(newSub.BillingCycle).
 		Save(ctx)
 
 	if err != nil {

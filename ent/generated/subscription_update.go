@@ -90,6 +90,20 @@ func (su *SubscriptionUpdate) SetNillableStatus(s *subscription.Status) *Subscri
 	return su
 }
 
+// SetBillingCycle sets the "billing_cycle" field.
+func (su *SubscriptionUpdate) SetBillingCycle(sc subscription.BillingCycle) *SubscriptionUpdate {
+	su.mutation.SetBillingCycle(sc)
+	return su
+}
+
+// SetNillableBillingCycle sets the "billing_cycle" field if the given value is not nil.
+func (su *SubscriptionUpdate) SetNillableBillingCycle(sc *subscription.BillingCycle) *SubscriptionUpdate {
+	if sc != nil {
+		su.SetBillingCycle(*sc)
+	}
+	return su
+}
+
 // SetDiscount sets the "discount" field.
 func (su *SubscriptionUpdate) SetDiscount(f float64) *SubscriptionUpdate {
 	su.mutation.ResetDiscount()
@@ -198,6 +212,11 @@ func (su *SubscriptionUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`generated: validator failed for field "Subscription.status": %w`, err)}
 		}
 	}
+	if v, ok := su.mutation.BillingCycle(); ok {
+		if err := subscription.BillingCycleValidator(v); err != nil {
+			return &ValidationError{Name: "billing_cycle", err: fmt.Errorf(`generated: validator failed for field "Subscription.billing_cycle": %w`, err)}
+		}
+	}
 	if _, ok := su.mutation.AccountID(); su.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Subscription.account"`)
 	}
@@ -230,6 +249,9 @@ func (su *SubscriptionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.Status(); ok {
 		_spec.SetField(subscription.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := su.mutation.BillingCycle(); ok {
+		_spec.SetField(subscription.FieldBillingCycle, field.TypeEnum, value)
 	}
 	if value, ok := su.mutation.Discount(); ok {
 		_spec.SetField(subscription.FieldDiscount, field.TypeFloat64, value)
@@ -387,6 +409,20 @@ func (suo *SubscriptionUpdateOne) SetNillableStatus(s *subscription.Status) *Sub
 	return suo
 }
 
+// SetBillingCycle sets the "billing_cycle" field.
+func (suo *SubscriptionUpdateOne) SetBillingCycle(sc subscription.BillingCycle) *SubscriptionUpdateOne {
+	suo.mutation.SetBillingCycle(sc)
+	return suo
+}
+
+// SetNillableBillingCycle sets the "billing_cycle" field if the given value is not nil.
+func (suo *SubscriptionUpdateOne) SetNillableBillingCycle(sc *subscription.BillingCycle) *SubscriptionUpdateOne {
+	if sc != nil {
+		suo.SetBillingCycle(*sc)
+	}
+	return suo
+}
+
 // SetDiscount sets the "discount" field.
 func (suo *SubscriptionUpdateOne) SetDiscount(f float64) *SubscriptionUpdateOne {
 	suo.mutation.ResetDiscount()
@@ -508,6 +544,11 @@ func (suo *SubscriptionUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`generated: validator failed for field "Subscription.status": %w`, err)}
 		}
 	}
+	if v, ok := suo.mutation.BillingCycle(); ok {
+		if err := subscription.BillingCycleValidator(v); err != nil {
+			return &ValidationError{Name: "billing_cycle", err: fmt.Errorf(`generated: validator failed for field "Subscription.billing_cycle": %w`, err)}
+		}
+	}
 	if _, ok := suo.mutation.AccountID(); suo.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Subscription.account"`)
 	}
@@ -557,6 +598,9 @@ func (suo *SubscriptionUpdateOne) sqlSave(ctx context.Context) (_node *Subscript
 	}
 	if value, ok := suo.mutation.Status(); ok {
 		_spec.SetField(subscription.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := suo.mutation.BillingCycle(); ok {
+		_spec.SetField(subscription.FieldBillingCycle, field.TypeEnum, value)
 	}
 	if value, ok := suo.mutation.Discount(); ok {
 		_spec.SetField(subscription.FieldDiscount, field.TypeFloat64, value)

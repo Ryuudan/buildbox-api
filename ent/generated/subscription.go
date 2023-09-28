@@ -21,17 +21,19 @@ type Subscription struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// AccountID holds the value of the "account_id" field.
-	AccountID int `json:"account_id,omitempty"`
+	AccountID int `json:"account_id"`
 	// PlanID holds the value of the "plan_id" field.
-	PlanID int `json:"plan_id,omitempty"`
+	PlanID int `json:"plan_id"`
 	// StartDate holds the value of the "start_date" field.
 	StartDate time.Time `json:"start_date,omitempty"`
 	// EndDate holds the value of the "end_date" field.
 	EndDate time.Time `json:"end_date,omitempty"`
-	// Subscription status.
-	Status subscription.Status `json:"status,omitempty" validate:"omitempty,oneof=active canceled expired"`
+	// Status holds the value of the "status" field.
+	Status subscription.Status `json:"status" validate:"omitempty,oneof=active canceled expired"`
+	// BillingCycle holds the value of the "billing_cycle" field.
+	BillingCycle subscription.BillingCycle `json:"billing_cycle" validate:"omitempty,oneof=monthly yearly"`
 	// Discount applied to the subscription, this percent.
-	Discount float64 `json:"discount,omitempty" validate:"gte=0"`
+	Discount float64 `json:"discount" validate:"gte=0"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -90,7 +92,7 @@ func (*Subscription) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case subscription.FieldID, subscription.FieldAccountID, subscription.FieldPlanID:
 			values[i] = new(sql.NullInt64)
-		case subscription.FieldStatus:
+		case subscription.FieldStatus, subscription.FieldBillingCycle:
 			values[i] = new(sql.NullString)
 		case subscription.FieldStartDate, subscription.FieldEndDate, subscription.FieldUpdatedAt, subscription.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -146,6 +148,12 @@ func (s *Subscription) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				s.Status = subscription.Status(value.String)
+			}
+		case subscription.FieldBillingCycle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field billing_cycle", values[i])
+			} else if value.Valid {
+				s.BillingCycle = subscription.BillingCycle(value.String)
 			}
 		case subscription.FieldDiscount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -231,6 +239,9 @@ func (s *Subscription) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", s.Status))
+	builder.WriteString(", ")
+	builder.WriteString("billing_cycle=")
+	builder.WriteString(fmt.Sprintf("%v", s.BillingCycle))
 	builder.WriteString(", ")
 	builder.WriteString("discount=")
 	builder.WriteString(fmt.Sprintf("%v", s.Discount))

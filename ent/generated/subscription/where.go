@@ -246,6 +246,26 @@ func StatusNotIn(vs ...Status) predicate.Subscription {
 	return predicate.Subscription(sql.FieldNotIn(FieldStatus, vs...))
 }
 
+// BillingCycleEQ applies the EQ predicate on the "billing_cycle" field.
+func BillingCycleEQ(v BillingCycle) predicate.Subscription {
+	return predicate.Subscription(sql.FieldEQ(FieldBillingCycle, v))
+}
+
+// BillingCycleNEQ applies the NEQ predicate on the "billing_cycle" field.
+func BillingCycleNEQ(v BillingCycle) predicate.Subscription {
+	return predicate.Subscription(sql.FieldNEQ(FieldBillingCycle, v))
+}
+
+// BillingCycleIn applies the In predicate on the "billing_cycle" field.
+func BillingCycleIn(vs ...BillingCycle) predicate.Subscription {
+	return predicate.Subscription(sql.FieldIn(FieldBillingCycle, vs...))
+}
+
+// BillingCycleNotIn applies the NotIn predicate on the "billing_cycle" field.
+func BillingCycleNotIn(vs ...BillingCycle) predicate.Subscription {
+	return predicate.Subscription(sql.FieldNotIn(FieldBillingCycle, vs...))
+}
+
 // DiscountEQ applies the EQ predicate on the "discount" field.
 func DiscountEQ(v float64) predicate.Subscription {
 	return predicate.Subscription(sql.FieldEQ(FieldDiscount, v))

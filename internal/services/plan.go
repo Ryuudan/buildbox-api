@@ -12,6 +12,7 @@ type PlanService interface {
 	CreatePlan(ctx context.Context, plan *generated.Plan) (*generated.Plan, error)
 	GetPlans(ctx context.Context) ([]*generated.Plan, error)
 	GetPlanByName(ctx context.Context, name string) (*generated.Plan, error)
+	GetPlanByID(ctx context.Context, id int) (*generated.Plan, error)
 }
 
 type planService struct {
@@ -49,6 +50,21 @@ func (p *planService) GetPlans(ctx context.Context) ([]*generated.Plan, error) {
 func (p *planService) GetPlanByName(ctx context.Context, name string) (*generated.Plan, error) {
 	plan, err := p.client.Query().Where(
 		plan.NameEQ(name),
+	).First(ctx)
+
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, errors.New("plan not found")
+		}
+		return nil, errors.New("something went wrong, please try again later")
+	}
+
+	return plan, nil
+}
+
+func (p *planService) GetPlanByID(ctx context.Context, id int) (*generated.Plan, error) {
+	plan, err := p.client.Query().Where(
+		plan.IDEQ(id),
 	).First(ctx)
 
 	if err != nil {

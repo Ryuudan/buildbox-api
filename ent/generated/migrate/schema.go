@@ -80,6 +80,7 @@ var (
 		{Name: "start_date", Type: field.TypeTime},
 		{Name: "end_date", Type: field.TypeTime, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "canceled", "expired"}, Default: "active"},
+		{Name: "billing_cycle", Type: field.TypeEnum, Enums: []string{"monthly", "yearly"}, Default: "monthly"},
 		{Name: "discount", Type: field.TypeFloat64, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
@@ -95,13 +96,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "subscriptions_accounts_subscriptions",
-				Columns:    []*schema.Column{SubscriptionsColumns[8]},
+				Columns:    []*schema.Column{SubscriptionsColumns[9]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "subscriptions_plans_subscriptions",
-				Columns:    []*schema.Column{SubscriptionsColumns[9]},
+				Columns:    []*schema.Column{SubscriptionsColumns[10]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

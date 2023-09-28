@@ -18,9 +18,9 @@ type Subscription struct {
 func (Subscription) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("account_id").
-			StructTag(`json:"account_id,omitempty"`),
+			StructTag(`json:"account_id"`),
 		field.Int("plan_id").
-			StructTag(`json:"plan_id,omitempty"`),
+			StructTag(`json:"plan_id"`),
 		field.Time("start_date").
 			Default(time.Now),
 		field.Time("end_date").
@@ -29,12 +29,15 @@ func (Subscription) Fields() []ent.Field {
 		field.Enum("status").
 			Default("active").
 			Values("active", "canceled", "expired").
-			StructTag(`json:"status,omitempty" validate:"omitempty,oneof=active canceled expired"`).
-			Comment("Subscription status."),
+			StructTag(`json:"status" validate:"omitempty,oneof=active canceled expired"`),
+		field.Enum("billing_cycle").
+			Default("monthly").
+			Values("monthly", "yearly").
+			StructTag(`json:"billing_cycle" validate:"omitempty,oneof=monthly yearly"`),
 		field.Float("discount").
 			Optional().
 			Comment("Discount applied to the subscription, this percent.").
-			StructTag(`json:"discount,omitempty" validate:"gte=0"`),
+			StructTag(`json:"discount" validate:"gte=0"`),
 		field.Time("updated_at").
 			Optional().
 			Default(time.Now),
