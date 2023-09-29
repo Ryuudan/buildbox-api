@@ -16,8 +16,8 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
-          POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
+          POSTGRES_DB: test
+          POSTGRES_PASSWORD: pass
         ports:
           - 5432:5432
         options: >-
@@ -37,4 +37,4 @@ jobs:
         with:
           dir: ent/generated/migrate/migration
           dir-format: golang-migrate # Or: atlas, goose, dbmate
-          dev-url: ${{ vars.DEV_URL }}
+          dev-url: postgres://postgres:pass@localhost:5432/test?sslmode=disable
