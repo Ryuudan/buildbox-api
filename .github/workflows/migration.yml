@@ -8,7 +8,7 @@ on:
   # Run on PRs where something changed under the `ent/migrate/migrations/` directory.
   pull_request:
     paths:
-      - 'ent/generated/migrate/migration/*'
+      - "ent/generated/migrate/migration/*"
 
 jobs:
   lint:
@@ -16,8 +16,8 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+          POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -32,9 +32,9 @@ jobs:
       - uses: actions/checkout@v3.0.1
         with:
           fetch-depth: 0 # Mandatory unless "latest" is set below.
-          
+
       - uses: ariga/atlas-action@v0
         with:
           dir: ent/generated/migrate/migration
           dir-format: golang-migrate # Or: atlas, goose, dbmate
-          dev-url: ${{ secrets.DEV_URL }}
+          dev-url: ${{ vars.DEV_URL }}
