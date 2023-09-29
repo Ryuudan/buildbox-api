@@ -8,7 +8,7 @@ on:
   # Run on PRs where something changed under the `ent/migrate/migrations/` directory.
   pull_request:
     paths:
-      - 'ent/generated/migrate/migrations/*'
+      - 'ent/generated/migrate/migration/*'
 jobs:
   lint:
     services:
@@ -31,6 +31,6 @@ jobs:
           fetch-depth: 0 # Mandatory unless "latest" is set below.
       - uses: ariga/atlas-action@v0
         with:
-          dir: ent/generated/migrate/migrations
+          dir: ent/generated/migrate/migration
           dir-format: golang-migrate # Or: atlas, goose, dbmate
           dev-url: postgres://buildbox_1plo_user:8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV@dpg-ckb5beusmu8c73avmjqg-a.singapore-postgres.render.com/buildbox_1plo?sslmode=require
