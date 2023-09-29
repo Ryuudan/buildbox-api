@@ -1,4 +1,4 @@
-name: Atlas Lint
+name: Atlas Migration Lint
 on:
   # Run whenever code is changed in the master branch,
   # change this to your root branch.

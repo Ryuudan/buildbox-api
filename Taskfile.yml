@@ -27,6 +27,10 @@ tasks:
     desc: Create new migration file
     cmds:
       - atlas migrate new {{.name}} --dir "file://ent/generated/migrate/migration"
+  migrate:status:
+    desc: Run database migration
+    cmds:
+      - atlas migrate status --dir "file://ent/generated/migrate/migration" --url "$POSTGRES_CONNECTION_STRING"
   migrate:apply:
     desc: Run database migration
     cmds:
