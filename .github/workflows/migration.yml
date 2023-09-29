@@ -33,4 +33,4 @@ jobs:
         with:
           dir: ent/migrate/migrations
           dir-format: golang-migrate # Or: atlas, goose, dbmate
-          dev-url: postgres://buildbox_1plo_user:8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV@dpg-ckb5beusmu8c73avmjqg-a.singapore-postgres.render.com/buildbox_1plo?sslmode=disable
+          dev-url: postgres://buildbox_1plo_user:8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV@dpg-ckb5beusmu8c73avmjqg-a.singapore-postgres.render.com/buildbox_1plo?sslmode=require
