@@ -9,14 +9,15 @@ on:
   pull_request:
     paths:
       - 'ent/generated/migrate/migration/*'
+
 jobs:
   lint:
     services:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: buildbox_1plo
-          POSTGRES_PASSWORD: 8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -24,13 +25,16 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3.0.1
         with:
           fetch-depth: 0 # Mandatory unless "latest" is set below.
+          
       - uses: ariga/atlas-action@v0
         with:
           dir: ent/generated/migrate/migration
           dir-format: golang-migrate # Or: atlas, goose, dbmate
-          dev-url: postgres://buildbox_1plo_user:8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV@dpg-ckb5beusmu8c73avmjqg-a.singapore-postgres.render.com/buildbox_1plo?sslmode=require
+          dev-url: ${{ secrets.DEV_URL }}
