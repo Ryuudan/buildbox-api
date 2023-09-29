@@ -1,0 +1,36 @@
+name: Atlas CI
+on:
+  # Run whenever code is changed in the master branch,
+  # change this to your root branch.
+  push:
+    branches:
+      - master
+  # Run on PRs where something changed under the `ent/migrate/migrations/` directory.
+  pull_request:
+    paths:
+      - 'ent/generated/migrate/migrations/*'
+jobs:
+  lint:
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: buildbox_1plo_user
+          POSTGRES_PASSWORD: 8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.0.1
+        with:
+          fetch-depth: 0 # Mandatory unless "latest" is set below.
+      - uses: ariga/atlas-action@v0
+        with:
+          dir: ent/migrate/migrations
+          dir-format: golang-migrate # Or: atlas, goose, dbmate
+          dev-url: postgres://buildbox_1plo_user:8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV@dpg-ckb5beusmu8c73avmjqg-a.singapore-postgres.render.com/buildbox_1plo?sslmode=disable
