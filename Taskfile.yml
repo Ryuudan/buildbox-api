@@ -20,6 +20,17 @@ tasks:
   build:
     cmds:
       - go build -o buildbox-api ./cmd
+  migrate:hash:
+    cmds:
+      - atlas migrate hash --dir "file://ent/generated/migrate/migration"
+  migrate:new:
+    desc: Create new migration file
+    cmds:
+      - atlas migrate new {{.name}} --dir "file://ent/generated/migrate/migration"
+  migrate:apply:
+    desc: Run database migration
+    cmds:
+      - atlas migrate apply --dir "file://ent/generated/migrate/migration" --url "$POSTGRES_CONNECTION_STRING"
   start:
     cmds:
       - ./buildbox-api

@@ -64,7 +64,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		validationErrors = append(validationErrors, render.ValidationErrorDetails{
 			Field:   "plan_id",
-			Message: "Plan does not exist, please try another one",
+			Message: err.Error(),
 		})
 	}
 
