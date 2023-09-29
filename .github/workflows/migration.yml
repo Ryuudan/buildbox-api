@@ -15,7 +15,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: buildbox_1plo_user
+          POSTGRES_DB: buildbox_1plo
           POSTGRES_PASSWORD: 8P12BQLYDI3ew2rkX9c8DgCHJsoOkdtV
         ports:
           - 5432:5432
