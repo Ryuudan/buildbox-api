@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
@@ -18,8 +17,6 @@ type ProjectHandler struct {
 }
 
 func NewProjectHandler(projectService services.ProjectService, accountService services.AccountService) *ProjectHandler {
-	log.Println("✅ Projects Handler Initialized")
-
 	return &ProjectHandler{
 		projectService: projectService,
 		accountService: accountService,

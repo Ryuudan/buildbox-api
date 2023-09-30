@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -24,7 +23,6 @@ type AccountHandler struct {
 
 // TODO: make a separate fuction for Creation of Demo accounts
 func NewAccountHandler(accountService services.AccountService, userService services.UserService, planService services.PlanService, subscriptionService services.SubscriptionService) *AccountHandler {
-	log.Println("✅ Accounts Handler Initialized")
 	return &AccountHandler{
 		accountService:      accountService,
 		userService:         userService,
@@ -90,7 +88,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newSubscription, err := a.subscriptionService.CreateSubscription(r.Context(), &generated.Subscription{
+	_, err = a.subscriptionService.CreateSubscription(r.Context(), &generated.Subscription{
 		PlanID:       plan.ID,
 		AccountID:    newAccount.ID,
 		Status:       "active",
@@ -105,17 +103,14 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	println(newSubscription)
-
 	password, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-
 	if err != nil {
 		render.Error(w, r, "password", http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Creater user for the account
-	newUser, err := a.userService.RegisterUser(r.Context(), &generated.User{
+	_, err = a.userService.RegisterUser(r.Context(), &generated.User{
 		AccountID:  newAccount.ID,
 		Email:      account.Email,
 		Password:   string(password),
@@ -123,8 +118,6 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		LastName:   account.LastName,
 		MiddleName: &account.MiddleName,
 	})
-
-	println(newUser)
 
 	if err != nil {
 		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())

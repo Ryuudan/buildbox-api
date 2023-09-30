@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"log"
+
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/handlers"
 	"github.com/Pyakz/buildbox-api/internal/services"
@@ -10,7 +12,7 @@ import (
 // These routes needs authentication
 
 func V1Projects(client *generated.Client, router chi.Router) {
-
+	log.Println("✅ Projects Routes Initialized")
 	projectService := services.NewProjectService(client.Project)
 	accountService := services.NewAccountService(client.Account)
 	project := handlers.NewProjectHandler(projectService, accountService)

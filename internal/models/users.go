@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
@@ -11,12 +12,17 @@ type UserLogin struct {
 }
 
 type CustomClaims struct {
-	AccountID int       `json:"account_id"`
-	UserID    int       `json:"user_id"`
-	UserUUID  uuid.UUID `json:"user_uuid"`
-	Email     string    `json:"email"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	AccountID      int                    `json:"account_id"`
+	UserID         int                    `json:"user_id"`
+	SubscriptionID int                    `json:"subscription_id"`
+	PlanID         int                    `json:"plan_id"`
+	UserUUID       uuid.UUID              `json:"user_uuid"`
+	Email          string                 `json:"email"`
+	FirstName      string                 `json:"first_name"`
+	LastName       string                 `json:"last_name"`
+	Subscription   generated.Subscription `json:"subscription"`
+	Plan           generated.Plan         `json:"plan"`
+	Account        generated.Account      `json:"account"`
 	jwt.StandardClaims
 }
 

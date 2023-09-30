@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"log"
+
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/handlers"
 	"github.com/Pyakz/buildbox-api/internal/services"
@@ -11,14 +13,14 @@ import (
 // and other public routes
 // TODO: make a separate route for Creation of Demo accounts
 func V1Public(client *generated.Client, router chi.Router) {
-
+	log.Println("✅ Auth Routes Initialized")
 	accountService := services.NewAccountService(client.Account)
 	userService := services.NewUserService(client.User)
 	subscriptionService := services.NewSubscriptionService(client.Subscription)
 	planService := services.NewPlanService(client.Plan)
 
 	account := handlers.NewAccountHandler(accountService, userService, planService, subscriptionService)
-	user := handlers.NewUserHandler(userService)
+	user := handlers.NewUserHandler(userService, subscriptionService)
 
 	router.Post("/register", account.CreateAccount)
 	router.Post("/login", user.LoginUser)

@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
@@ -16,7 +15,6 @@ type PlanHandler struct {
 }
 
 func NewPlanHandler(planService services.PlanService) *PlanHandler {
-	log.Println("✅ Plans Handler Initialized")
 	return &PlanHandler{
 		planService: planService,
 	}
