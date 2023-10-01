@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/internal/models"
+	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 
 	"github.com/google/uuid"
@@ -16,7 +19,7 @@ import (
 // ProjectService defines methods for project management.
 type ProjectService interface {
 	CreateProject(ctx context.Context, newProject *generated.Project) (*generated.Project, error)
-	GetProjects(ctx context.Context) ([]*generated.Project, error)
+	GetProjects(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Project, int, error)
 	UpdateProjectByID(ctx context.Context, id int, newPayload *generated.Project) (*generated.Project, error)
 	GetProjectByID(ctx context.Context, id int) (*generated.Project, error)
 	GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (*generated.Project, error)
@@ -65,21 +68,54 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 	return project, nil
 }
 
-func (s *projectService) GetProjects(ctx context.Context) ([]*generated.Project, error) {
+func (s *projectService) GetProjects(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Project, int, error) {
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
-		return nil, errors.New("failed to get user claims from context")
+		return nil, 0, errors.New("failed to get user claims from context")
+	}
+
+	// Base Filters
+	filters := []predicate.Project{
+		project.AccountIDEQ(int(claims["account_id"].(float64))),
+		project.DeletedEQ(false),
+	}
+
+	if queryParams.Query != "" {
+		orCondition := project.Or(
+			project.NameContains(queryParams.Query),
+			project.DescriptionContains(queryParams.Query),
+		)
+		filters = append(filters, orCondition)
 	}
 
 	projects, err := s.client.Query().
-		Where(project.AccountIDEQ(int(claims["account_id"].(float64)))).
+		Where(filters...).
+		Offset((queryParams.Page - 1) * queryParams.Limit).
+		Limit(queryParams.Limit).
+		Order(
+			// TODO: Add sorting
+			project.ByCreatedAt(
+				sql.OrderDesc(),
+			),
+		).
 		All(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return projects, nil
+	totalProjects, err := s.client.Query().
+		Where(filters...).
+		Aggregate(
+			generated.Count(),
+		).
+		Int(ctx)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return projects, totalProjects, nil
 }
 
 // UpdateProject updates an existing project.
@@ -165,3 +201,34 @@ func (s *projectService) GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (
 
 	return project, nil
 }
+
+// project.ByBudget(
+// 	sql.OrderDesc(),
+// ),
+// project.ByName(
+// 	sql.OrderDesc(),
+// ),
+// project.ByStatus(
+// 	sql.OrderDesc(),
+// ),
+// project.ByLocation(
+// 	sql.OrderDesc(),
+// ),
+// project.ByBudget(
+// 	sql.OrderDesc(),
+// ),
+// project.ByDescription(
+// 	sql.OrderDesc(),
+// ),
+// project.ByNotes(
+// 	sql.OrderDesc(),
+// ),
+// project.ByStartDate(
+// 	sql.OrderDesc(),
+// ),
+// project.ByEndDate(
+// 	sql.OrderDesc(),
+// ),
+// project.ByDeleted(
+// 	sql.OrderDesc(),
+// ),

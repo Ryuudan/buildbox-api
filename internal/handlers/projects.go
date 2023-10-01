@@ -40,14 +40,6 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// this is sample validation error we can call on our own
-	// if somethingHappend  {
-	// 	validationErrors = append(validationErrors, utils.ValidationErrorDetails{
-	// 		Field:   "somthing",
-	// 		Message: "something",
-	// 	})
-	// }
-
 	// If there are validation errors, return a custom validation error response
 	if len(validationErrors) > 0 {
 		render.CustomValidationError(w, r, validationErrors)
@@ -66,13 +58,30 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
-	projects, err := p.projectService.GetProjects(r.Context())
+
+	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
+
+	if err != nil {
+		render.Error(w, r, "Params Error", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	projects, total, err := p.projectService.GetProjects(r.Context(), queryParams)
 	if err != nil {
 		render.Error(w, r, "projects", http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	render.JSON(w, http.StatusOK, projects)
+	response := &render.PaginatedResults{
+		Results: projects,
+		Meta: render.GenerateMeta(
+			total,
+			queryParams,
+			len(projects),
+		),
+	}
+
+	render.JSON(w, http.StatusOK, response)
 }
 
 func (p *ProjectHandler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
