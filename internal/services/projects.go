@@ -49,8 +49,9 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 	project, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		SetClientID(*newProject.ClientID).
 		SetName(newProject.Name).
+		SetNillableClientID(newProject.ClientID).
+		SetNillableManagerID(newProject.ManagerID).
 		SetNillableStatus(newProject.Status).
 		SetNillableStartDate(newProject.StartDate).
 		SetNillableEndDate(newProject.EndDate).
@@ -58,7 +59,6 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 		SetNillableLocation(newProject.Location).
 		SetNillableDescription(newProject.Description).
 		SetNillableNotes(newProject.Notes).
-		SetNillableManagerID(newProject.ManagerID).
 		SetDeleted(newProject.Deleted).
 		Save(ctx)
 

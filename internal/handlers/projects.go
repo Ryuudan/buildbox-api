@@ -30,7 +30,7 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
-		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
@@ -49,7 +49,7 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	newProject, err := p.projectService.CreateProject(r.Context(), &project)
 
 	if err != nil {
-		render.Error(w, r, "projects", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -62,39 +62,37 @@ func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
 	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
 
 	if err != nil {
-		render.Error(w, r, "Params Error", http.StatusBadRequest, err.Error())
+		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	projects, total, err := p.projectService.GetProjects(r.Context(), queryParams)
 	if err != nil {
-		render.Error(w, r, "projects", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response := &render.PaginatedResults{
+	render.JSON(w, http.StatusOK, &render.PaginatedResults{
 		Results: projects,
 		Meta: render.GenerateMeta(
 			total,
 			queryParams,
 			len(projects),
 		),
-	}
-
-	render.JSON(w, http.StatusOK, response)
+	})
 }
 
 func (p *ProjectHandler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.StringToInt(chi.URLParam(r, "id"))
 
 	if err != nil {
-		render.Error(w, r, "projects", http.StatusBadRequest, "Invalid ID")
+		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	project, err := p.projectService.GetProjectByID(r.Context(), id)
 	if err != nil {
-		render.Error(w, r, "projects", http.StatusBadRequest, err.Error())
+		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 

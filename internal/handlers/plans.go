@@ -28,7 +28,7 @@ func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&plan); err != nil {
-		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
@@ -55,7 +55,7 @@ func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 	newPlan, err := p.planService.CreatePlan(r.Context(), &plan)
 
 	if err != nil {
-		render.Error(w, r, "plans", http.StatusBadRequest, err.Error())
+		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -67,7 +67,7 @@ func (p *PlanHandler) GetPlans(w http.ResponseWriter, r *http.Request) {
 	plans, err := p.planService.GetPlans(r.Context())
 
 	if err != nil {
-		render.Error(w, r, "plans", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 

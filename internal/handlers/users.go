@@ -29,7 +29,7 @@ func NewUserHandler(userService services.UserService, subscriptionService servic
 func (u *UserHandler) GetUsersByAccount(w http.ResponseWriter, r *http.Request) {
 	users, err := u.userService.GetUsersByAccountID(r.Context(), 1)
 	if err != nil {
-		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 	render.JSON(w, http.StatusOK, users)
@@ -38,7 +38,7 @@ func (u *UserHandler) GetUsersByAccount(w http.ResponseWriter, r *http.Request) 
 func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	user, err := u.userService.GetUserById(r.Context(), 1)
 	if err != nil {
-		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 	render.JSON(w, http.StatusOK, user)
@@ -61,7 +61,7 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Decode the JSON request body into the user struct
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
@@ -90,7 +90,7 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Retrieve user claims from the JWT token in the request context
 	claims, ok := r.Context().Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
-		render.Error(w, r, "claims", http.StatusBadRequest, "failed to get user claims from context")
+		render.Error(w, r, http.StatusBadRequest, "failed to get user claims from context")
 		return
 	}
 
@@ -100,7 +100,7 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Generate a salted and hashed password
 	password, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		render.Error(w, r, "bcrypt", http.StatusInternalServerError, "failed to generate hashed password")
+		render.Error(w, r, http.StatusInternalServerError, "failed to generate hashed password")
 		return
 	}
 
@@ -111,7 +111,7 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	newUser, err := u.userService.RegisterUser(r.Context(), &user)
 
 	if err != nil {
-		render.Error(w, r, "users", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -125,7 +125,7 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var credentials models.UserLogin
 
 	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		render.Error(w, r, "users", http.StatusBadRequest, err.Error())
+		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -141,7 +141,7 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
 			{
 				Field:   "email",
-				Message: "Invalid email or password",
+				Message: "Email does not exist.",
 			},
 		})
 		return
@@ -163,12 +163,12 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	subscription, err := u.subscriptionService.GetActiveSubscriptionByAccountID(r.Context(), user.AccountID)
 
 	if err != nil {
-		render.Error(w, r, "auth", http.StatusInternalServerError, "Failed to get subscription.")
+		render.Error(w, r, http.StatusInternalServerError, "Failed to get subscription.")
 		return
 	}
 
 	if time.Now().After(subscription.EndDate) {
-		render.Error(w, r, "auth", http.StatusUnauthorized, "Your subscription has expired, please renew your subscription.")
+		render.Error(w, r, http.StatusUnauthorized, "Your subscription has expired, please renew your subscription.")
 		return
 	}
 
@@ -176,7 +176,7 @@ func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// so that we can directly access that using clains
 	accessToken, err := generateAccessToken(user, subscription)
 	if err != nil {
-		render.Error(w, r, "auth", http.StatusInternalServerError, "Failed to generate access token.")
+		render.Error(w, r, http.StatusInternalServerError, "Failed to generate access token.")
 		return
 	}
 

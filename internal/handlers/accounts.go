@@ -38,7 +38,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	var validationErrors []render.ValidationErrorDetails
 
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
-		render.Error(w, r, "json_validation", http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
@@ -84,7 +84,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -99,13 +99,13 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		render.Error(w, r, "subscription", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	if err != nil {
-		render.Error(w, r, "password", http.StatusBadRequest, err.Error())
+		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -120,7 +120,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -131,7 +131,7 @@ func (a *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 func (a *AccountHandler) GetAccounts(w http.ResponseWriter, r *http.Request) {
 	accounts, err := a.accountService.GetAccounts(r.Context())
 	if err != nil {
-		render.Error(w, r, "accounts", http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 

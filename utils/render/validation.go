@@ -50,7 +50,7 @@ func CustomValidationError(w http.ResponseWriter, r *http.Request, details []Val
 
 	errorResponse := ValidationErrorResponse{
 		Error: validationError{
-			Code:      http.StatusBadRequest,
+			Code:      http.StatusUnprocessableEntity,
 			Type:      "validation_error",
 			Path:      r.URL.Path,
 			TimeStamp: time.Now(),
@@ -64,7 +64,7 @@ func CustomValidationError(w http.ResponseWriter, r *http.Request, details []Val
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(http.StatusUnprocessableEntity)
 	if _, err := w.Write(response); err != nil {
 		log.Printf("Error writing response: %v", err)
 	}
@@ -98,7 +98,7 @@ func ValidationError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(http.StatusUnprocessableEntity)
 	if _, err := w.Write(response); err != nil {
 		log.Printf("Error writing response: %v", err)
 	}
@@ -189,8 +189,8 @@ type ValidationErrorDetails struct {
 type validationError struct {
 	Code      int                      `json:"code"`
 	Type      string                   `json:"type"`
-	TimeStamp time.Time                `json:"time_stamp"`
 	Path      string                   `json:"path"`
+	TimeStamp time.Time                `json:"time_stamp"`
 	Details   []ValidationErrorDetails `json:"details"`
 }
 

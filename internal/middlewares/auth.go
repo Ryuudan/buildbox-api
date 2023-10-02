@@ -17,7 +17,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			// Authorization header not found, return unauthorized status
-			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
+			render.Error(w, r, http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 
@@ -25,7 +25,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		headerParts := strings.Split(authHeader, " ")
 		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
 			// Invalid Authorization header format, return unauthorized status
-			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
+			render.Error(w, r, http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 
@@ -40,14 +40,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		if err != nil {
 			// Failed to parse JWT token, return unauthorized status
-			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
+			render.Error(w, r, http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 
 		// Check if the token is valid
 		if !token.Valid {
 			// Invalid token, return unauthorized status
-			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
+			render.Error(w, r, http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 
@@ -55,7 +55,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			// Failed to extract claims, return unauthorized status
-			render.Error(w, r, "Unauthorized", http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
+			render.Error(w, r, http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
 			return
 		}
 

@@ -6,19 +6,25 @@ import (
 	"time"
 )
 
-func Error(w http.ResponseWriter, r *http.Request, entity string, code int, message string) {
+func Error(w http.ResponseWriter, r *http.Request, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
+	// _, file, line, _ := runtime.Caller(1)
+	// errorLocation := fmt.Sprintf("%s:%d", path.Base(file), line)
 	// Create a buffer to hold the JSON encoding.
+
 	var buf []byte
 	data := map[string]interface{}{
 		"error": map[string]interface{}{
-			"code":       code,
-			"entity":     entity,
-			"message":    message,
-			"path":       r.URL.Path,
-			"time_stamp": time.Now(),
+			"code":             code,
+			"message":          message,
+			"path":             r.URL.Path,
+			"method":           r.Method,
+			"user_agent":       r.Header.Get("User-Agent"),
+			"query_parameters": r.URL.Query(),
+			"time_stamp":       time.Now(),
+			// "location":         errorLocation,
 		},
 	}
 
