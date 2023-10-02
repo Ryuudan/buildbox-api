@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"sync"
 
 	"entgo.io/ent/dialect/sql"
@@ -10,6 +11,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/internal/models"
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 
@@ -20,7 +22,7 @@ import (
 // ProjectService defines methods for project management.
 type ProjectService interface {
 	CreateProject(ctx context.Context, newProject *generated.Project) (*generated.Project, error)
-	GetProjects(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Project, int, error)
+	GetProjects(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.Project, int, error)
 	UpdateProjectByID(ctx context.Context, id int, newPayload *generated.Project) (*generated.Project, error)
 	GetProjectByID(ctx context.Context, id int) (*generated.Project, error)
 	GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (*generated.Project, error)
@@ -69,7 +71,11 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 	return project, nil
 }
 
-func (s *projectService) GetProjects(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Project, int, error) {
+// func GetSortFields(fields []models.SortFields, target interface) {
+
+// }
+
+func (s *projectService) GetProjects(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.Project, int, error) {
 
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
@@ -77,17 +83,18 @@ func (s *projectService) GetProjects(ctx context.Context, queryParams *render.Qu
 	}
 
 	// Base Filters
-	filters := []predicate.Project{
+	baseFilters := []predicate.Project{
 		project.AccountIDEQ(int(claims["account_id"].(float64))),
 		project.DeletedEQ(false),
 	}
 
+	utils.ConsoleLog(filters)
 	if queryParams.Query != "" {
 		orCondition := project.Or(
 			project.NameContains(queryParams.Query),
 			project.DescriptionContains(queryParams.Query),
 		)
-		filters = append(filters, orCondition)
+		baseFilters = append(baseFilters, orCondition)
 	}
 
 	var wg sync.WaitGroup
@@ -96,17 +103,51 @@ func (s *projectService) GetProjects(ctx context.Context, queryParams *render.Qu
 	var err1, err2 error
 
 	wg.Add(2)
-
 	// Get the projects
 	go func() {
+
+		baseOrders := []project.OrderOption{}
+
+		if len(filters.Order) == 0 {
+			baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
+		}
+
+		for _, sortCriteria := range filters.Order {
+			switch sortCriteria.Field {
+			case "name":
+				if sortCriteria.Direction == "asc" {
+					baseOrders = append(baseOrders, project.ByName(sql.OrderAsc()))
+				} else if sortCriteria.Direction == "desc" {
+					baseOrders = append(baseOrders, project.ByName(sql.OrderDesc()))
+				}
+			case "budget":
+				if sortCriteria.Direction == "asc" {
+					baseOrders = append(baseOrders, project.ByBudget(sql.OrderAsc()))
+				} else if sortCriteria.Direction == "desc" {
+					baseOrders = append(baseOrders, project.ByBudget(sql.OrderDesc()))
+				}
+			case "created_at":
+				if sortCriteria.Direction == "asc" {
+					baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderAsc()))
+				} else if sortCriteria.Direction == "desc" {
+					baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
+				}
+			default:
+				baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
+				log.Println("Unknown Field is passed as order ignore it")
+				// Handle unknown fields or provide a default behavior
+				// For example, you can log an error or ignore unknown fields
+			}
+
+		}
+
 		defer wg.Done()
 		projects, err1 = s.client.Query().
-			Where(filters...).
+			Where(baseFilters...).
 			Offset((queryParams.Page - 1) * queryParams.Limit).
 			Limit(queryParams.Limit).
 			Order(
-				// TODO: Add sorting
-				project.ByCreatedAt(sql.OrderDesc()),
+				baseOrders...,
 			).
 			All(ctx)
 	}()
@@ -114,7 +155,7 @@ func (s *projectService) GetProjects(ctx context.Context, queryParams *render.Qu
 	// Get the total projects with the current filters
 	go func() {
 		defer wg.Done()
-		totalProjects, err2 = s.client.Query().Where(filters...).Aggregate(generated.Count()).Int(ctx)
+		totalProjects, err2 = s.client.Query().Where(baseFilters...).Aggregate(generated.Count()).Int(ctx)
 	}()
 
 	wg.Wait()

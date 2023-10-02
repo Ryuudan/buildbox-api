@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
@@ -58,6 +59,14 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
+	var filters models.Filters
+	// if err := json.NewDecoder(r.Body).Decode(&filters); err != nil {
+	// 	render.Error(w, r, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
+
+	// Close the request body when done
+	// defer r.Body.Close()
 
 	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
 
@@ -66,7 +75,18 @@ func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projects, total, err := p.projectService.GetProjects(r.Context(), queryParams)
+	orderFields, err := render.ParseOrderString(queryParams.Order)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for _, fields := range orderFields {
+		filters.Order = append(filters.Order, *fields)
+	}
+
+	projects, total, err := p.projectService.GetProjects(r.Context(), queryParams, filters)
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
