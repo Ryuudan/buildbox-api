@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated"
@@ -69,6 +70,7 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 }
 
 func (s *projectService) GetProjects(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Project, int, error) {
+
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
 		return nil, 0, errors.New("failed to get user claims from context")
@@ -88,31 +90,41 @@ func (s *projectService) GetProjects(ctx context.Context, queryParams *render.Qu
 		filters = append(filters, orCondition)
 	}
 
-	projects, err := s.client.Query().
-		Where(filters...).
-		Offset((queryParams.Page - 1) * queryParams.Limit).
-		Limit(queryParams.Limit).
-		Order(
-			// TODO: Add sorting
-			project.ByCreatedAt(
-				sql.OrderDesc(),
-			),
-		).
-		All(ctx)
+	var wg sync.WaitGroup
+	var projects []*generated.Project
+	var totalProjects int
+	var err1, err2 error
 
-	if err != nil {
-		return nil, 0, err
+	wg.Add(2)
+
+	// Get the projects
+	go func() {
+		defer wg.Done()
+		projects, err1 = s.client.Query().
+			Where(filters...).
+			Offset((queryParams.Page - 1) * queryParams.Limit).
+			Limit(queryParams.Limit).
+			Order(
+				// TODO: Add sorting
+				project.ByCreatedAt(sql.OrderDesc()),
+			).
+			All(ctx)
+	}()
+
+	// Get the total projects with the current filters
+	go func() {
+		defer wg.Done()
+		totalProjects, err2 = s.client.Query().Where(filters...).Aggregate(generated.Count()).Int(ctx)
+	}()
+
+	wg.Wait()
+
+	if err1 != nil {
+		return nil, 0, err1
 	}
 
-	totalProjects, err := s.client.Query().
-		Where(filters...).
-		Aggregate(
-			generated.Count(),
-		).
-		Int(ctx)
-
-	if err != nil {
-		return nil, 0, err
+	if err2 != nil {
+		return nil, 0, err2
 	}
 
 	return projects, totalProjects, nil
