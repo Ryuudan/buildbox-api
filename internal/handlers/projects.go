@@ -60,13 +60,6 @@ func (p *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 
 func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
 	var filters models.Filters
-	// if err := json.NewDecoder(r.Body).Decode(&filters); err != nil {
-	// 	render.Error(w, r, http.StatusBadRequest, err.Error())
-	// 	return
-	// }
-
-	// Close the request body when done
-	// defer r.Body.Close()
 
 	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
 
@@ -75,18 +68,19 @@ func (p *ProjectHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderFields, err := render.ParseOrderString(queryParams.Order)
+	orders, err := render.ParseOrderString(queryParams.Order)
 
 	if err != nil {
 		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	for _, fields := range orderFields {
+	for _, fields := range orders {
 		filters.Order = append(filters.Order, *fields)
 	}
 
 	projects, total, err := p.projectService.GetProjects(r.Context(), queryParams, filters)
+
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return

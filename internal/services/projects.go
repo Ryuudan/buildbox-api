@@ -11,7 +11,6 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/internal/models"
-	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 
@@ -71,91 +70,65 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 	return project, nil
 }
 
-// func GetSortFields(fields []models.SortFields, target interface) {
-
-// }
-
+// GetProjects retrieves a list of projects based on query parameters and filters,
+// and returns the projects along with the total count of matching projects.
+// It applies user-specific filters based on claims from the context,
+// supports searching by name or description, sorting, and pagination.
+//
+// Parameters:
+//   - ctx: The request context.
+//   - queryParams: Query parameters specifying page, limit, query, and order.
+//   - filters: Additional filters to apply.
+//
+// Returns:
+//   - []*generated.Project: List of projects matching the criteria.
+//   - int: Total count of matching projects.
+//   - error: An error if any occurred during the retrieval.
 func (s *projectService) GetProjects(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.Project, int, error) {
-
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
 		return nil, 0, errors.New("failed to get user claims from context")
 	}
 
-	// Base Filters
 	baseFilters := []predicate.Project{
 		project.AccountIDEQ(int(claims["account_id"].(float64))),
 		project.DeletedEQ(false),
 	}
 
-	utils.ConsoleLog(filters)
+	baseOrders := getProjectOrders(filters.Order)
+
 	if queryParams.Query != "" {
-		orCondition := project.Or(
+		searchFilter := project.Or(
 			project.NameContains(queryParams.Query),
 			project.DescriptionContains(queryParams.Query),
 		)
-		baseFilters = append(baseFilters, orCondition)
+		baseFilters = append(baseFilters, searchFilter)
 	}
 
 	var wg sync.WaitGroup
 	var projects []*generated.Project
-	var totalProjects int
+	var totalFiltered int
 	var err1, err2 error
 
 	wg.Add(2)
-	// Get the projects
+
 	go func() {
-
-		baseOrders := []project.OrderOption{}
-
-		if len(filters.Order) == 0 {
-			baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
-		}
-
-		for _, sortCriteria := range filters.Order {
-			switch sortCriteria.Field {
-			case "name":
-				if sortCriteria.Direction == "asc" {
-					baseOrders = append(baseOrders, project.ByName(sql.OrderAsc()))
-				} else if sortCriteria.Direction == "desc" {
-					baseOrders = append(baseOrders, project.ByName(sql.OrderDesc()))
-				}
-			case "budget":
-				if sortCriteria.Direction == "asc" {
-					baseOrders = append(baseOrders, project.ByBudget(sql.OrderAsc()))
-				} else if sortCriteria.Direction == "desc" {
-					baseOrders = append(baseOrders, project.ByBudget(sql.OrderDesc()))
-				}
-			case "created_at":
-				if sortCriteria.Direction == "asc" {
-					baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderAsc()))
-				} else if sortCriteria.Direction == "desc" {
-					baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
-				}
-			default:
-				baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
-				log.Println("Unknown Field is passed as order ignore it")
-				// Handle unknown fields or provide a default behavior
-				// For example, you can log an error or ignore unknown fields
-			}
-
-		}
-
 		defer wg.Done()
-		projects, err1 = s.client.Query().
+		projects, err1 = s.client.
+			Query().
 			Where(baseFilters...).
+			Order(baseOrders...).
 			Offset((queryParams.Page - 1) * queryParams.Limit).
 			Limit(queryParams.Limit).
-			Order(
-				baseOrders...,
-			).
 			All(ctx)
 	}()
 
-	// Get the total projects with the current filters
 	go func() {
 		defer wg.Done()
-		totalProjects, err2 = s.client.Query().Where(baseFilters...).Aggregate(generated.Count()).Int(ctx)
+		totalFiltered, err2 = s.client.
+			Query().
+			Where(baseFilters...).
+			Aggregate(generated.Count()).Int(ctx)
 	}()
 
 	wg.Wait()
@@ -168,7 +141,7 @@ func (s *projectService) GetProjects(ctx context.Context, queryParams *render.Qu
 		return nil, 0, err2
 	}
 
-	return projects, totalProjects, nil
+	return projects, totalFiltered, nil
 }
 
 // UpdateProject updates an existing project.
@@ -254,34 +227,82 @@ func (s *projectService) GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (
 
 	return project, nil
 }
+func getProjectOrders(filters []models.OrderFields) []project.OrderOption {
+	baseOrders := []project.OrderOption{}
 
-// project.ByBudget(
-// 	sql.OrderDesc(),
-// ),
-// project.ByName(
-// 	sql.OrderDesc(),
-// ),
-// project.ByStatus(
-// 	sql.OrderDesc(),
-// ),
-// project.ByLocation(
-// 	sql.OrderDesc(),
-// ),
-// project.ByBudget(
-// 	sql.OrderDesc(),
-// ),
-// project.ByDescription(
-// 	sql.OrderDesc(),
-// ),
-// project.ByNotes(
-// 	sql.OrderDesc(),
-// ),
-// project.ByStartDate(
-// 	sql.OrderDesc(),
-// ),
-// project.ByEndDate(
-// 	sql.OrderDesc(),
-// ),
-// project.ByDeleted(
-// 	sql.OrderDesc(),
-// ),
+	if len(filters) == 0 {
+		baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
+	}
+
+	for _, sortCriteria := range filters {
+		switch sortCriteria.Field {
+		case "name":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByName(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByName(sql.OrderDesc()))
+			}
+		case "budget":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByBudget(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByBudget(sql.OrderDesc()))
+			}
+		case "created_at":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
+			}
+		case "status":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByStatus(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByStatus(sql.OrderDesc()))
+			}
+		case "location":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByLocation(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByLocation(sql.OrderDesc()))
+			}
+		case "description":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByDescription(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByDescription(sql.OrderDesc()))
+			}
+		case "notes":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByNotes(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByNotes(sql.OrderDesc()))
+			}
+		case "start_date":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByStartDate(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByStartDate(sql.OrderDesc()))
+			}
+		case "end_date":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByEndDate(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByEndDate(sql.OrderDesc()))
+			}
+		case "deleted":
+			if sortCriteria.Direction == "asc" {
+				baseOrders = append(baseOrders, project.ByDeleted(sql.OrderAsc()))
+			} else if sortCriteria.Direction == "desc" {
+				baseOrders = append(baseOrders, project.ByDeleted(sql.OrderDesc()))
+			}
+		default:
+			// baseOrders = append(baseOrders, project.ByCreatedAt(sql.OrderDesc()))
+			log.Println("Unknown Field is passed as order, ignore it")
+			// Handle unknown fields or provide a default behavior
+			// For example, you can log an error or ignore unknown fields
+		}
+	}
+
+	return baseOrders
+}
