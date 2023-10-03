@@ -1,12 +1,9 @@
 name: EntCI
 on:
   push:
-    # Run whenever code is changed in the master.
-    branches:
-      - main
-      - staging
-  # Run on PRs where something changed under the `ent/` directory.
+    branches: ["main", "staging", "dev"]
   pull_request:
+    branches: ["main", "staging", "dev"]
     paths:
       - "ent/*"
 jobs:
