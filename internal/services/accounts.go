@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
-	"github.com/Pyakz/buildbox-api/ent/generated/account"
 
 	_ "github.com/lib/pq"
 )
@@ -45,16 +45,37 @@ func (s *accountService) CreateAccount(ctx context.Context, newAccount *generate
 }
 
 func (s *accountService) GetAccounts(ctx context.Context) ([]*generated.Account, error) {
-	accounts, err := s.client.Query().Select(
-		// return all fields
-		account.FieldID,
-		account.FieldName,
-	).All(ctx)
 
-	if err != nil {
-		return nil, err
+	var wg sync.WaitGroup
+	var accounts []*generated.Account
+	var totalFiltered int
+	var err1, err2 error
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		accounts, err1 = s.client.Query().All(ctx)
+	}()
+
+	go func() {
+		defer wg.Done()
+		totalFiltered, err2 = s.client.
+			Query().
+			Aggregate(generated.Count()).Int(ctx)
+	}()
+
+	wg.Wait()
+
+	if err1 != nil {
+		return nil, err1
 	}
 
+	if err2 != nil {
+		return nil, err2
+	}
+
+	println("Total Filtered: ", totalFiltered)
 	return accounts, nil
 }
 
