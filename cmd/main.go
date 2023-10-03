@@ -56,11 +56,15 @@ func main() {
 	app.Use(cors.Handler)
 
 	app.Get("/", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte("This is Build Box API"))
+		_, err := w.Write([]byte("This is Build Box API"))
+		if err != nil {
+			log.Println("Error writing response:", err)
+		}
 	})
 
 	app.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
+
 	})
 
 	routers.PrivateInitializeRoutes(db_client, app)
