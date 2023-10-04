@@ -18,11 +18,11 @@ func V1Public(client *generated.Client, router chi.Router) {
 	userService := services.NewUserService(client.User)
 	subscriptionService := services.NewSubscriptionService(client.Subscription)
 	planService := services.NewPlanService(client.Plan)
+	rolesService := services.NewRolesService(client.Role)
 
-	account := handlers.NewAccountHandler(accountService, userService, planService, subscriptionService)
-	user := handlers.NewUserHandler(userService, subscriptionService)
+	authHandler := handlers.NewAuthHandler(accountService, userService, planService, subscriptionService, rolesService)
 
-	router.Post("/register", account.CreateAccount)
-	router.Post("/login", user.LoginUser)
+	router.Post("/register", authHandler.CreateAccount)
+	router.Post("/login", authHandler.LoginUser)
 
 }

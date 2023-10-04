@@ -74,6 +74,30 @@ var (
 			},
 		},
 	}
+	// RolesColumns holds the columns for the "roles" table.
+	RolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "account_id", Type: field.TypeInt},
+	}
+	// RolesTable holds the schema information for the "roles" table.
+	RolesTable = &schema.Table{
+		Name:       "roles",
+		Columns:    RolesColumns,
+		PrimaryKey: []*schema.Column{RolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "roles_accounts_roles",
+				Columns:    []*schema.Column{RolesColumns[6]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// SubscriptionsColumns holds the columns for the "subscriptions" table.
 	SubscriptionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -141,6 +165,7 @@ var (
 		AccountsTable,
 		PlansTable,
 		ProjectsTable,
+		RolesTable,
 		SubscriptionsTable,
 		UsersTable,
 	}
@@ -148,6 +173,7 @@ var (
 
 func init() {
 	ProjectsTable.ForeignKeys[0].RefTable = AccountsTable
+	RolesTable.ForeignKeys[0].RefTable = AccountsTable
 	SubscriptionsTable.ForeignKeys[0].RefTable = AccountsTable
 	SubscriptionsTable.ForeignKeys[1].RefTable = PlansTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable

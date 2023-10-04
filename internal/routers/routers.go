@@ -27,6 +27,7 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 		V1Projects(client, v1)
 		V1Users(client, v1)
 		V1Plans(client, v1)
+		V1Roles(client, v1)
 	})
 
 	router.Mount("/api/v1", private)
