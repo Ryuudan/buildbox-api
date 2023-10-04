@@ -2,9 +2,8 @@ name: Format
 
 on:
   push:
-    branches: ["main", "staging", "dev"]
-  pull_request:
-    branches: ["main", "staging", "dev"]
+    branches:
+      - "*"
 
 jobs:
   format-check:
