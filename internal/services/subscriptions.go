@@ -10,7 +10,6 @@ import (
 
 type SubscriptionService interface {
 	CreateSubscription(ctx context.Context, newSub *generated.Subscription) (*generated.Subscription, error)
-	GetSubscriptionsByAccountID(ctx context.Context, accountID int) ([]*generated.Subscription, error)
 	GetActiveSubscriptionByAccountID(ctx context.Context, accountID int) (*generated.Subscription, error)
 	UpdateSubscriptionStatusByID(ctx context.Context, id int, status subscription.Status) (*generated.Subscription, error)
 }
@@ -21,22 +20,6 @@ type subscriptionService struct {
 
 func NewSubscriptionService(client *generated.SubscriptionClient) SubscriptionService {
 	return &subscriptionService{client: client}
-}
-
-func (s *subscriptionService) GetSubscriptionsByAccountID(ctx context.Context, accountID int) ([]*generated.Subscription, error) {
-
-	subscriptions, err := s.client.Query().Where(
-		subscription.AccountIDEQ(accountID),
-	).All(ctx)
-
-	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("subscription not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
-	}
-
-	return subscriptions, nil
 }
 
 func (s *subscriptionService) GetActiveSubscriptionByAccountID(ctx context.Context, accountID int) (*generated.Subscription, error) {

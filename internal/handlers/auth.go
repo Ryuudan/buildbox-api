@@ -10,7 +10,6 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
-	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -202,7 +201,6 @@ func (u *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateAccessToken(user *generated.User, subscription *generated.Subscription) (string, error) {
-	// TODO: Add permissions
 	claims := models.CustomClaims{
 		AccountID:      user.AccountID,
 		PlanID:         subscription.Edges.Plan.ID,
@@ -226,12 +224,16 @@ func generateAccessToken(user *generated.User, subscription *generated.Subscript
 			Description: subscription.Edges.Plan.Description,
 			Price:       subscription.Edges.Plan.Price,
 		},
+		// TODO: Add Role to the claims
+		Role: generated.Role{
+			ID: 1,
+		},
 		Account: *user.Edges.Account,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(), // Example: 24 hours from now
 		},
 	}
-	utils.ConsoleLog(claims)
+
 	// Set expiration time for the token
 	// Generate the JWT token with the payload
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
