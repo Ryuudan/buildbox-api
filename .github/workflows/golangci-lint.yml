@@ -1,7 +1,5 @@
 name: GolangCI Lint
 on:
-  push:
-    branches: ["main", "staging", "dev"]
   pull_request:
     branches: ["main", "staging", "dev"]
 
