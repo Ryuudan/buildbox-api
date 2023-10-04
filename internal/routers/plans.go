@@ -23,6 +23,7 @@ func V1Plans(client *generated.Client, router chi.Router) {
 }
 
 func V1PublicPlans(client *generated.Client, router chi.Router) {
+	log.Println("✅ Routes: /public/plans")
 
 	planService := services.NewPlanService(client.Plan)
 	planHandler := handlers.NewPlanHandler(planService)

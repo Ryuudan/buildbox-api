@@ -18,7 +18,7 @@ import (
 type UserService interface {
 	RegisterUser(ctx context.Context, newUser *generated.User) (*generated.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*generated.User, error)
-	GetUserById(ctx context.Context, id int) (*generated.User, error)
+	GetUserByID(ctx context.Context, id int) (*generated.User, error)
 	GetUsers(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.User, int, error)
 }
 
@@ -64,7 +64,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*genera
 	return user, nil
 }
 
-func (s *userService) GetUserById(ctx context.Context, id int) (*generated.User, error) {
+func (s *userService) GetUserByID(ctx context.Context, id int) (*generated.User, error) {
 	user, err := s.client.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {

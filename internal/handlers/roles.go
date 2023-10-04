@@ -21,6 +21,7 @@ func NewRolesHandlers(rolesService services.RolesService) *RolesHandlers {
 	}
 }
 
+// TODO: Add permissions
 func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
 
 	validate := render.Validator()

@@ -63,7 +63,7 @@ func (u *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	user, err := u.userService.GetUserById(r.Context(), 1)
+	user, err := u.userService.GetUserByID(r.Context(), 1)
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
