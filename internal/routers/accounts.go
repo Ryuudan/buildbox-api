@@ -11,7 +11,7 @@ import (
 
 // These routes needs authentication
 func V1Accounts(client *generated.Client, router chi.Router) {
-	log.Println("✅ Accounts Routes Initialized")
+	log.Println("✅ Routes: /accounts")
 	accountService := services.NewAccountService(client.Account)
 	userService := services.NewUserService(client.User)
 	planService := services.NewPlanService(client.Plan)

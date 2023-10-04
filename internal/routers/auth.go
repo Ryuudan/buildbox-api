@@ -13,7 +13,7 @@ import (
 // and other public routes
 // TODO: make a separate route for Creation of Demo accounts
 func V1Public(client *generated.Client, router chi.Router) {
-	log.Println("✅ Auth Routes Initialized")
+	log.Println("✅ Routes: /auth")
 	accountService := services.NewAccountService(client.Account)
 	userService := services.NewUserService(client.User)
 	subscriptionService := services.NewSubscriptionService(client.Subscription)

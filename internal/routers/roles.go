@@ -11,7 +11,7 @@ import (
 
 // These routes needs authentication
 func V1Roles(client *generated.Client, router chi.Router) {
-	log.Println("✅ Roles Routes Initialized")
+	log.Println("✅ Routes: /roles")
 
 	rolesService := services.NewRolesService(client.Role)
 	rolesHandler := handlers.NewRolesHandlers(rolesService)

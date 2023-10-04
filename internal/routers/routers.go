@@ -13,7 +13,7 @@ import (
 )
 
 func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
-	log.Println("✅ Private Routes Initialized")
+	log.Println("✅ Routes: /private")
 
 	private := chi.NewRouter()
 
@@ -35,7 +35,7 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 }
 
 func PublicInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
-	log.Println("✅ Public Routes Initialized")
+	log.Println("✅ Routes: /public")
 
 	public := chi.NewRouter()
 

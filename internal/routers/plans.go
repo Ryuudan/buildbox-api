@@ -11,7 +11,7 @@ import (
 
 // These routes needs authentication
 func V1Plans(client *generated.Client, router chi.Router) {
-	log.Println("✅ Plans Routes Initialized")
+	log.Println("✅ Routes: /plans")
 
 	planService := services.NewPlanService(client.Plan)
 	planHandler := handlers.NewPlanHandler(planService)
