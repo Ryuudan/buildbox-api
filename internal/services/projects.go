@@ -228,6 +228,7 @@ func (s *projectService) GetProjectByUUID(ctx context.Context, uuid uuid.UUID) (
 
 	return project, nil
 }
+
 func getProjectOrders(filters []models.OrderFields) []project.OrderOption {
 	baseOrders := []project.OrderOption{}
 

@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
@@ -26,13 +24,42 @@ func NewUserHandler(userService services.UserService, subscriptionService servic
 	}
 }
 
-func (u *UserHandler) GetUsersByAccount(w http.ResponseWriter, r *http.Request) {
-	users, err := u.userService.GetUsersByAccountID(r.Context(), 1)
+func (u *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
+	var filters models.Filters
+
+	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	orders, err := render.ParseOrderString(queryParams.Order)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for _, fields := range orders {
+		filters.Order = append(filters.Order, *fields)
+	}
+
+	users, total, err := u.userService.GetUsers(r.Context(), queryParams, filters)
+
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
-	render.JSON(w, http.StatusOK, users)
+
+	render.JSON(w, http.StatusOK, &render.PaginatedResults{
+		Results: users,
+		Meta: render.GenerateMeta(
+			total,
+			queryParams,
+			len(users),
+		),
+	})
 }
 
 func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -117,118 +144,4 @@ func (u *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with the newly created user in JSON format
 	render.JSON(w, http.StatusOK, newUser)
-}
-
-func (u *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	validate := render.Validator()
-
-	var credentials models.UserLogin
-
-	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		render.Error(w, r, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Struct level validation
-	if err := validate.Struct(credentials); err != nil {
-		render.ValidationError(w, r, err)
-		return
-	}
-
-	user, err := u.userService.GetUserByEmail(r.Context(), credentials.Email)
-
-	if err != nil {
-		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
-			{
-				Field:   "email",
-				Message: "Email does not exist.",
-			},
-		})
-		return
-	}
-
-	// Compare the provided password with the stored password using bcrypt
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
-
-	if err != nil {
-		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
-			{
-				Field:   "password",
-				Message: "Invalid password, please try again.",
-			},
-		})
-		return
-	}
-
-	subscription, err := u.subscriptionService.GetActiveSubscriptionByAccountID(r.Context(), user.AccountID)
-
-	if err != nil {
-		render.Error(w, r, http.StatusInternalServerError, "Failed to get subscription.")
-		return
-	}
-
-	if time.Now().After(subscription.EndDate) {
-		render.Error(w, r, http.StatusUnauthorized, "Your subscription has expired, please renew your subscription.")
-		return
-	}
-
-	// TODO: Add Plan and Subscription data to the generated token
-	// so that we can directly access that using clains
-	accessToken, err := generateAccessToken(user, subscription)
-	if err != nil {
-		render.Error(w, r, http.StatusInternalServerError, "Failed to generate access token.")
-		return
-	}
-
-	render.JSON(w, http.StatusOK, struct {
-		Token string `json:"access_token"`
-		Code  int    `json:"code"`
-	}{
-		Token: accessToken,
-		Code:  http.StatusOK,
-	})
-}
-
-func generateAccessToken(user *generated.User, subscription *generated.Subscription) (string, error) {
-	// TODO: Add permissions
-	claims := models.CustomClaims{
-		AccountID:      user.AccountID,
-		PlanID:         subscription.Edges.Plan.ID,
-		SubscriptionID: subscription.ID,
-		UserID:         user.ID,
-		UserUUID:       user.UUID,
-		Email:          user.Email,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		Subscription: generated.Subscription{
-			ID:           subscription.ID,
-			StartDate:    subscription.StartDate,
-			EndDate:      subscription.EndDate,
-			Status:       subscription.Status,
-			BillingCycle: subscription.BillingCycle,
-			Discount:     subscription.Discount,
-		},
-		Plan: generated.Plan{
-			ID:          subscription.Edges.Plan.ID,
-			Name:        subscription.Edges.Plan.Name,
-			Description: subscription.Edges.Plan.Description,
-			Price:       subscription.Edges.Plan.Price,
-		},
-		Account: *user.Edges.Account,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(), // Example: 24 hours from now
-		},
-	}
-
-	// Set expiration time for the token
-	// Generate the JWT token with the payload
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Sign the token with a secret key
-	accessToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-	if err != nil {
-		return "", err
-	}
-
-	return accessToken, nil
 }

@@ -23,6 +23,7 @@ type CustomClaims struct {
 	Subscription   generated.Subscription `json:"subscription"`
 	Plan           generated.Plan         `json:"plan"`
 	Account        generated.Account      `json:"account"`
+	Role           generated.Role         `json:"role"`
 	jwt.StandardClaims
 }
 
