@@ -71,7 +71,7 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 }
 
 // GetProjects retrieves a list of projects based on query parameters and filters,
-// and returns the projects along with the total count of matching projects.
+// and returns the projects along with the total count of matching projects, in the current accountID
 // It applies user-specific filters based on claims from the context,
 // supports searching by name or description, sorting, and pagination.
 //
@@ -85,6 +85,7 @@ func (s *projectService) CreateProject(ctx context.Context, newProject *generate
 //   - int: Total count of matching projects.
 //   - error: An error if any occurred during the retrieval.
 func (s *projectService) GetProjects(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.Project, int, error) {
+
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
 		return nil, 0, errors.New("failed to get user claims from context")

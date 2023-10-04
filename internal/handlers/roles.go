@@ -1,0 +1,107 @@
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/internal/models"
+	"github.com/Pyakz/buildbox-api/internal/services"
+	"github.com/Pyakz/buildbox-api/utils/render"
+)
+
+type RolesHandlers struct {
+	rolesService services.RolesService
+}
+
+func NewRolesHandlers(rolesService services.RolesService) *RolesHandlers {
+	return &RolesHandlers{
+		rolesService: rolesService,
+	}
+}
+
+func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
+
+	validate := render.Validator()
+
+	var role generated.Role
+	var validationErrors []render.ValidationErrorDetails
+
+	if err := json.NewDecoder(r.Body).Decode(&role); err != nil {
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		return
+	}
+
+	// Struct level validation
+	if err := validate.Struct(role); err != nil {
+		render.ValidationError(w, r, err)
+		return
+	}
+
+	existingName, _ := ro.rolesService.GetRoleByName(r.Context(), role.Name)
+
+	if existingName != nil {
+		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
+			{
+				Field:   "name",
+				Message: fmt.Sprintf("Role with name '%s' already exists in this account.", role.Name),
+			},
+		})
+		return
+	}
+
+	// If there are validation errors, return a custom validation error response
+	if len(validationErrors) > 0 {
+		render.CustomValidationError(w, r, validationErrors)
+		return
+	}
+
+	newRole, err := ro.rolesService.CreateRole(r.Context(), &role)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	defer r.Body.Close()
+	render.JSON(w, http.StatusCreated, newRole)
+}
+
+func (ro *RolesHandlers) GetRoles(w http.ResponseWriter, r *http.Request) {
+	var filters models.Filters
+
+	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	orders, err := render.ParseOrderString(queryParams.Order)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for _, fields := range orders {
+		filters.Order = append(filters.Order, *fields)
+	}
+
+	roles, total, err := ro.rolesService.GetRoles(r.Context(), queryParams)
+
+	if err != nil {
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	render.JSON(w, http.StatusOK, &render.PaginatedResults{
+		Results: roles,
+		Meta: render.GenerateMeta(
+			total,
+			queryParams,
+			len(roles),
+		),
+	})
+}

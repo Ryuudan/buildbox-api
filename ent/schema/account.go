@@ -49,5 +49,6 @@ func (Account) Edges() []ent.Edge {
 		edge.To("users", User.Type),
 		edge.To("projects", Project.Type),
 		edge.To("subscriptions", Subscription.Type),
+		edge.To("roles", Role.Type),
 	}
 }
