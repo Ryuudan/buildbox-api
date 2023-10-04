@@ -26,13 +26,42 @@ func NewUserHandler(userService services.UserService, subscriptionService servic
 	}
 }
 
-func (u *UserHandler) GetUsersByAccount(w http.ResponseWriter, r *http.Request) {
-	users, err := u.userService.GetUsersByAccountID(r.Context(), 1)
+func (u *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
+	var filters models.Filters
+
+	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	orders, err := render.ParseOrderString(queryParams.Order)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for _, fields := range orders {
+		filters.Order = append(filters.Order, *fields)
+	}
+
+	users, total, err := u.userService.GetUsers(r.Context(), queryParams, filters)
+
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
-	render.JSON(w, http.StatusOK, users)
+
+	render.JSON(w, http.StatusOK, &render.PaginatedResults{
+		Results: users,
+		Meta: render.GenerateMeta(
+			total,
+			queryParams,
+			len(users),
+		),
+	})
 }
 
 func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {

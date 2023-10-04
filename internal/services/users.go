@@ -5,14 +5,18 @@ import (
 	"errors"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
+	"github.com/Pyakz/buildbox-api/internal/models"
+	"github.com/Pyakz/buildbox-api/utils/render"
+	"github.com/golang-jwt/jwt"
 )
 
 type UserService interface {
 	RegisterUser(ctx context.Context, newUser *generated.User) (*generated.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*generated.User, error)
 	GetUserById(ctx context.Context, id int) (*generated.User, error)
-	GetUsersByAccountID(ctx context.Context, accountID int) ([]*generated.User, error)
+	GetUsers(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.User, int, error)
 }
 
 type userService struct {
@@ -69,14 +73,26 @@ func (s *userService) GetUserById(ctx context.Context, id int) (*generated.User,
 	return user, nil
 }
 
-func (s *userService) GetUsersByAccountID(ctx context.Context, accountID int) ([]*generated.User, error) {
-	users, err := s.client.Query().Where(
-		user.AccountIDEQ(accountID),
-	).All(ctx)
+// func (s *userService) GetUsers(ctx context.Context, queryParams *render.QueryParams, filters models.Filters) ([]*generated.User, int, error) {
+// 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+// 	if !ok {
+// 		return nil, 0, errors.New("failed to get user claims from context")
+// 	}
 
-	if err != nil {
-		return nil, err
-	}
+// 	baseFilters := []predicate.User{
+// 		user.AccountIDEQ(int(claims["account_id"].(float64))),
+// 	}
 
-	return users, nil
-}
+// 	// baseOrders := getProjectOrders(filters.Order)
+
+// 	if queryParams.Query != "" {
+// 		searchFilter := user.Or(
+// 			user.FirstNameContains(queryParams.Query),
+// 			user.MiddleNameContains(queryParams.Query),
+// 			user.LastNameContains(queryParams.Query),
+// 			user.EmailContains(queryParams.Query),
+// 		)
+// 		baseFilters = append(baseFilters, searchFilter)
+// 	}
+// 	return users, nil
+// }
