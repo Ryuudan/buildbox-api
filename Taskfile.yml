@@ -23,6 +23,9 @@ tasks:
   ent:new:
     cmds:
       - go run -mod=mod entgo.io/ent/cmd/ent new {{.name}}
+  migrate:lint:
+    cmds:
+      - atlas migrate lint --dir "file://ent/generated/migrate/migration" --dev-url "$POSTGRES_CONNECTION_STRING" --latest 1
   migrate:hash:
     cmds:
       - atlas migrate hash --dir "file://ent/generated/migrate/migration"
