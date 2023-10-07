@@ -21,6 +21,6 @@ func V1Accounts(client *generated.Client, router chi.Router) {
 
 	router.Route("/accounts", func(r chi.Router) {
 		r.Get("/", account.GetAccounts)
+		r.Get("/{id}", account.GetAccount)
 	})
-
 }

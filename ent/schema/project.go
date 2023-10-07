@@ -100,5 +100,6 @@ func (Project) Edges() []ent.Edge {
 			Ref("projects").
 			Required().
 			Unique(),
+		edge.To("tasks", Task.Type),
 	}
 }

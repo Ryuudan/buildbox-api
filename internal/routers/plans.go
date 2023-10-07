@@ -1,8 +1,6 @@
 package routers
 
 import (
-	"log"
-
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/handlers"
 	"github.com/Pyakz/buildbox-api/internal/services"
@@ -11,8 +9,6 @@ import (
 
 // These routes needs authentication
 func V1Plans(client *generated.Client, router chi.Router) {
-	log.Println("✅ Routes: /plans")
-
 	planService := services.NewPlanService(client.Plan)
 	planHandler := handlers.NewPlanHandler(planService)
 
@@ -23,7 +19,6 @@ func V1Plans(client *generated.Client, router chi.Router) {
 }
 
 func V1PublicPlans(client *generated.Client, router chi.Router) {
-	log.Println("✅ Routes: /public/plans")
 
 	planService := services.NewPlanService(client.Plan)
 	planHandler := handlers.NewPlanHandler(planService)

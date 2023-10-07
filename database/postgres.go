@@ -16,11 +16,6 @@ func PostgresConnect() (*generated.Client, error) {
 		return nil, err
 	}
 
-	// // Run the auto migration tool.
-	// if err := client.Schema.Create(context.Background()); err != nil {
-	// 	log.Fatalf("failed creating schema resources: %v", err)
-	// }
-
 	// Successfully connected to the database
 	log.Println("✅ Sucessfully connected to the Postgres Database!")
 

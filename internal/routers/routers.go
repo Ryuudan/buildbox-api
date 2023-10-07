@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -24,6 +25,7 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 		V1Users(client, v1)
 		V1Plans(client, v1)
 		V1Roles(client, v1)
+		V1Tasks(client, v1)
 		// TODO: add Tasks, Documents this week
 		// TODO: Search route
 	})
@@ -33,7 +35,7 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 }
 
 func PublicInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
-
+	log.Println("✅ Routes: /public")
 	public := chi.NewRouter()
 
 	public.Use(httprate.LimitByIP(20, 1*time.Minute))

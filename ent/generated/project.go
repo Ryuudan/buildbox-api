@@ -61,9 +61,11 @@ type Project struct {
 type ProjectEdges struct {
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
+	// Tasks holds the value of the tasks edge.
+	Tasks []*Task `json:"tasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -77,6 +79,15 @@ func (e ProjectEdges) AccountOrErr() (*Account, error) {
 		return e.Account, nil
 	}
 	return nil, &NotLoadedError{edge: "account"}
+}
+
+// TasksOrErr returns the Tasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) TasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[1] {
+		return e.Tasks, nil
+	}
+	return nil, &NotLoadedError{edge: "tasks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -238,6 +249,11 @@ func (pr *Project) Value(name string) (ent.Value, error) {
 // QueryAccount queries the "account" edge of the Project entity.
 func (pr *Project) QueryAccount() *AccountQuery {
 	return NewProjectClient(pr.config).QueryAccount(pr)
+}
+
+// QueryTasks queries the "tasks" edge of the Project entity.
+func (pr *Project) QueryTasks() *TaskQuery {
+	return NewProjectClient(pr.config).QueryTasks(pr)
 }
 
 // Update returns a builder for updating this Project.
