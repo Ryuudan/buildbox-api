@@ -7,7 +7,9 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -63,11 +65,25 @@ func (u *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	user, err := u.userService.GetUserByID(r.Context(), 1)
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
+
 	if err != nil {
-		render.Error(w, r, http.StatusInternalServerError, err.Error())
+		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
 		return
 	}
+
+	user, err := u.userService.GetUserByID(r.Context(), id)
+
+	if err != nil {
+		if generated.IsNotFound(err) {
+			render.Error(w, r, http.StatusNotFound, "user not found")
+			return
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
 	render.JSON(w, http.StatusOK, user)
 }
 

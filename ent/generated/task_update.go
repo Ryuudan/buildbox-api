@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
@@ -46,6 +47,26 @@ func (tu *TaskUpdate) SetCreatedBy(i int) *TaskUpdate {
 // SetProjectID sets the "project_id" field.
 func (tu *TaskUpdate) SetProjectID(i int) *TaskUpdate {
 	tu.mutation.SetProjectID(i)
+	return tu
+}
+
+// SetTaskMilestoneID sets the "task_milestone_id" field.
+func (tu *TaskUpdate) SetTaskMilestoneID(i int) *TaskUpdate {
+	tu.mutation.SetTaskMilestoneID(i)
+	return tu
+}
+
+// SetNillableTaskMilestoneID sets the "task_milestone_id" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableTaskMilestoneID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetTaskMilestoneID(*i)
+	}
+	return tu
+}
+
+// ClearTaskMilestoneID clears the value of the "task_milestone_id" field.
+func (tu *TaskUpdate) ClearTaskMilestoneID() *TaskUpdate {
+	tu.mutation.ClearTaskMilestoneID()
 	return tu
 }
 
@@ -116,6 +137,25 @@ func (tu *TaskUpdate) SetProject(p *Project) *TaskUpdate {
 	return tu.SetProjectID(p.ID)
 }
 
+// SetMilestoneID sets the "milestone" edge to the Milestone entity by ID.
+func (tu *TaskUpdate) SetMilestoneID(id int) *TaskUpdate {
+	tu.mutation.SetMilestoneID(id)
+	return tu
+}
+
+// SetNillableMilestoneID sets the "milestone" edge to the Milestone entity by ID if the given value is not nil.
+func (tu *TaskUpdate) SetNillableMilestoneID(id *int) *TaskUpdate {
+	if id != nil {
+		tu = tu.SetMilestoneID(*id)
+	}
+	return tu
+}
+
+// SetMilestone sets the "milestone" edge to the Milestone entity.
+func (tu *TaskUpdate) SetMilestone(m *Milestone) *TaskUpdate {
+	return tu.SetMilestoneID(m.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tu *TaskUpdate) Mutation() *TaskMutation {
 	return tu.mutation
@@ -136,6 +176,12 @@ func (tu *TaskUpdate) ClearUser() *TaskUpdate {
 // ClearProject clears the "project" edge to the Project entity.
 func (tu *TaskUpdate) ClearProject() *TaskUpdate {
 	tu.mutation.ClearProject()
+	return tu
+}
+
+// ClearMilestone clears the "milestone" edge to the Milestone entity.
+func (tu *TaskUpdate) ClearMilestone() *TaskUpdate {
+	tu.mutation.ClearMilestone()
 	return tu
 }
 
@@ -304,6 +350,35 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if tu.mutation.MilestoneCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.MilestoneTable,
+			Columns: []string{task.MilestoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.MilestoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.MilestoneTable,
+			Columns: []string{task.MilestoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{task.Label}
@@ -339,6 +414,26 @@ func (tuo *TaskUpdateOne) SetCreatedBy(i int) *TaskUpdateOne {
 // SetProjectID sets the "project_id" field.
 func (tuo *TaskUpdateOne) SetProjectID(i int) *TaskUpdateOne {
 	tuo.mutation.SetProjectID(i)
+	return tuo
+}
+
+// SetTaskMilestoneID sets the "task_milestone_id" field.
+func (tuo *TaskUpdateOne) SetTaskMilestoneID(i int) *TaskUpdateOne {
+	tuo.mutation.SetTaskMilestoneID(i)
+	return tuo
+}
+
+// SetNillableTaskMilestoneID sets the "task_milestone_id" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableTaskMilestoneID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetTaskMilestoneID(*i)
+	}
+	return tuo
+}
+
+// ClearTaskMilestoneID clears the value of the "task_milestone_id" field.
+func (tuo *TaskUpdateOne) ClearTaskMilestoneID() *TaskUpdateOne {
+	tuo.mutation.ClearTaskMilestoneID()
 	return tuo
 }
 
@@ -409,6 +504,25 @@ func (tuo *TaskUpdateOne) SetProject(p *Project) *TaskUpdateOne {
 	return tuo.SetProjectID(p.ID)
 }
 
+// SetMilestoneID sets the "milestone" edge to the Milestone entity by ID.
+func (tuo *TaskUpdateOne) SetMilestoneID(id int) *TaskUpdateOne {
+	tuo.mutation.SetMilestoneID(id)
+	return tuo
+}
+
+// SetNillableMilestoneID sets the "milestone" edge to the Milestone entity by ID if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableMilestoneID(id *int) *TaskUpdateOne {
+	if id != nil {
+		tuo = tuo.SetMilestoneID(*id)
+	}
+	return tuo
+}
+
+// SetMilestone sets the "milestone" edge to the Milestone entity.
+func (tuo *TaskUpdateOne) SetMilestone(m *Milestone) *TaskUpdateOne {
+	return tuo.SetMilestoneID(m.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 	return tuo.mutation
@@ -429,6 +543,12 @@ func (tuo *TaskUpdateOne) ClearUser() *TaskUpdateOne {
 // ClearProject clears the "project" edge to the Project entity.
 func (tuo *TaskUpdateOne) ClearProject() *TaskUpdateOne {
 	tuo.mutation.ClearProject()
+	return tuo
+}
+
+// ClearMilestone clears the "milestone" edge to the Milestone entity.
+func (tuo *TaskUpdateOne) ClearMilestone() *TaskUpdateOne {
+	tuo.mutation.ClearMilestone()
 	return tuo
 }
 
@@ -620,6 +740,35 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.MilestoneCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.MilestoneTable,
+			Columns: []string{task.MilestoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.MilestoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.MilestoneTable,
+			Columns: []string{task.MilestoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

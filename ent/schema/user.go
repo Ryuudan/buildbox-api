@@ -56,5 +56,6 @@ func (User) Edges() []ent.Edge {
 			Required().
 			Unique(),
 		edge.To("tasks", Task.Type),
+		edge.To("milestones", Milestone.Type),
 	}
 }

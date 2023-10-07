@@ -14,10 +14,12 @@ func V1Tasks(client *generated.Client, router chi.Router) {
 
 	taskService := services.NewTaskService(client.Task)
 	projectService := services.NewProjectService(client.Project)
-	taskHandler := handlers.NewTaskHandlers(taskService, projectService)
+	milestoneService := services.NewMilestoneService(client.Milestone)
+	taskHandler := handlers.NewTaskHandlers(taskService, projectService, milestoneService)
 
 	router.Route("/tasks", func(r chi.Router) {
 		r.Get("/", taskHandler.GetTasks)
 		r.Post("/", taskHandler.CreateTask)
+		r.Get("/{id}", taskHandler.GetTaskByID)
 	})
 }

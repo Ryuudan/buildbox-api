@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
@@ -310,6 +311,21 @@ func (pu *ProjectUpdate) AddTasks(t ...*Task) *ProjectUpdate {
 	return pu.AddTaskIDs(ids...)
 }
 
+// AddMilestoneIDs adds the "milestones" edge to the Milestone entity by IDs.
+func (pu *ProjectUpdate) AddMilestoneIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddMilestoneIDs(ids...)
+	return pu
+}
+
+// AddMilestones adds the "milestones" edges to the Milestone entity.
+func (pu *ProjectUpdate) AddMilestones(m ...*Milestone) *ProjectUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return pu.AddMilestoneIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -340,6 +356,27 @@ func (pu *ProjectUpdate) RemoveTasks(t ...*Task) *ProjectUpdate {
 		ids[i] = t[i].ID
 	}
 	return pu.RemoveTaskIDs(ids...)
+}
+
+// ClearMilestones clears all "milestones" edges to the Milestone entity.
+func (pu *ProjectUpdate) ClearMilestones() *ProjectUpdate {
+	pu.mutation.ClearMilestones()
+	return pu
+}
+
+// RemoveMilestoneIDs removes the "milestones" edge to Milestone entities by IDs.
+func (pu *ProjectUpdate) RemoveMilestoneIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveMilestoneIDs(ids...)
+	return pu
+}
+
+// RemoveMilestones removes "milestones" edges to Milestone entities.
+func (pu *ProjectUpdate) RemoveMilestones(m ...*Milestone) *ProjectUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return pu.RemoveMilestoneIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -552,6 +589,51 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.MilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MilestonesTable,
+			Columns: []string{project.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedMilestonesIDs(); len(nodes) > 0 && !pu.mutation.MilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MilestonesTable,
+			Columns: []string{project.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.MilestonesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MilestonesTable,
+			Columns: []string{project.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -859,6 +941,21 @@ func (puo *ProjectUpdateOne) AddTasks(t ...*Task) *ProjectUpdateOne {
 	return puo.AddTaskIDs(ids...)
 }
 
+// AddMilestoneIDs adds the "milestones" edge to the Milestone entity by IDs.
+func (puo *ProjectUpdateOne) AddMilestoneIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddMilestoneIDs(ids...)
+	return puo
+}
+
+// AddMilestones adds the "milestones" edges to the Milestone entity.
+func (puo *ProjectUpdateOne) AddMilestones(m ...*Milestone) *ProjectUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return puo.AddMilestoneIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -889,6 +986,27 @@ func (puo *ProjectUpdateOne) RemoveTasks(t ...*Task) *ProjectUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return puo.RemoveTaskIDs(ids...)
+}
+
+// ClearMilestones clears all "milestones" edges to the Milestone entity.
+func (puo *ProjectUpdateOne) ClearMilestones() *ProjectUpdateOne {
+	puo.mutation.ClearMilestones()
+	return puo
+}
+
+// RemoveMilestoneIDs removes the "milestones" edge to Milestone entities by IDs.
+func (puo *ProjectUpdateOne) RemoveMilestoneIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveMilestoneIDs(ids...)
+	return puo
+}
+
+// RemoveMilestones removes "milestones" edges to Milestone entities.
+func (puo *ProjectUpdateOne) RemoveMilestones(m ...*Milestone) *ProjectUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return puo.RemoveMilestoneIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -1131,6 +1249,51 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.MilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MilestonesTable,
+			Columns: []string{project.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedMilestonesIDs(); len(nodes) > 0 && !puo.mutation.MilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MilestonesTable,
+			Columns: []string{project.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.MilestonesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MilestonesTable,
+			Columns: []string{project.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
@@ -31,6 +32,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
+	// Milestone is the client for interacting with the Milestone builders.
+	Milestone *MilestoneClient
 	// Plan is the client for interacting with the Plan builders.
 	Plan *PlanClient
 	// Project is the client for interacting with the Project builders.
@@ -57,6 +60,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Account = NewAccountClient(c.config)
+	c.Milestone = NewMilestoneClient(c.config)
 	c.Plan = NewPlanClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.Role = NewRoleClient(c.config)
@@ -149,6 +153,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:          ctx,
 		config:       cfg,
 		Account:      NewAccountClient(cfg),
+		Milestone:    NewMilestoneClient(cfg),
 		Plan:         NewPlanClient(cfg),
 		Project:      NewProjectClient(cfg),
 		Role:         NewRoleClient(cfg),
@@ -175,6 +180,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:          ctx,
 		config:       cfg,
 		Account:      NewAccountClient(cfg),
+		Milestone:    NewMilestoneClient(cfg),
 		Plan:         NewPlanClient(cfg),
 		Project:      NewProjectClient(cfg),
 		Role:         NewRoleClient(cfg),
@@ -210,7 +216,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Account, c.Plan, c.Project, c.Role, c.Subscription, c.Task, c.User,
+		c.Account, c.Milestone, c.Plan, c.Project, c.Role, c.Subscription, c.Task,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -220,7 +227,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Account, c.Plan, c.Project, c.Role, c.Subscription, c.Task, c.User,
+		c.Account, c.Milestone, c.Plan, c.Project, c.Role, c.Subscription, c.Task,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -231,6 +239,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AccountMutation:
 		return c.Account.mutate(ctx, m)
+	case *MilestoneMutation:
+		return c.Milestone.mutate(ctx, m)
 	case *PlanMutation:
 		return c.Plan.mutate(ctx, m)
 	case *ProjectMutation:
@@ -436,6 +446,22 @@ func (c *AccountClient) QueryTasks(a *Account) *TaskQuery {
 	return query
 }
 
+// QueryMilestones queries the milestones edge of a Account.
+func (c *AccountClient) QueryMilestones(a *Account) *MilestoneQuery {
+	query := (&MilestoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, id),
+			sqlgraph.To(milestone.Table, milestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.MilestonesTable, account.MilestonesColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AccountClient) Hooks() []Hook {
 	return c.hooks.Account
@@ -458,6 +484,203 @@ func (c *AccountClient) mutate(ctx context.Context, m *AccountMutation) (Value, 
 		return (&AccountDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("generated: unknown Account mutation op: %q", m.Op())
+	}
+}
+
+// MilestoneClient is a client for the Milestone schema.
+type MilestoneClient struct {
+	config
+}
+
+// NewMilestoneClient returns a client for the Milestone from the given config.
+func NewMilestoneClient(c config) *MilestoneClient {
+	return &MilestoneClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `milestone.Hooks(f(g(h())))`.
+func (c *MilestoneClient) Use(hooks ...Hook) {
+	c.hooks.Milestone = append(c.hooks.Milestone, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `milestone.Intercept(f(g(h())))`.
+func (c *MilestoneClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Milestone = append(c.inters.Milestone, interceptors...)
+}
+
+// Create returns a builder for creating a Milestone entity.
+func (c *MilestoneClient) Create() *MilestoneCreate {
+	mutation := newMilestoneMutation(c.config, OpCreate)
+	return &MilestoneCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Milestone entities.
+func (c *MilestoneClient) CreateBulk(builders ...*MilestoneCreate) *MilestoneCreateBulk {
+	return &MilestoneCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MilestoneClient) MapCreateBulk(slice any, setFunc func(*MilestoneCreate, int)) *MilestoneCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MilestoneCreateBulk{err: fmt.Errorf("calling to MilestoneClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MilestoneCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MilestoneCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Milestone.
+func (c *MilestoneClient) Update() *MilestoneUpdate {
+	mutation := newMilestoneMutation(c.config, OpUpdate)
+	return &MilestoneUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MilestoneClient) UpdateOne(m *Milestone) *MilestoneUpdateOne {
+	mutation := newMilestoneMutation(c.config, OpUpdateOne, withMilestone(m))
+	return &MilestoneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MilestoneClient) UpdateOneID(id int) *MilestoneUpdateOne {
+	mutation := newMilestoneMutation(c.config, OpUpdateOne, withMilestoneID(id))
+	return &MilestoneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Milestone.
+func (c *MilestoneClient) Delete() *MilestoneDelete {
+	mutation := newMilestoneMutation(c.config, OpDelete)
+	return &MilestoneDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MilestoneClient) DeleteOne(m *Milestone) *MilestoneDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MilestoneClient) DeleteOneID(id int) *MilestoneDeleteOne {
+	builder := c.Delete().Where(milestone.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MilestoneDeleteOne{builder}
+}
+
+// Query returns a query builder for Milestone.
+func (c *MilestoneClient) Query() *MilestoneQuery {
+	return &MilestoneQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMilestone},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Milestone entity by its id.
+func (c *MilestoneClient) Get(ctx context.Context, id int) (*Milestone, error) {
+	return c.Query().Where(milestone.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MilestoneClient) GetX(ctx context.Context, id int) *Milestone {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTasks queries the tasks edge of a Milestone.
+func (c *MilestoneClient) QueryTasks(m *Milestone) *TaskQuery {
+	query := (&TaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(milestone.Table, milestone.FieldID, id),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, milestone.TasksTable, milestone.TasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAccount queries the account edge of a Milestone.
+func (c *MilestoneClient) QueryAccount(m *Milestone) *AccountQuery {
+	query := (&AccountClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(milestone.Table, milestone.FieldID, id),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, milestone.AccountTable, milestone.AccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a Milestone.
+func (c *MilestoneClient) QueryUser(m *Milestone) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(milestone.Table, milestone.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, milestone.UserTable, milestone.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a Milestone.
+func (c *MilestoneClient) QueryProject(m *Milestone) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(milestone.Table, milestone.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, milestone.ProjectTable, milestone.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MilestoneClient) Hooks() []Hook {
+	return c.hooks.Milestone
+}
+
+// Interceptors returns the client interceptors.
+func (c *MilestoneClient) Interceptors() []Interceptor {
+	return c.inters.Milestone
+}
+
+func (c *MilestoneClient) mutate(ctx context.Context, m *MilestoneMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MilestoneCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MilestoneUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MilestoneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MilestoneDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("generated: unknown Milestone mutation op: %q", m.Op())
 	}
 }
 
@@ -743,6 +966,22 @@ func (c *ProjectClient) QueryTasks(pr *Project) *TaskQuery {
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.TasksTable, project.TasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMilestones queries the milestones edge of a Project.
+func (c *ProjectClient) QueryMilestones(pr *Project) *MilestoneQuery {
+	query := (&MilestoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(milestone.Table, milestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.MilestonesTable, project.MilestonesColumn),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -1245,6 +1484,22 @@ func (c *TaskClient) QueryProject(t *Task) *ProjectQuery {
 	return query
 }
 
+// QueryMilestone queries the milestone edge of a Task.
+func (c *TaskClient) QueryMilestone(t *Task) *MilestoneQuery {
+	query := (&MilestoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(milestone.Table, milestone.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, task.MilestoneTable, task.MilestoneColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TaskClient) Hooks() []Hook {
 	return c.hooks.Task
@@ -1410,6 +1665,22 @@ func (c *UserClient) QueryTasks(u *User) *TaskQuery {
 	return query
 }
 
+// QueryMilestones queries the milestones edge of a User.
+func (c *UserClient) QueryMilestones(u *User) *MilestoneQuery {
+	query := (&MilestoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(milestone.Table, milestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.MilestonesTable, user.MilestonesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1438,9 +1709,10 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Account, Plan, Project, Role, Subscription, Task, User []ent.Hook
+		Account, Milestone, Plan, Project, Role, Subscription, Task, User []ent.Hook
 	}
 	inters struct {
-		Account, Plan, Project, Role, Subscription, Task, User []ent.Interceptor
+		Account, Milestone, Plan, Project, Role, Subscription, Task,
+		User []ent.Interceptor
 	}
 )

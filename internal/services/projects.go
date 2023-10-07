@@ -207,7 +207,18 @@ func (s *projectService) DeleteManyProjectsByID(ctx context.Context, ids []int) 
 
 // GetProjectByID retrieves a project by its ID.
 func (s *projectService) GetProjectByID(ctx context.Context, id int) (*generated.Project, error) {
-	project, err := s.client.Get(ctx, id)
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	project, err := s.client.Query().
+		Where(
+			project.IDEQ(id),
+			project.AccountIDEQ(int(claims["account_id"].(float64))),
+		).
+		First(ctx)
+
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, errors.New("project not found")

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
@@ -46,6 +47,32 @@ func init() {
 	accountDescUUID := accountFields[5].Descriptor()
 	// account.DefaultUUID holds the default value on creation for the uuid field.
 	account.DefaultUUID = accountDescUUID.Default.(func() uuid.UUID)
+	milestoneFields := schema.Milestone{}.Fields()
+	_ = milestoneFields
+	// milestoneDescTitle is the schema descriptor for title field.
+	milestoneDescTitle := milestoneFields[3].Descriptor()
+	// milestone.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	milestone.TitleValidator = milestoneDescTitle.Validators[0].(func(string) error)
+	// milestoneDescDescription is the schema descriptor for description field.
+	milestoneDescDescription := milestoneFields[4].Descriptor()
+	// milestone.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	milestone.DescriptionValidator = milestoneDescDescription.Validators[0].(func(string) error)
+	// milestoneDescUpdatedAt is the schema descriptor for updated_at field.
+	milestoneDescUpdatedAt := milestoneFields[6].Descriptor()
+	// milestone.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	milestone.DefaultUpdatedAt = milestoneDescUpdatedAt.Default.(func() time.Time)
+	// milestoneDescCreatedAt is the schema descriptor for created_at field.
+	milestoneDescCreatedAt := milestoneFields[7].Descriptor()
+	// milestone.DefaultCreatedAt holds the default value on creation for the created_at field.
+	milestone.DefaultCreatedAt = milestoneDescCreatedAt.Default.(func() time.Time)
+	// milestoneDescDeleted is the schema descriptor for deleted field.
+	milestoneDescDeleted := milestoneFields[8].Descriptor()
+	// milestone.DefaultDeleted holds the default value on creation for the deleted field.
+	milestone.DefaultDeleted = milestoneDescDeleted.Default.(bool)
+	// milestoneDescUUID is the schema descriptor for uuid field.
+	milestoneDescUUID := milestoneFields[9].Descriptor()
+	// milestone.DefaultUUID holds the default value on creation for the uuid field.
+	milestone.DefaultUUID = milestoneDescUUID.Default.(func() uuid.UUID)
 	planFields := schema.Plan{}.Fields()
 	_ = planFields
 	// planDescName is the schema descriptor for name field.
@@ -141,27 +168,27 @@ func init() {
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescTitle is the schema descriptor for title field.
-	taskDescTitle := taskFields[3].Descriptor()
+	taskDescTitle := taskFields[4].Descriptor()
 	// task.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	task.TitleValidator = taskDescTitle.Validators[0].(func(string) error)
 	// taskDescDescription is the schema descriptor for description field.
-	taskDescDescription := taskFields[4].Descriptor()
+	taskDescDescription := taskFields[5].Descriptor()
 	// task.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	task.DescriptionValidator = taskDescDescription.Validators[0].(func(string) error)
 	// taskDescUpdatedAt is the schema descriptor for updated_at field.
-	taskDescUpdatedAt := taskFields[5].Descriptor()
+	taskDescUpdatedAt := taskFields[6].Descriptor()
 	// task.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
 	// taskDescCreatedAt is the schema descriptor for created_at field.
-	taskDescCreatedAt := taskFields[6].Descriptor()
+	taskDescCreatedAt := taskFields[7].Descriptor()
 	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
 	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
 	// taskDescDeleted is the schema descriptor for deleted field.
-	taskDescDeleted := taskFields[7].Descriptor()
+	taskDescDeleted := taskFields[8].Descriptor()
 	// task.DefaultDeleted holds the default value on creation for the deleted field.
 	task.DefaultDeleted = taskDescDeleted.Default.(bool)
 	// taskDescUUID is the schema descriptor for uuid field.
-	taskDescUUID := taskFields[8].Descriptor()
+	taskDescUUID := taskFields[9].Descriptor()
 	// task.DefaultUUID holds the default value on creation for the uuid field.
 	task.DefaultUUID = taskDescUUID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
