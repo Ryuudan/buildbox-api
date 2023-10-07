@@ -11,7 +11,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: test_db
+          POSTGRES_DB: test
           POSTGRES_PASSWORD: pass
         ports:
           - 5432:5432
@@ -32,4 +32,4 @@ jobs:
         with:
           dir: ent/generated/migrate/migration
           dir-format: golang-migrate # Or: atlas, goose, dbmate
-          dev-url: postgres://postgres:pass@localhost:5432/test_db?sslmode=disable
+          dev-url: postgres://postgres:pass@localhost:5432/test?sslmode=disable
