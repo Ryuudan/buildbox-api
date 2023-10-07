@@ -16,6 +16,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
+	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
@@ -30,6 +31,7 @@ type AccountQuery struct {
 	withProjects      *ProjectQuery
 	withSubscriptions *SubscriptionQuery
 	withRoles         *RoleQuery
+	withTasks         *TaskQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -147,6 +149,28 @@ func (aq *AccountQuery) QueryRoles() *RoleQuery {
 			sqlgraph.From(account.Table, account.FieldID, selector),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, account.RolesTable, account.RolesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTasks chains the current query on the "tasks" edge.
+func (aq *AccountQuery) QueryTasks() *TaskQuery {
+	query := (&TaskClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.TasksTable, account.TasksColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -350,6 +374,7 @@ func (aq *AccountQuery) Clone() *AccountQuery {
 		withProjects:      aq.withProjects.Clone(),
 		withSubscriptions: aq.withSubscriptions.Clone(),
 		withRoles:         aq.withRoles.Clone(),
+		withTasks:         aq.withTasks.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -397,6 +422,17 @@ func (aq *AccountQuery) WithRoles(opts ...func(*RoleQuery)) *AccountQuery {
 		opt(query)
 	}
 	aq.withRoles = query
+	return aq
+}
+
+// WithTasks tells the query-builder to eager-load the nodes that are connected to
+// the "tasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AccountQuery) WithTasks(opts ...func(*TaskQuery)) *AccountQuery {
+	query := (&TaskClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withTasks = query
 	return aq
 }
 
@@ -478,11 +514,12 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 	var (
 		nodes       = []*Account{}
 		_spec       = aq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			aq.withUsers != nil,
 			aq.withProjects != nil,
 			aq.withSubscriptions != nil,
 			aq.withRoles != nil,
+			aq.withTasks != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -528,6 +565,13 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 		if err := aq.loadRoles(ctx, query, nodes,
 			func(n *Account) { n.Edges.Roles = []*Role{} },
 			func(n *Account, e *Role) { n.Edges.Roles = append(n.Edges.Roles, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withTasks; query != nil {
+		if err := aq.loadTasks(ctx, query, nodes,
+			func(n *Account) { n.Edges.Tasks = []*Task{} },
+			func(n *Account, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -639,6 +683,36 @@ func (aq *AccountQuery) loadRoles(ctx context.Context, query *RoleQuery, nodes [
 	}
 	query.Where(predicate.Role(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(account.RolesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AccountID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "account_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *AccountQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Account, init func(*Account), assign func(*Account, *Task)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Account)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(task.FieldAccountID)
+	}
+	query.Where(predicate.Task(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(account.TasksColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

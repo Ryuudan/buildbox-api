@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
+	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
+	"github.com/go-chi/chi/v5"
 )
 
 type AccountHandler struct {
@@ -28,13 +31,59 @@ func NewAccountHandler(accountService services.AccountService, userService servi
 }
 
 func (a *AccountHandler) GetAccounts(w http.ResponseWriter, r *http.Request) {
-	accounts, err := a.accountService.GetAccounts(r.Context())
+
+	var filters models.Filters
+
+	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	orders, err := render.ParseOrderString(queryParams.Order)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for _, fields := range orders {
+		filters.Order = append(filters.Order, *fields)
+	}
+
+	accounts, total, err := a.accountService.GetAccounts(r.Context(), queryParams)
+
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	render.JSON(w, http.StatusOK, accounts)
+	render.JSON(w, http.StatusOK, &render.PaginatedResults{
+		Results: accounts,
+		Meta: render.GenerateMeta(
+			total,
+			queryParams,
+			len(accounts),
+		),
+	})
+}
+
+func (a *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	account, err := a.accountService.GetAccountByID(r.Context(), id)
+	if err != nil {
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	render.JSON(w, http.StatusOK, account)
 }
 
 func CalculateEndDate(planName string, billingCycle subscription.BillingCycle) time.Time {

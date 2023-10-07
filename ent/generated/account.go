@@ -46,9 +46,11 @@ type AccountEdges struct {
 	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
 	// Roles holds the value of the roles edge.
 	Roles []*Role `json:"roles,omitempty"`
+	// Tasks holds the value of the tasks edge.
+	Tasks []*Task `json:"tasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -85,6 +87,15 @@ func (e AccountEdges) RolesOrErr() ([]*Role, error) {
 		return e.Roles, nil
 	}
 	return nil, &NotLoadedError{edge: "roles"}
+}
+
+// TasksOrErr returns the Tasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) TasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[4] {
+		return e.Tasks, nil
+	}
+	return nil, &NotLoadedError{edge: "tasks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -188,6 +199,11 @@ func (a *Account) QuerySubscriptions() *SubscriptionQuery {
 // QueryRoles queries the "roles" edge of the Account entity.
 func (a *Account) QueryRoles() *RoleQuery {
 	return NewAccountClient(a.config).QueryRoles(a)
+}
+
+// QueryTasks queries the "tasks" edge of the Account entity.
+func (a *Account) QueryTasks() *TaskQuery {
+	return NewAccountClient(a.config).QueryTasks(a)
 }
 
 // Update returns a builder for updating this Account.

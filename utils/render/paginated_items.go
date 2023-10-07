@@ -180,14 +180,22 @@ func getStringValue(values url.Values, key string, defaultValue string) string {
 // The generated Meta structure provides metadata that can be used for building paginated
 // responses.
 func GenerateMeta(total int, queryParams *QueryParams, count int) *Meta {
+
+	from := (queryParams.Page-1)*queryParams.Limit + 1
+	to := (queryParams.Page-1)*queryParams.Limit + count
+
+	if total == 0 {
+		from = 0
+	}
+
 	return &Meta{
 		Page:          queryParams.Page,
 		Size:          queryParams.Limit,
 		TotalFiltered: total,
 		Count:         count,
 		LastPage:      int(math.Ceil(float64(total) / float64(queryParams.Limit))),
-		From:          (queryParams.Page-1)*queryParams.Limit + 1,
-		To:            (queryParams.Page-1)*queryParams.Limit + count,
+		From:          from,
+		To:            to,
 		Query:         queryParams.Query,
 		Order:         queryParams.Order,
 	}

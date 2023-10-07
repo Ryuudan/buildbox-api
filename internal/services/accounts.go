@@ -6,13 +6,14 @@ import (
 	"sync"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/utils/render"
 
 	_ "github.com/lib/pq"
 )
 
 type AccountService interface {
 	CreateAccount(ctx context.Context, newAccount *generated.Account) (*generated.Account, error)
-	GetAccounts(ctx context.Context) ([]*generated.Account, error)
+	GetAccounts(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Account, int, error)
 	GetAccountByID(ctx context.Context, id int) (*generated.Account, error)
 }
 
@@ -44,7 +45,8 @@ func (s *accountService) CreateAccount(ctx context.Context, newAccount *generate
 	return account, nil
 }
 
-func (s *accountService) GetAccounts(ctx context.Context) ([]*generated.Account, error) {
+// TODO: Implement pagination
+func (s *accountService) GetAccounts(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Account, int, error) {
 
 	var wg sync.WaitGroup
 	var accounts []*generated.Account
@@ -55,7 +57,10 @@ func (s *accountService) GetAccounts(ctx context.Context) ([]*generated.Account,
 
 	go func() {
 		defer wg.Done()
-		accounts, err1 = s.client.Query().All(ctx)
+		accounts, err1 = s.client.Query().
+			Offset((queryParams.Page - 1) * queryParams.Limit).
+			Limit(queryParams.Limit).
+			All(ctx)
 	}()
 
 	go func() {
@@ -68,15 +73,14 @@ func (s *accountService) GetAccounts(ctx context.Context) ([]*generated.Account,
 	wg.Wait()
 
 	if err1 != nil {
-		return nil, err1
+		return nil, 0, err1
 	}
 
 	if err2 != nil {
-		return nil, err2
+		return nil, 0, err2
 	}
 
-	println("Total Filtered: ", totalFiltered)
-	return accounts, nil
+	return accounts, totalFiltered, nil
 }
 
 func (s *accountService) GetAccountByID(ctx context.Context, id int) (*generated.Account, error) {

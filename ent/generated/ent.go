@@ -17,6 +17,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
+	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
@@ -83,6 +84,7 @@ func checkColumn(table, column string) error {
 			project.Table:      project.ValidColumn,
 			role.Table:         role.ValidColumn,
 			subscription.Table: subscription.ValidColumn,
+			task.Table:         task.ValidColumn,
 			user.Table:         user.ValidColumn,
 		})
 	})

@@ -55,5 +55,6 @@ func (User) Edges() []ent.Edge {
 			Ref("users").
 			Required().
 			Unique(),
+		edge.To("tasks", Task.Type),
 	}
 }

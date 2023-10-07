@@ -35,6 +35,8 @@ const (
 	EdgeSubscriptions = "subscriptions"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgeTasks holds the string denoting the tasks edge name in mutations.
+	EdgeTasks = "tasks"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// UsersTable is the table that holds the users relation/edge.
@@ -65,6 +67,13 @@ const (
 	RolesInverseTable = "roles"
 	// RolesColumn is the table column denoting the roles relation/edge.
 	RolesColumn = "account_id"
+	// TasksTable is the table that holds the tasks relation/edge.
+	TasksTable = "tasks"
+	// TasksInverseTable is the table name for the Task entity.
+	// It exists in this package in order to avoid circular dependency with the "task" package.
+	TasksInverseTable = "tasks"
+	// TasksColumn is the table column denoting the tasks relation/edge.
+	TasksColumn = "account_id"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -196,6 +205,20 @@ func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRolesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTasksCount orders the results by tasks count.
+func ByTasksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTasksStep(), opts...)
+	}
+}
+
+// ByTasks orders the results by tasks terms.
+func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -222,5 +245,12 @@ func newRolesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RolesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RolesTable, RolesColumn),
+	)
+}
+func newTasksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TasksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
 	)
 }

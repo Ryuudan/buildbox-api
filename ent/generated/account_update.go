@@ -16,6 +16,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
+	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
@@ -158,6 +159,21 @@ func (au *AccountUpdate) AddRoles(r ...*Role) *AccountUpdate {
 	return au.AddRoleIDs(ids...)
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (au *AccountUpdate) AddTaskIDs(ids ...int) *AccountUpdate {
+	au.mutation.AddTaskIDs(ids...)
+	return au
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (au *AccountUpdate) AddTasks(t ...*Task) *AccountUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.AddTaskIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (au *AccountUpdate) Mutation() *AccountMutation {
 	return au.mutation
@@ -245,6 +261,27 @@ func (au *AccountUpdate) RemoveRoles(r ...*Role) *AccountUpdate {
 		ids[i] = r[i].ID
 	}
 	return au.RemoveRoleIDs(ids...)
+}
+
+// ClearTasks clears all "tasks" edges to the Task entity.
+func (au *AccountUpdate) ClearTasks() *AccountUpdate {
+	au.mutation.ClearTasks()
+	return au
+}
+
+// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
+func (au *AccountUpdate) RemoveTaskIDs(ids ...int) *AccountUpdate {
+	au.mutation.RemoveTaskIDs(ids...)
+	return au
+}
+
+// RemoveTasks removes "tasks" edges to Task entities.
+func (au *AccountUpdate) RemoveTasks(t ...*Task) *AccountUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.RemoveTaskIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -510,6 +547,51 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TasksTable,
+			Columns: []string{account.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedTasksIDs(); len(nodes) > 0 && !au.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TasksTable,
+			Columns: []string{account.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TasksTable,
+			Columns: []string{account.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -656,6 +738,21 @@ func (auo *AccountUpdateOne) AddRoles(r ...*Role) *AccountUpdateOne {
 	return auo.AddRoleIDs(ids...)
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (auo *AccountUpdateOne) AddTaskIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.AddTaskIDs(ids...)
+	return auo
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (auo *AccountUpdateOne) AddTasks(t ...*Task) *AccountUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.AddTaskIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (auo *AccountUpdateOne) Mutation() *AccountMutation {
 	return auo.mutation
@@ -743,6 +840,27 @@ func (auo *AccountUpdateOne) RemoveRoles(r ...*Role) *AccountUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return auo.RemoveRoleIDs(ids...)
+}
+
+// ClearTasks clears all "tasks" edges to the Task entity.
+func (auo *AccountUpdateOne) ClearTasks() *AccountUpdateOne {
+	auo.mutation.ClearTasks()
+	return auo
+}
+
+// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
+func (auo *AccountUpdateOne) RemoveTaskIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.RemoveTaskIDs(ids...)
+	return auo
+}
+
+// RemoveTasks removes "tasks" edges to Task entities.
+func (auo *AccountUpdateOne) RemoveTasks(t ...*Task) *AccountUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.RemoveTaskIDs(ids...)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -1031,6 +1149,51 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TasksTable,
+			Columns: []string{account.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedTasksIDs(); len(nodes) > 0 && !auo.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TasksTable,
+			Columns: []string{account.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TasksTable,
+			Columns: []string{account.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

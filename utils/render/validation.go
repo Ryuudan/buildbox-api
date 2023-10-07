@@ -63,6 +63,7 @@ func CustomValidationError(w http.ResponseWriter, r *http.Request, details []Val
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnprocessableEntity)
 	if _, err := w.Write(response); err != nil {

@@ -15,6 +15,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Extract the JWT token from the Authorization header
 		authHeader := r.Header.Get("Authorization")
+
 		if authHeader == "" {
 			// Authorization header not found, return unauthorized status
 			render.Error(w, r, http.StatusUnauthorized, "Please provide a valid token, or login to get one.")
