@@ -1,4 +1,4 @@
-name: Atlas Migration Lint
+name: Migration Lint
 on:
   pull_request:
     branches: ["main", "staging", "dev"]
