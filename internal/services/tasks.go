@@ -17,7 +17,7 @@ import (
 type TaskService interface {
 	CreateTask(ctx context.Context, newTask *generated.Task) (*generated.Task, error)
 	GetTasks(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Task, int, error)
-	// GetTaskByID(ctx context.Context, name string) (*generated.Role, error)
+	GetTaskByID(ctx context.Context, id int) (*generated.Task, error)
 }
 
 type taskService struct {
@@ -38,6 +38,7 @@ func (s *taskService) CreateTask(ctx context.Context, newTask *generated.Task) (
 	task, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
+		SetNillableTaskMilestoneID(newTask.TaskMilestoneID).
 		SetProjectID(newTask.ProjectID).
 		SetTitle(newTask.Title).
 		SetDescription(newTask.Description).
@@ -83,6 +84,7 @@ func (s *taskService) GetTasks(ctx context.Context, queryParams *render.QueryPar
 			Query().
 			Where(baseFilters...).
 			Order(
+				// TODO: Add others ways to sort
 				task.ByCreatedAt(
 					sql.OrderDesc(),
 				),
@@ -111,4 +113,25 @@ func (s *taskService) GetTasks(ctx context.Context, queryParams *render.QueryPar
 	}
 
 	return tasks, totalFiltered, nil
+}
+
+func (s *taskService) GetTaskByID(ctx context.Context, id int) (*generated.Task, error) {
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	task, err := s.client.
+		Query().
+		Where(
+			task.AccountIDEQ(int(claims["account_id"].(float64))),
+			task.IDEQ(id),
+		).
+		First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }

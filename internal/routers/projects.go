@@ -20,10 +20,12 @@ func V1Projects(client *generated.Client, router chi.Router) {
 	router.Route("/projects", func(r chi.Router) {
 		r.Get("/", project.GetProjects)
 		r.Post("/", project.CreateProject)
+		r.Get("/{id}", project.GetProjectByID)
 
-		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", project.GetProjectByID)
-			// r.Patch("/delete", project.DeleteProjectByID)
-		})
+		// other approach
+		// r.Route("/{id}", func(r chi.Router) {
+		// 	r.Get("/", project.GetProjectByID)
+		// 	// r.Patch("/delete", project.DeleteProjectByID)
+		// })
 	})
 }

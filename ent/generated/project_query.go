@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
@@ -20,12 +21,13 @@ import (
 // ProjectQuery is the builder for querying Project entities.
 type ProjectQuery struct {
 	config
-	ctx         *QueryContext
-	order       []project.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Project
-	withAccount *AccountQuery
-	withTasks   *TaskQuery
+	ctx            *QueryContext
+	order          []project.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Project
+	withAccount    *AccountQuery
+	withTasks      *TaskQuery
+	withMilestones *MilestoneQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +101,28 @@ func (pq *ProjectQuery) QueryTasks() *TaskQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.TasksTable, project.TasksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMilestones chains the current query on the "milestones" edge.
+func (pq *ProjectQuery) QueryMilestones() *MilestoneQuery {
+	query := (&MilestoneClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(milestone.Table, milestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.MilestonesTable, project.MilestonesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +317,14 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:      pq.config,
-		ctx:         pq.ctx.Clone(),
-		order:       append([]project.OrderOption{}, pq.order...),
-		inters:      append([]Interceptor{}, pq.inters...),
-		predicates:  append([]predicate.Project{}, pq.predicates...),
-		withAccount: pq.withAccount.Clone(),
-		withTasks:   pq.withTasks.Clone(),
+		config:         pq.config,
+		ctx:            pq.ctx.Clone(),
+		order:          append([]project.OrderOption{}, pq.order...),
+		inters:         append([]Interceptor{}, pq.inters...),
+		predicates:     append([]predicate.Project{}, pq.predicates...),
+		withAccount:    pq.withAccount.Clone(),
+		withTasks:      pq.withTasks.Clone(),
+		withMilestones: pq.withMilestones.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -325,6 +350,17 @@ func (pq *ProjectQuery) WithTasks(opts ...func(*TaskQuery)) *ProjectQuery {
 		opt(query)
 	}
 	pq.withTasks = query
+	return pq
+}
+
+// WithMilestones tells the query-builder to eager-load the nodes that are connected to
+// the "milestones" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithMilestones(opts ...func(*MilestoneQuery)) *ProjectQuery {
+	query := (&MilestoneClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withMilestones = query
 	return pq
 }
 
@@ -406,9 +442,10 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			pq.withAccount != nil,
 			pq.withTasks != nil,
+			pq.withMilestones != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -439,6 +476,13 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 		if err := pq.loadTasks(ctx, query, nodes,
 			func(n *Project) { n.Edges.Tasks = []*Task{} },
 			func(n *Project, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withMilestones; query != nil {
+		if err := pq.loadMilestones(ctx, query, nodes,
+			func(n *Project) { n.Edges.Milestones = []*Milestone{} },
+			func(n *Project, e *Milestone) { n.Edges.Milestones = append(n.Edges.Milestones, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -489,6 +533,36 @@ func (pq *ProjectQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes [
 	}
 	query.Where(predicate.Task(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(project.TasksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (pq *ProjectQuery) loadMilestones(ctx context.Context, query *MilestoneQuery, nodes []*Project, init func(*Project), assign func(*Project, *Milestone)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(milestone.FieldProjectID)
+	}
+	query.Where(predicate.Milestone(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.MilestonesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

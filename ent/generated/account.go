@@ -48,9 +48,11 @@ type AccountEdges struct {
 	Roles []*Role `json:"roles,omitempty"`
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
+	// Milestones holds the value of the milestones edge.
+	Milestones []*Milestone `json:"milestones,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -96,6 +98,15 @@ func (e AccountEdges) TasksOrErr() ([]*Task, error) {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
+}
+
+// MilestonesOrErr returns the Milestones value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) MilestonesOrErr() ([]*Milestone, error) {
+	if e.loadedTypes[5] {
+		return e.Milestones, nil
+	}
+	return nil, &NotLoadedError{edge: "milestones"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -204,6 +215,11 @@ func (a *Account) QueryRoles() *RoleQuery {
 // QueryTasks queries the "tasks" edge of the Account entity.
 func (a *Account) QueryTasks() *TaskQuery {
 	return NewAccountClient(a.config).QueryTasks(a)
+}
+
+// QueryMilestones queries the "milestones" edge of the Account entity.
+func (a *Account) QueryMilestones() *MilestoneQuery {
+	return NewAccountClient(a.config).QueryMilestones(a)
 }
 
 // Update returns a builder for updating this Account.

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -39,6 +40,20 @@ func (tc *TaskCreate) SetCreatedBy(i int) *TaskCreate {
 // SetProjectID sets the "project_id" field.
 func (tc *TaskCreate) SetProjectID(i int) *TaskCreate {
 	tc.mutation.SetProjectID(i)
+	return tc
+}
+
+// SetTaskMilestoneID sets the "task_milestone_id" field.
+func (tc *TaskCreate) SetTaskMilestoneID(i int) *TaskCreate {
+	tc.mutation.SetTaskMilestoneID(i)
+	return tc
+}
+
+// SetNillableTaskMilestoneID sets the "task_milestone_id" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableTaskMilestoneID(i *int) *TaskCreate {
+	if i != nil {
+		tc.SetTaskMilestoneID(*i)
+	}
 	return tc
 }
 
@@ -129,6 +144,25 @@ func (tc *TaskCreate) SetUser(u *User) *TaskCreate {
 // SetProject sets the "project" edge to the Project entity.
 func (tc *TaskCreate) SetProject(p *Project) *TaskCreate {
 	return tc.SetProjectID(p.ID)
+}
+
+// SetMilestoneID sets the "milestone" edge to the Milestone entity by ID.
+func (tc *TaskCreate) SetMilestoneID(id int) *TaskCreate {
+	tc.mutation.SetMilestoneID(id)
+	return tc
+}
+
+// SetNillableMilestoneID sets the "milestone" edge to the Milestone entity by ID if the given value is not nil.
+func (tc *TaskCreate) SetNillableMilestoneID(id *int) *TaskCreate {
+	if id != nil {
+		tc = tc.SetMilestoneID(*id)
+	}
+	return tc
+}
+
+// SetMilestone sets the "milestone" edge to the Milestone entity.
+func (tc *TaskCreate) SetMilestone(m *Milestone) *TaskCreate {
+	return tc.SetMilestoneID(m.ID)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -328,6 +362,23 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ProjectID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.MilestoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.MilestoneTable,
+			Columns: []string{task.MilestoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TaskMilestoneID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

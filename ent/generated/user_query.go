@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -20,12 +21,13 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx         *QueryContext
-	order       []user.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.User
-	withAccount *AccountQuery
-	withTasks   *TaskQuery
+	ctx            *QueryContext
+	order          []user.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.User
+	withAccount    *AccountQuery
+	withTasks      *TaskQuery
+	withMilestones *MilestoneQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +101,28 @@ func (uq *UserQuery) QueryTasks() *TaskQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.TasksTable, user.TasksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMilestones chains the current query on the "milestones" edge.
+func (uq *UserQuery) QueryMilestones() *MilestoneQuery {
+	query := (&MilestoneClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(milestone.Table, milestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.MilestonesTable, user.MilestonesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +317,14 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:      uq.config,
-		ctx:         uq.ctx.Clone(),
-		order:       append([]user.OrderOption{}, uq.order...),
-		inters:      append([]Interceptor{}, uq.inters...),
-		predicates:  append([]predicate.User{}, uq.predicates...),
-		withAccount: uq.withAccount.Clone(),
-		withTasks:   uq.withTasks.Clone(),
+		config:         uq.config,
+		ctx:            uq.ctx.Clone(),
+		order:          append([]user.OrderOption{}, uq.order...),
+		inters:         append([]Interceptor{}, uq.inters...),
+		predicates:     append([]predicate.User{}, uq.predicates...),
+		withAccount:    uq.withAccount.Clone(),
+		withTasks:      uq.withTasks.Clone(),
+		withMilestones: uq.withMilestones.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -325,6 +350,17 @@ func (uq *UserQuery) WithTasks(opts ...func(*TaskQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withTasks = query
+	return uq
+}
+
+// WithMilestones tells the query-builder to eager-load the nodes that are connected to
+// the "milestones" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithMilestones(opts ...func(*MilestoneQuery)) *UserQuery {
+	query := (&MilestoneClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withMilestones = query
 	return uq
 }
 
@@ -406,9 +442,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			uq.withAccount != nil,
 			uq.withTasks != nil,
+			uq.withMilestones != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -439,6 +476,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadTasks(ctx, query, nodes,
 			func(n *User) { n.Edges.Tasks = []*Task{} },
 			func(n *User, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withMilestones; query != nil {
+		if err := uq.loadMilestones(ctx, query, nodes,
+			func(n *User) { n.Edges.Milestones = []*Milestone{} },
+			func(n *User, e *Milestone) { n.Edges.Milestones = append(n.Edges.Milestones, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -489,6 +533,36 @@ func (uq *UserQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*U
 	}
 	query.Where(predicate.Task(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.TasksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CreatedBy
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadMilestones(ctx context.Context, query *MilestoneQuery, nodes []*User, init func(*User), assign func(*User, *Milestone)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(milestone.FieldCreatedBy)
+	}
+	query.Where(predicate.Milestone(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.MilestonesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

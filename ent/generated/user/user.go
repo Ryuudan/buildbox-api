@@ -39,6 +39,8 @@ const (
 	EdgeAccount = "account"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
+	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
+	EdgeMilestones = "milestones"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// AccountTable is the table that holds the account relation/edge.
@@ -55,6 +57,13 @@ const (
 	TasksInverseTable = "tasks"
 	// TasksColumn is the table column denoting the tasks relation/edge.
 	TasksColumn = "created_by"
+	// MilestonesTable is the table that holds the milestones relation/edge.
+	MilestonesTable = "milestones"
+	// MilestonesInverseTable is the table name for the Milestone entity.
+	// It exists in this package in order to avoid circular dependency with the "milestone" package.
+	MilestonesInverseTable = "milestones"
+	// MilestonesColumn is the table column denoting the milestones relation/edge.
+	MilestonesColumn = "created_by"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -169,6 +178,20 @@ func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMilestonesCount orders the results by milestones count.
+func ByMilestonesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMilestonesStep(), opts...)
+	}
+}
+
+// ByMilestones orders the results by milestones terms.
+func ByMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMilestonesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAccountStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -181,5 +204,12 @@ func newTasksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TasksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
+	)
+}
+func newMilestonesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MilestonesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MilestonesTable, MilestonesColumn),
 	)
 }

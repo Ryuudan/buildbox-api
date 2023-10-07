@@ -12,13 +12,12 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
-	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
 )
 
-// Task is the model entity for the Task schema.
-type Task struct {
+// Milestone is the model entity for the Milestone schema.
+type Milestone struct {
 	config `json:"-" validate:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -28,12 +27,12 @@ type Task struct {
 	CreatedBy int `json:"created_by,omitempty"`
 	// ProjectID holds the value of the "project_id" field.
 	ProjectID int `json:"project_id,omitempty" validate:"required"`
-	// TaskMilestoneID holds the value of the "task_milestone_id" field.
-	TaskMilestoneID *int `json:"task_milestone_id"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title" validate:"required,min=1,max=100"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description" validate:"required,min=1,max=100"`
+	// EndDate holds the value of the "end_date" field.
+	EndDate time.Time `json:"end_date" validate:"required,gtfield=CreatedAt"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -43,30 +42,39 @@ type Task struct {
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the TaskQuery when eager-loading is set.
-	Edges        TaskEdges `json:"edges"`
+	// The values are being populated by the MilestoneQuery when eager-loading is set.
+	Edges        MilestoneEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// TaskEdges holds the relations/edges for other nodes in the graph.
-type TaskEdges struct {
+// MilestoneEdges holds the relations/edges for other nodes in the graph.
+type MilestoneEdges struct {
+	// Tasks holds the value of the tasks edge.
+	Tasks []*Task `json:"tasks,omitempty"`
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// Project holds the value of the project edge.
 	Project *Project `json:"project,omitempty"`
-	// Milestone holds the value of the milestone edge.
-	Milestone *Milestone `json:"milestone,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
 }
 
+// TasksOrErr returns the Tasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e MilestoneEdges) TasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[0] {
+		return e.Tasks, nil
+	}
+	return nil, &NotLoadedError{edge: "tasks"}
+}
+
 // AccountOrErr returns the Account value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) AccountOrErr() (*Account, error) {
-	if e.loadedTypes[0] {
+func (e MilestoneEdges) AccountOrErr() (*Account, error) {
+	if e.loadedTypes[1] {
 		if e.Account == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: account.Label}
@@ -78,8 +86,8 @@ func (e TaskEdges) AccountOrErr() (*Account, error) {
 
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) UserOrErr() (*User, error) {
-	if e.loadedTypes[1] {
+func (e MilestoneEdges) UserOrErr() (*User, error) {
+	if e.loadedTypes[2] {
 		if e.User == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: user.Label}
@@ -91,8 +99,8 @@ func (e TaskEdges) UserOrErr() (*User, error) {
 
 // ProjectOrErr returns the Project value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) ProjectOrErr() (*Project, error) {
-	if e.loadedTypes[2] {
+func (e MilestoneEdges) ProjectOrErr() (*Project, error) {
+	if e.loadedTypes[3] {
 		if e.Project == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: project.Label}
@@ -102,33 +110,20 @@ func (e TaskEdges) ProjectOrErr() (*Project, error) {
 	return nil, &NotLoadedError{edge: "project"}
 }
 
-// MilestoneOrErr returns the Milestone value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) MilestoneOrErr() (*Milestone, error) {
-	if e.loadedTypes[3] {
-		if e.Milestone == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: milestone.Label}
-		}
-		return e.Milestone, nil
-	}
-	return nil, &NotLoadedError{edge: "milestone"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Task) scanValues(columns []string) ([]any, error) {
+func (*Milestone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldDeleted:
+		case milestone.FieldDeleted:
 			values[i] = new(sql.NullBool)
-		case task.FieldID, task.FieldAccountID, task.FieldCreatedBy, task.FieldProjectID, task.FieldTaskMilestoneID:
+		case milestone.FieldID, milestone.FieldAccountID, milestone.FieldCreatedBy, milestone.FieldProjectID:
 			values[i] = new(sql.NullInt64)
-		case task.FieldTitle, task.FieldDescription:
+		case milestone.FieldTitle, milestone.FieldDescription:
 			values[i] = new(sql.NullString)
-		case task.FieldUpdatedAt, task.FieldCreatedAt:
+		case milestone.FieldEndDate, milestone.FieldUpdatedAt, milestone.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case task.FieldUUID:
+		case milestone.FieldUUID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -138,170 +133,167 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Task fields.
-func (t *Task) assignValues(columns []string, values []any) error {
+// to the Milestone fields.
+func (m *Milestone) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldID:
+		case milestone.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			t.ID = int(value.Int64)
-		case task.FieldAccountID:
+			m.ID = int(value.Int64)
+		case milestone.FieldAccountID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field account_id", values[i])
 			} else if value.Valid {
-				t.AccountID = int(value.Int64)
+				m.AccountID = int(value.Int64)
 			}
-		case task.FieldCreatedBy:
+		case milestone.FieldCreatedBy:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field created_by", values[i])
 			} else if value.Valid {
-				t.CreatedBy = int(value.Int64)
+				m.CreatedBy = int(value.Int64)
 			}
-		case task.FieldProjectID:
+		case milestone.FieldProjectID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field project_id", values[i])
 			} else if value.Valid {
-				t.ProjectID = int(value.Int64)
+				m.ProjectID = int(value.Int64)
 			}
-		case task.FieldTaskMilestoneID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field task_milestone_id", values[i])
-			} else if value.Valid {
-				t.TaskMilestoneID = new(int)
-				*t.TaskMilestoneID = int(value.Int64)
-			}
-		case task.FieldTitle:
+		case milestone.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				t.Title = value.String
+				m.Title = value.String
 			}
-		case task.FieldDescription:
+		case milestone.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				t.Description = value.String
+				m.Description = value.String
 			}
-		case task.FieldUpdatedAt:
+		case milestone.FieldEndDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field end_date", values[i])
+			} else if value.Valid {
+				m.EndDate = value.Time
+			}
+		case milestone.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				t.UpdatedAt = value.Time
+				m.UpdatedAt = value.Time
 			}
-		case task.FieldCreatedAt:
+		case milestone.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				t.CreatedAt = value.Time
+				m.CreatedAt = value.Time
 			}
-		case task.FieldDeleted:
+		case milestone.FieldDeleted:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted", values[i])
 			} else if value.Valid {
-				t.Deleted = value.Bool
+				m.Deleted = value.Bool
 			}
-		case task.FieldUUID:
+		case milestone.FieldUUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field uuid", values[i])
 			} else if value != nil {
-				t.UUID = *value
+				m.UUID = *value
 			}
 		default:
-			t.selectValues.Set(columns[i], values[i])
+			m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Task.
+// Value returns the ent.Value that was dynamically selected and assigned to the Milestone.
 // This includes values selected through modifiers, order, etc.
-func (t *Task) Value(name string) (ent.Value, error) {
-	return t.selectValues.Get(name)
+func (m *Milestone) Value(name string) (ent.Value, error) {
+	return m.selectValues.Get(name)
 }
 
-// QueryAccount queries the "account" edge of the Task entity.
-func (t *Task) QueryAccount() *AccountQuery {
-	return NewTaskClient(t.config).QueryAccount(t)
+// QueryTasks queries the "tasks" edge of the Milestone entity.
+func (m *Milestone) QueryTasks() *TaskQuery {
+	return NewMilestoneClient(m.config).QueryTasks(m)
 }
 
-// QueryUser queries the "user" edge of the Task entity.
-func (t *Task) QueryUser() *UserQuery {
-	return NewTaskClient(t.config).QueryUser(t)
+// QueryAccount queries the "account" edge of the Milestone entity.
+func (m *Milestone) QueryAccount() *AccountQuery {
+	return NewMilestoneClient(m.config).QueryAccount(m)
 }
 
-// QueryProject queries the "project" edge of the Task entity.
-func (t *Task) QueryProject() *ProjectQuery {
-	return NewTaskClient(t.config).QueryProject(t)
+// QueryUser queries the "user" edge of the Milestone entity.
+func (m *Milestone) QueryUser() *UserQuery {
+	return NewMilestoneClient(m.config).QueryUser(m)
 }
 
-// QueryMilestone queries the "milestone" edge of the Task entity.
-func (t *Task) QueryMilestone() *MilestoneQuery {
-	return NewTaskClient(t.config).QueryMilestone(t)
+// QueryProject queries the "project" edge of the Milestone entity.
+func (m *Milestone) QueryProject() *ProjectQuery {
+	return NewMilestoneClient(m.config).QueryProject(m)
 }
 
-// Update returns a builder for updating this Task.
-// Note that you need to call Task.Unwrap() before calling this method if this Task
+// Update returns a builder for updating this Milestone.
+// Note that you need to call Milestone.Unwrap() before calling this method if this Milestone
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (t *Task) Update() *TaskUpdateOne {
-	return NewTaskClient(t.config).UpdateOne(t)
+func (m *Milestone) Update() *MilestoneUpdateOne {
+	return NewMilestoneClient(m.config).UpdateOne(m)
 }
 
-// Unwrap unwraps the Task entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Milestone entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (t *Task) Unwrap() *Task {
-	_tx, ok := t.config.driver.(*txDriver)
+func (m *Milestone) Unwrap() *Milestone {
+	_tx, ok := m.config.driver.(*txDriver)
 	if !ok {
-		panic("generated: Task is not a transactional entity")
+		panic("generated: Milestone is not a transactional entity")
 	}
-	t.config.driver = _tx.drv
-	return t
+	m.config.driver = _tx.drv
+	return m
 }
 
 // String implements the fmt.Stringer.
-func (t *Task) String() string {
+func (m *Milestone) String() string {
 	var builder strings.Builder
-	builder.WriteString("Task(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString("Milestone(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", m.ID))
 	builder.WriteString("account_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.AccountID))
+	builder.WriteString(fmt.Sprintf("%v", m.AccountID))
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
-	builder.WriteString(fmt.Sprintf("%v", t.CreatedBy))
+	builder.WriteString(fmt.Sprintf("%v", m.CreatedBy))
 	builder.WriteString(", ")
 	builder.WriteString("project_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.ProjectID))
-	builder.WriteString(", ")
-	if v := t.TaskMilestoneID; v != nil {
-		builder.WriteString("task_milestone_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString(fmt.Sprintf("%v", m.ProjectID))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(t.Title)
+	builder.WriteString(m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(t.Description)
+	builder.WriteString(m.Description)
+	builder.WriteString(", ")
+	builder.WriteString("end_date=")
+	builder.WriteString(m.EndDate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("deleted=")
-	builder.WriteString(fmt.Sprintf("%v", t.Deleted))
+	builder.WriteString(fmt.Sprintf("%v", m.Deleted))
 	builder.WriteString(", ")
 	builder.WriteString("uuid=")
-	builder.WriteString(fmt.Sprintf("%v", t.UUID))
+	builder.WriteString(fmt.Sprintf("%v", m.UUID))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// Tasks is a parsable slice of Task.
-type Tasks []*Task
+// Milestones is a parsable slice of Milestone.
+type Milestones []*Milestone

@@ -20,6 +20,6 @@ func V1Users(client *generated.Client, router chi.Router) {
 	router.Route("/users", func(r chi.Router) {
 		r.Post("/", user.CreateUser)
 		r.Get("/", user.GetUsers)
-
+		r.Get("/{id}", user.GetUserByID)
 	})
 }

@@ -21,6 +21,18 @@ func (f AccountFunc) Mutate(ctx context.Context, m generated.Mutation) (generate
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *generated.AccountMutation", m)
 }
 
+// The MilestoneFunc type is an adapter to allow the use of ordinary
+// function as Milestone mutator.
+type MilestoneFunc func(context.Context, *generated.MilestoneMutation) (generated.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MilestoneFunc) Mutate(ctx context.Context, m generated.Mutation) (generated.Value, error) {
+	if mv, ok := m.(*generated.MilestoneMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *generated.MilestoneMutation", m)
+}
+
 // The PlanFunc type is an adapter to allow the use of ordinary
 // function as Plan mutator.
 type PlanFunc func(context.Context, *generated.PlanMutation) (generated.Value, error)

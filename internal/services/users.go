@@ -65,12 +65,21 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*genera
 }
 
 func (s *userService) GetUserByID(ctx context.Context, id int) (*generated.User, error) {
-	user, err := s.client.Get(ctx, id)
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	user, err := s.client.
+		Query().
+		Where(
+			user.AccountIDEQ(int(claims["account_id"].(float64))),
+			user.IDEQ(id),
+		).
+		First(ctx)
+
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("user not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 
 	return user, nil

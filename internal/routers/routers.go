@@ -26,7 +26,8 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 		V1Plans(client, v1)
 		V1Roles(client, v1)
 		V1Tasks(client, v1)
-		// TODO: add Tasks, Documents this week
+		V1Milestones(client, v1)
+		// TODO: Add Subscriptions
 		// TODO: Search route
 	})
 

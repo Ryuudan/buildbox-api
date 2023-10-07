@@ -71,6 +71,11 @@ func ProjectID(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldProjectID, v))
 }
 
+// TaskMilestoneID applies equality check predicate on the "task_milestone_id" field. It's identical to TaskMilestoneIDEQ.
+func TaskMilestoneID(v int) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldTaskMilestoneID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldTitle, v))
@@ -159,6 +164,36 @@ func ProjectIDIn(vs ...int) predicate.Task {
 // ProjectIDNotIn applies the NotIn predicate on the "project_id" field.
 func ProjectIDNotIn(vs ...int) predicate.Task {
 	return predicate.Task(sql.FieldNotIn(FieldProjectID, vs...))
+}
+
+// TaskMilestoneIDEQ applies the EQ predicate on the "task_milestone_id" field.
+func TaskMilestoneIDEQ(v int) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldTaskMilestoneID, v))
+}
+
+// TaskMilestoneIDNEQ applies the NEQ predicate on the "task_milestone_id" field.
+func TaskMilestoneIDNEQ(v int) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldTaskMilestoneID, v))
+}
+
+// TaskMilestoneIDIn applies the In predicate on the "task_milestone_id" field.
+func TaskMilestoneIDIn(vs ...int) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldTaskMilestoneID, vs...))
+}
+
+// TaskMilestoneIDNotIn applies the NotIn predicate on the "task_milestone_id" field.
+func TaskMilestoneIDNotIn(vs ...int) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldTaskMilestoneID, vs...))
+}
+
+// TaskMilestoneIDIsNil applies the IsNil predicate on the "task_milestone_id" field.
+func TaskMilestoneIDIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldTaskMilestoneID))
+}
+
+// TaskMilestoneIDNotNil applies the NotNil predicate on the "task_milestone_id" field.
+func TaskMilestoneIDNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldTaskMilestoneID))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -492,6 +527,29 @@ func HasProject() predicate.Task {
 func HasProjectWith(preds ...predicate.Project) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newProjectStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMilestone applies the HasEdge predicate on the "milestone" edge.
+func HasMilestone() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, MilestoneTable, MilestoneColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMilestoneWith applies the HasEdge predicate on the "milestone" edge with a given conditions (other predicates).
+func HasMilestoneWith(preds ...predicate.Milestone) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newMilestoneStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
