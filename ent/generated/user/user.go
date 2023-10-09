@@ -27,6 +27,8 @@ const (
 	FieldBirthday = "birthday"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldPhoneNumber holds the string denoting the phone_number field in the database.
+	FieldPhoneNumber = "phone_number"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -84,6 +86,7 @@ var Columns = []string{
 	FieldMiddleName,
 	FieldBirthday,
 	FieldEmail,
+	FieldPhoneNumber,
 	FieldPassword,
 	FieldUpdatedAt,
 	FieldCreatedAt,
@@ -145,6 +148,11 @@ func ByBirthday(opts ...sql.OrderTermOption) OrderOption {
 // ByEmail orders the results by the email field.
 func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByPhoneNumber orders the results by the phone_number field.
+func ByPhoneNumber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhoneNumber, opts...).ToFunc()
 }
 
 // ByPassword orders the results by the password field.

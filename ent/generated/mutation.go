@@ -297,22 +297,9 @@ func (m *AccountMutation) OldPhoneNumber(ctx context.Context) (v string, err err
 	return oldValue.PhoneNumber, nil
 }
 
-// ClearPhoneNumber clears the value of the "phone_number" field.
-func (m *AccountMutation) ClearPhoneNumber() {
-	m.phone_number = nil
-	m.clearedFields[account.FieldPhoneNumber] = struct{}{}
-}
-
-// PhoneNumberCleared returns if the "phone_number" field was cleared in this mutation.
-func (m *AccountMutation) PhoneNumberCleared() bool {
-	_, ok := m.clearedFields[account.FieldPhoneNumber]
-	return ok
-}
-
 // ResetPhoneNumber resets all changes to the "phone_number" field.
 func (m *AccountMutation) ResetPhoneNumber() {
 	m.phone_number = nil
-	delete(m.clearedFields, account.FieldPhoneNumber)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -1005,9 +992,6 @@ func (m *AccountMutation) ClearedFields() []string {
 	if m.FieldCleared(account.FieldEmail) {
 		fields = append(fields, account.FieldEmail)
 	}
-	if m.FieldCleared(account.FieldPhoneNumber) {
-		fields = append(fields, account.FieldPhoneNumber)
-	}
 	if m.FieldCleared(account.FieldUpdatedAt) {
 		fields = append(fields, account.FieldUpdatedAt)
 	}
@@ -1030,9 +1014,6 @@ func (m *AccountMutation) ClearField(name string) error {
 	switch name {
 	case account.FieldEmail:
 		m.ClearEmail()
-		return nil
-	case account.FieldPhoneNumber:
-		m.ClearPhoneNumber()
 		return nil
 	case account.FieldUpdatedAt:
 		m.ClearUpdatedAt()
@@ -8873,6 +8854,7 @@ type UserMutation struct {
 	middle_name       *string
 	birthday          *time.Time
 	email             *string
+	phone_number      *string
 	password          *string
 	updated_at        *time.Time
 	created_at        *time.Time
@@ -9232,6 +9214,55 @@ func (m *UserMutation) OldEmail(ctx context.Context) (v string, err error) {
 // ResetEmail resets all changes to the "email" field.
 func (m *UserMutation) ResetEmail() {
 	m.email = nil
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (m *UserMutation) SetPhoneNumber(s string) {
+	m.phone_number = &s
+}
+
+// PhoneNumber returns the value of the "phone_number" field in the mutation.
+func (m *UserMutation) PhoneNumber() (r string, exists bool) {
+	v := m.phone_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhoneNumber returns the old "phone_number" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldPhoneNumber(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhoneNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhoneNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhoneNumber: %w", err)
+	}
+	return oldValue.PhoneNumber, nil
+}
+
+// ClearPhoneNumber clears the value of the "phone_number" field.
+func (m *UserMutation) ClearPhoneNumber() {
+	m.phone_number = nil
+	m.clearedFields[user.FieldPhoneNumber] = struct{}{}
+}
+
+// PhoneNumberCleared returns if the "phone_number" field was cleared in this mutation.
+func (m *UserMutation) PhoneNumberCleared() bool {
+	_, ok := m.clearedFields[user.FieldPhoneNumber]
+	return ok
+}
+
+// ResetPhoneNumber resets all changes to the "phone_number" field.
+func (m *UserMutation) ResetPhoneNumber() {
+	m.phone_number = nil
+	delete(m.clearedFields, user.FieldPhoneNumber)
 }
 
 // SetPassword sets the "password" field.
@@ -9627,7 +9658,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.account != nil {
 		fields = append(fields, user.FieldAccountID)
 	}
@@ -9645,6 +9676,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
+	}
+	if m.phone_number != nil {
+		fields = append(fields, user.FieldPhoneNumber)
 	}
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
@@ -9678,6 +9712,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Birthday()
 	case user.FieldEmail:
 		return m.Email()
+	case user.FieldPhoneNumber:
+		return m.PhoneNumber()
 	case user.FieldPassword:
 		return m.Password()
 	case user.FieldUpdatedAt:
@@ -9707,6 +9743,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBirthday(ctx)
 	case user.FieldEmail:
 		return m.OldEmail(ctx)
+	case user.FieldPhoneNumber:
+		return m.OldPhoneNumber(ctx)
 	case user.FieldPassword:
 		return m.OldPassword(ctx)
 	case user.FieldUpdatedAt:
@@ -9765,6 +9803,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEmail(v)
+		return nil
+	case user.FieldPhoneNumber:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhoneNumber(v)
 		return nil
 	case user.FieldPassword:
 		v, ok := value.(string)
@@ -9833,6 +9878,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldBirthday) {
 		fields = append(fields, user.FieldBirthday)
 	}
+	if m.FieldCleared(user.FieldPhoneNumber) {
+		fields = append(fields, user.FieldPhoneNumber)
+	}
 	if m.FieldCleared(user.FieldUpdatedAt) {
 		fields = append(fields, user.FieldUpdatedAt)
 	}
@@ -9858,6 +9906,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldBirthday:
 		m.ClearBirthday()
+		return nil
+	case user.FieldPhoneNumber:
+		m.ClearPhoneNumber()
 		return nil
 	case user.FieldUpdatedAt:
 		m.ClearUpdatedAt()
@@ -9890,6 +9941,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldEmail:
 		m.ResetEmail()
+		return nil
+	case user.FieldPhoneNumber:
+		m.ResetPhoneNumber()
 		return nil
 	case user.FieldPassword:
 		m.ResetPassword()

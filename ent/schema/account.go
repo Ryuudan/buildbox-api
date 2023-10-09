@@ -27,9 +27,9 @@ func (Account) Fields() []ent.Field {
 			NotEmpty().
 			StructTag(`json:"email" validate:"required,email"`),
 		field.String("phone_number").
-			Optional().
+			Unique().
 			NotEmpty().
-			StructTag(`json:"phone_number" validate:"required,phone"`),
+			StructTag(`json:"phone_number" validate:"required,e164"`),
 		field.Time("updated_at").
 			Optional().
 			Default(time.Now),

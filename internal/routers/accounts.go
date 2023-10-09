@@ -5,6 +5,7 @@ import (
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/handlers"
+	"github.com/Pyakz/buildbox-api/internal/middlewares"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/go-chi/chi/v5"
 )
@@ -21,6 +22,6 @@ func V1Accounts(client *generated.Client, router chi.Router) {
 
 	router.Route("/accounts", func(r chi.Router) {
 		r.Get("/", account.GetAccounts)
-		r.Get("/{id}", account.GetAccount)
+		r.With(middlewares.EnforceAccountAuthorization).Get("/{id}", account.GetAccount)
 	})
 }

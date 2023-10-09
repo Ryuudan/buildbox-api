@@ -23,7 +23,7 @@ type Plan struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description" validate:"required,min=10"`
 	// Price holds the value of the "price" field.
-	Price *float64 `json:"price,omitempty" validate:"omitempty,gte=0"`
+	Price *float64 `json:"price" validate:"required,gte=0"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.

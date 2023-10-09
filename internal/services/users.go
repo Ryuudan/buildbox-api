@@ -40,6 +40,7 @@ func (s *userService) RegisterUser(ctx context.Context, newUser *generated.User)
 		SetPassword(newUser.Password).
 		SetNillableMiddleName(newUser.MiddleName).
 		SetNillableBirthday(newUser.Birthday).
+		SetNillablePhoneNumber(newUser.PhoneNumber).
 		Save(ctx)
 
 	if err != nil {
@@ -98,6 +99,7 @@ func (s *userService) GetUsers(ctx context.Context, queryParams *render.QueryPar
 			user.MiddleNameContains(queryParams.Query),
 			user.LastNameContains(queryParams.Query),
 			user.EmailContains(queryParams.Query),
+			user.PhoneNumber(queryParams.Query),
 		)
 		baseFilters = append(baseFilters, searchFilter)
 	}

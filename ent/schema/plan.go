@@ -26,7 +26,7 @@ func (Plan) Fields() []ent.Field {
 			Optional(),
 		field.Float("price").
 			Nillable().
-			StructTag(`json:"price,omitempty" validate:"omitempty,gte=0"`).
+			StructTag(`json:"price" validate:"required,gte=0"`).
 			Default(0),
 		field.Time("updated_at").
 			Optional().

@@ -281,16 +281,6 @@ func PhoneNumberHasSuffix(v string) predicate.Account {
 	return predicate.Account(sql.FieldHasSuffix(FieldPhoneNumber, v))
 }
 
-// PhoneNumberIsNil applies the IsNil predicate on the "phone_number" field.
-func PhoneNumberIsNil() predicate.Account {
-	return predicate.Account(sql.FieldIsNull(FieldPhoneNumber))
-}
-
-// PhoneNumberNotNil applies the NotNil predicate on the "phone_number" field.
-func PhoneNumberNotNil() predicate.Account {
-	return predicate.Account(sql.FieldNotNull(FieldPhoneNumber))
-}
-
 // PhoneNumberEqualFold applies the EqualFold predicate on the "phone_number" field.
 func PhoneNumberEqualFold(v string) predicate.Account {
 	return predicate.Account(sql.FieldEqualFold(FieldPhoneNumber, v))

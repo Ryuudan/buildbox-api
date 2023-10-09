@@ -67,20 +67,6 @@ func (au *AccountUpdate) SetPhoneNumber(s string) *AccountUpdate {
 	return au
 }
 
-// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
-func (au *AccountUpdate) SetNillablePhoneNumber(s *string) *AccountUpdate {
-	if s != nil {
-		au.SetPhoneNumber(*s)
-	}
-	return au
-}
-
-// ClearPhoneNumber clears the value of the "phone_number" field.
-func (au *AccountUpdate) ClearPhoneNumber() *AccountUpdate {
-	au.mutation.ClearPhoneNumber()
-	return au
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (au *AccountUpdate) SetUpdatedAt(t time.Time) *AccountUpdate {
 	au.mutation.SetUpdatedAt(t)
@@ -428,9 +414,6 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.PhoneNumber(); ok {
 		_spec.SetField(account.FieldPhoneNumber, field.TypeString, value)
-	}
-	if au.mutation.PhoneNumberCleared() {
-		_spec.ClearField(account.FieldPhoneNumber, field.TypeString)
 	}
 	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.SetField(account.FieldUpdatedAt, field.TypeTime, value)
@@ -805,20 +788,6 @@ func (auo *AccountUpdateOne) ClearEmail() *AccountUpdateOne {
 // SetPhoneNumber sets the "phone_number" field.
 func (auo *AccountUpdateOne) SetPhoneNumber(s string) *AccountUpdateOne {
 	auo.mutation.SetPhoneNumber(s)
-	return auo
-}
-
-// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
-func (auo *AccountUpdateOne) SetNillablePhoneNumber(s *string) *AccountUpdateOne {
-	if s != nil {
-		auo.SetPhoneNumber(*s)
-	}
-	return auo
-}
-
-// ClearPhoneNumber clears the value of the "phone_number" field.
-func (auo *AccountUpdateOne) ClearPhoneNumber() *AccountUpdateOne {
-	auo.mutation.ClearPhoneNumber()
 	return auo
 }
 
@@ -1199,9 +1168,6 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 	}
 	if value, ok := auo.mutation.PhoneNumber(); ok {
 		_spec.SetField(account.FieldPhoneNumber, field.TypeString, value)
-	}
-	if auo.mutation.PhoneNumberCleared() {
-		_spec.ClearField(account.FieldPhoneNumber, field.TypeString)
 	}
 	if value, ok := auo.mutation.UpdatedAt(); ok {
 		_spec.SetField(account.FieldUpdatedAt, field.TypeTime, value)

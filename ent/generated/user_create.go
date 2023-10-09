@@ -77,6 +77,20 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
+// SetPhoneNumber sets the "phone_number" field.
+func (uc *UserCreate) SetPhoneNumber(s string) *UserCreate {
+	uc.mutation.SetPhoneNumber(s)
+	return uc
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (uc *UserCreate) SetNillablePhoneNumber(s *string) *UserCreate {
+	if s != nil {
+		uc.SetPhoneNumber(*s)
+	}
+	return uc
+}
+
 // SetPassword sets the "password" field.
 func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	uc.mutation.SetPassword(s)
@@ -292,6 +306,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
+	}
+	if value, ok := uc.mutation.PhoneNumber(); ok {
+		_spec.SetField(user.FieldPhoneNumber, field.TypeString, value)
+		_node.PhoneNumber = &value
 	}
 	if value, ok := uc.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)

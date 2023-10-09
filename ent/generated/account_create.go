@@ -54,14 +54,6 @@ func (ac *AccountCreate) SetPhoneNumber(s string) *AccountCreate {
 	return ac
 }
 
-// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
-func (ac *AccountCreate) SetNillablePhoneNumber(s *string) *AccountCreate {
-	if s != nil {
-		ac.SetPhoneNumber(*s)
-	}
-	return ac
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (ac *AccountCreate) SetUpdatedAt(t time.Time) *AccountCreate {
 	ac.mutation.SetUpdatedAt(t)
@@ -272,6 +264,9 @@ func (ac *AccountCreate) check() error {
 		if err := account.EmailValidator(v); err != nil {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`generated: validator failed for field "Account.email": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.PhoneNumber(); !ok {
+		return &ValidationError{Name: "phone_number", err: errors.New(`generated: missing required field "Account.phone_number"`)}
 	}
 	if v, ok := ac.mutation.PhoneNumber(); ok {
 		if err := account.PhoneNumberValidator(v); err != nil {

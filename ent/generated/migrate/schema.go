@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
-		{Name: "phone_number", Type: field.TypeString, Nullable: true},
+		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "uuid", Type: field.TypeUUID},
@@ -272,6 +272,7 @@ var (
 		{Name: "middle_name", Type: field.TypeString, Nullable: true},
 		{Name: "birthday", Type: field.TypeTime, Nullable: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "phone_number", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
@@ -286,7 +287,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_accounts_users",
-				Columns:    []*schema.Column{UsersColumns[10]},
+				Columns:    []*schema.Column{UsersColumns[11]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

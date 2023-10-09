@@ -32,6 +32,11 @@ func (User) Fields() []ent.Field {
 		field.String("email").
 			Unique().
 			StructTag(`json:"email" validate:"required,email"`),
+		field.String("phone_number").
+			Unique().
+			Optional().
+			Nillable().
+			StructTag(`json:"phone_number" validate:"e164"`),
 		field.String("password").
 			StructTag(`json:"password" validate:"required,min=3"`),
 		field.Time("updated_at").

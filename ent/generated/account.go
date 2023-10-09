@@ -23,7 +23,7 @@ type Account struct {
 	// Email holds the value of the "email" field.
 	Email string `json:"email" validate:"required,email"`
 	// PhoneNumber holds the value of the "phone_number" field.
-	PhoneNumber string `json:"phone_number" validate:"required,phone"`
+	PhoneNumber string `json:"phone_number" validate:"required,e164"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.

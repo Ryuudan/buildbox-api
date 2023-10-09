@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/utils/render"
 
 	_ "github.com/lib/pq"
@@ -34,12 +34,7 @@ func (s *accountService) CreateAccount(ctx context.Context, newAccount *generate
 		Save(ctx)
 
 	if err != nil {
-
-		if generated.IsConstraintError(err) {
-			return nil, errors.New("email already exists")
-		}
-
-		return nil, errors.New(err.Error())
+		return nil, err
 	}
 
 	return account, nil
@@ -84,7 +79,7 @@ func (s *accountService) GetAccounts(ctx context.Context, queryParams *render.Qu
 }
 
 func (s *accountService) GetAccountByID(ctx context.Context, id int) (*generated.Account, error) {
-	account, err := s.client.Get(ctx, id)
+	account, err := s.client.Query().Where(account.IDEQ(id)).WithSubscriptions().First(ctx)
 	if err != nil {
 		return nil, err
 	}
