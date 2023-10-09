@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: ["main", "staging", "dev"]
     paths:
-      - "ent/generated/migrate/migration/*"
+      - "database/migrations/*"
 
 jobs:
   lint:
@@ -30,6 +30,6 @@ jobs:
 
       - uses: ariga/atlas-action@v0
         with:
-          dir: ent/generated/migrate/migration
+          dir: database/migration
           dir-format: golang-migrate # Or: atlas, goose, dbmate
           dev-url: postgres://postgres:pass@localhost:5432/test?sslmode=disable
