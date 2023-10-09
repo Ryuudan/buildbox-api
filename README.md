@@ -1,4 +1,4 @@
-# BuildBox
+# BuildBox ( to be changed )
 
 BuildBox is a powerful project management tool designed specifically for engineering firms and professionals. It streamlines the entire project lifecycle, from planning and task assignment to tracking progress and collaborating seamlessly with your team.
 
@@ -28,3 +28,11 @@ BuildBox is a powerful project management tool designed specifically for enginee
 ## Possible AI Integrations
 - **AI-Powered Predictive Analytics:** Leverage AI to predict potential project delays, cost overruns, and resource shortages, aiding proactive decision-making.
 
+
+## Possible name for the app
+
+- **AntBuilder.ph**
+- **AntBox.ph**
+- **SteelBee.ph**
+- **BuzzBuild.ph**
+- **AntRadar.ph**
