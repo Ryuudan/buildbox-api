@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
@@ -28,6 +29,8 @@ type Task struct {
 	CreatedBy int `json:"created_by,omitempty"`
 	// ProjectID holds the value of the "project_id" field.
 	ProjectID int `json:"project_id,omitempty" validate:"required"`
+	// TaskIssueID holds the value of the "task_issue_id" field.
+	TaskIssueID *int `json:"task_issue_id"`
 	// TaskMilestoneID holds the value of the "task_milestone_id" field.
 	TaskMilestoneID *int `json:"task_milestone_id"`
 	// Title holds the value of the "title" field.
@@ -58,9 +61,11 @@ type TaskEdges struct {
 	Project *Project `json:"project,omitempty"`
 	// Milestone holds the value of the milestone edge.
 	Milestone *Milestone `json:"milestone,omitempty"`
+	// Issues holds the value of the issues edge.
+	Issues *Issue `json:"issues,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -115,6 +120,19 @@ func (e TaskEdges) MilestoneOrErr() (*Milestone, error) {
 	return nil, &NotLoadedError{edge: "milestone"}
 }
 
+// IssuesOrErr returns the Issues value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TaskEdges) IssuesOrErr() (*Issue, error) {
+	if e.loadedTypes[4] {
+		if e.Issues == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: issue.Label}
+		}
+		return e.Issues, nil
+	}
+	return nil, &NotLoadedError{edge: "issues"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -122,7 +140,7 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case task.FieldDeleted:
 			values[i] = new(sql.NullBool)
-		case task.FieldID, task.FieldAccountID, task.FieldCreatedBy, task.FieldProjectID, task.FieldTaskMilestoneID:
+		case task.FieldID, task.FieldAccountID, task.FieldCreatedBy, task.FieldProjectID, task.FieldTaskIssueID, task.FieldTaskMilestoneID:
 			values[i] = new(sql.NullInt64)
 		case task.FieldTitle, task.FieldDescription:
 			values[i] = new(sql.NullString)
@@ -168,6 +186,13 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field project_id", values[i])
 			} else if value.Valid {
 				t.ProjectID = int(value.Int64)
+			}
+		case task.FieldTaskIssueID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field task_issue_id", values[i])
+			} else if value.Valid {
+				t.TaskIssueID = new(int)
+				*t.TaskIssueID = int(value.Int64)
 			}
 		case task.FieldTaskMilestoneID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -245,6 +270,11 @@ func (t *Task) QueryMilestone() *MilestoneQuery {
 	return NewTaskClient(t.config).QueryMilestone(t)
 }
 
+// QueryIssues queries the "issues" edge of the Task entity.
+func (t *Task) QueryIssues() *IssueQuery {
+	return NewTaskClient(t.config).QueryIssues(t)
+}
+
 // Update returns a builder for updating this Task.
 // Note that you need to call Task.Unwrap() before calling this method if this Task
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -276,6 +306,11 @@ func (t *Task) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("project_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.ProjectID))
+	builder.WriteString(", ")
+	if v := t.TaskIssueID; v != nil {
+		builder.WriteString("task_issue_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := t.TaskMilestoneID; v != nil {
 		builder.WriteString("task_milestone_id=")

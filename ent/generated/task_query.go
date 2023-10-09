@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
@@ -29,6 +30,7 @@ type TaskQuery struct {
 	withUser      *UserQuery
 	withProject   *ProjectQuery
 	withMilestone *MilestoneQuery
+	withIssues    *IssueQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -146,6 +148,28 @@ func (tq *TaskQuery) QueryMilestone() *MilestoneQuery {
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(milestone.Table, milestone.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, task.MilestoneTable, task.MilestoneColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIssues chains the current query on the "issues" edge.
+func (tq *TaskQuery) QueryIssues() *IssueQuery {
+	query := (&IssueClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(issue.Table, issue.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, task.IssuesTable, task.IssuesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -349,6 +373,7 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		withUser:      tq.withUser.Clone(),
 		withProject:   tq.withProject.Clone(),
 		withMilestone: tq.withMilestone.Clone(),
+		withIssues:    tq.withIssues.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -396,6 +421,17 @@ func (tq *TaskQuery) WithMilestone(opts ...func(*MilestoneQuery)) *TaskQuery {
 		opt(query)
 	}
 	tq.withMilestone = query
+	return tq
+}
+
+// WithIssues tells the query-builder to eager-load the nodes that are connected to
+// the "issues" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithIssues(opts ...func(*IssueQuery)) *TaskQuery {
+	query := (&IssueClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withIssues = query
 	return tq
 }
 
@@ -477,11 +513,12 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	var (
 		nodes       = []*Task{}
 		_spec       = tq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			tq.withAccount != nil,
 			tq.withUser != nil,
 			tq.withProject != nil,
 			tq.withMilestone != nil,
+			tq.withIssues != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -523,6 +560,12 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if query := tq.withMilestone; query != nil {
 		if err := tq.loadMilestone(ctx, query, nodes, nil,
 			func(n *Task, e *Milestone) { n.Edges.Milestone = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withIssues; query != nil {
+		if err := tq.loadIssues(ctx, query, nodes, nil,
+			func(n *Task, e *Issue) { n.Edges.Issues = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -648,6 +691,38 @@ func (tq *TaskQuery) loadMilestone(ctx context.Context, query *MilestoneQuery, n
 	}
 	return nil
 }
+func (tq *TaskQuery) loadIssues(ctx context.Context, query *IssueQuery, nodes []*Task, init func(*Task), assign func(*Task, *Issue)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Task)
+	for i := range nodes {
+		if nodes[i].TaskIssueID == nil {
+			continue
+		}
+		fk := *nodes[i].TaskIssueID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(issue.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "task_issue_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (tq *TaskQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := tq.querySpec()
@@ -685,6 +760,9 @@ func (tq *TaskQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if tq.withMilestone != nil {
 			_spec.Node.AddColumnOnce(task.FieldTaskMilestoneID)
+		}
+		if tq.withIssues != nil {
+			_spec.Node.AddColumnOnce(task.FieldTaskIssueID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {

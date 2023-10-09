@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
@@ -34,6 +35,7 @@ type AccountQuery struct {
 	withRoles         *RoleQuery
 	withTasks         *TaskQuery
 	withMilestones    *MilestoneQuery
+	withIssues        *IssueQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -195,6 +197,28 @@ func (aq *AccountQuery) QueryMilestones() *MilestoneQuery {
 			sqlgraph.From(account.Table, account.FieldID, selector),
 			sqlgraph.To(milestone.Table, milestone.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, account.MilestonesTable, account.MilestonesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIssues chains the current query on the "issues" edge.
+func (aq *AccountQuery) QueryIssues() *IssueQuery {
+	query := (&IssueClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, selector),
+			sqlgraph.To(issue.Table, issue.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.IssuesTable, account.IssuesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -400,6 +424,7 @@ func (aq *AccountQuery) Clone() *AccountQuery {
 		withRoles:         aq.withRoles.Clone(),
 		withTasks:         aq.withTasks.Clone(),
 		withMilestones:    aq.withMilestones.Clone(),
+		withIssues:        aq.withIssues.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -469,6 +494,17 @@ func (aq *AccountQuery) WithMilestones(opts ...func(*MilestoneQuery)) *AccountQu
 		opt(query)
 	}
 	aq.withMilestones = query
+	return aq
+}
+
+// WithIssues tells the query-builder to eager-load the nodes that are connected to
+// the "issues" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AccountQuery) WithIssues(opts ...func(*IssueQuery)) *AccountQuery {
+	query := (&IssueClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withIssues = query
 	return aq
 }
 
@@ -550,13 +586,14 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 	var (
 		nodes       = []*Account{}
 		_spec       = aq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			aq.withUsers != nil,
 			aq.withProjects != nil,
 			aq.withSubscriptions != nil,
 			aq.withRoles != nil,
 			aq.withTasks != nil,
 			aq.withMilestones != nil,
+			aq.withIssues != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -616,6 +653,13 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 		if err := aq.loadMilestones(ctx, query, nodes,
 			func(n *Account) { n.Edges.Milestones = []*Milestone{} },
 			func(n *Account, e *Milestone) { n.Edges.Milestones = append(n.Edges.Milestones, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withIssues; query != nil {
+		if err := aq.loadIssues(ctx, query, nodes,
+			func(n *Account) { n.Edges.Issues = []*Issue{} },
+			func(n *Account, e *Issue) { n.Edges.Issues = append(n.Edges.Issues, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -787,6 +831,36 @@ func (aq *AccountQuery) loadMilestones(ctx context.Context, query *MilestoneQuer
 	}
 	query.Where(predicate.Milestone(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(account.MilestonesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AccountID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "account_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *AccountQuery) loadIssues(ctx context.Context, query *IssueQuery, nodes []*Account, init func(*Account), assign func(*Account, *Issue)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Account)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(issue.FieldAccountID)
+	}
+	query.Where(predicate.Issue(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(account.IssuesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

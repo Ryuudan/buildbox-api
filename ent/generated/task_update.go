@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
@@ -47,6 +48,26 @@ func (tu *TaskUpdate) SetCreatedBy(i int) *TaskUpdate {
 // SetProjectID sets the "project_id" field.
 func (tu *TaskUpdate) SetProjectID(i int) *TaskUpdate {
 	tu.mutation.SetProjectID(i)
+	return tu
+}
+
+// SetTaskIssueID sets the "task_issue_id" field.
+func (tu *TaskUpdate) SetTaskIssueID(i int) *TaskUpdate {
+	tu.mutation.SetTaskIssueID(i)
+	return tu
+}
+
+// SetNillableTaskIssueID sets the "task_issue_id" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableTaskIssueID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetTaskIssueID(*i)
+	}
+	return tu
+}
+
+// ClearTaskIssueID clears the value of the "task_issue_id" field.
+func (tu *TaskUpdate) ClearTaskIssueID() *TaskUpdate {
+	tu.mutation.ClearTaskIssueID()
 	return tu
 }
 
@@ -156,6 +177,25 @@ func (tu *TaskUpdate) SetMilestone(m *Milestone) *TaskUpdate {
 	return tu.SetMilestoneID(m.ID)
 }
 
+// SetIssuesID sets the "issues" edge to the Issue entity by ID.
+func (tu *TaskUpdate) SetIssuesID(id int) *TaskUpdate {
+	tu.mutation.SetIssuesID(id)
+	return tu
+}
+
+// SetNillableIssuesID sets the "issues" edge to the Issue entity by ID if the given value is not nil.
+func (tu *TaskUpdate) SetNillableIssuesID(id *int) *TaskUpdate {
+	if id != nil {
+		tu = tu.SetIssuesID(*id)
+	}
+	return tu
+}
+
+// SetIssues sets the "issues" edge to the Issue entity.
+func (tu *TaskUpdate) SetIssues(i *Issue) *TaskUpdate {
+	return tu.SetIssuesID(i.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tu *TaskUpdate) Mutation() *TaskMutation {
 	return tu.mutation
@@ -182,6 +222,12 @@ func (tu *TaskUpdate) ClearProject() *TaskUpdate {
 // ClearMilestone clears the "milestone" edge to the Milestone entity.
 func (tu *TaskUpdate) ClearMilestone() *TaskUpdate {
 	tu.mutation.ClearMilestone()
+	return tu
+}
+
+// ClearIssues clears the "issues" edge to the Issue entity.
+func (tu *TaskUpdate) ClearIssues() *TaskUpdate {
+	tu.mutation.ClearIssues()
 	return tu
 }
 
@@ -379,6 +425,35 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if tu.mutation.IssuesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.IssuesTable,
+			Columns: []string{task.IssuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.IssuesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.IssuesTable,
+			Columns: []string{task.IssuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{task.Label}
@@ -414,6 +489,26 @@ func (tuo *TaskUpdateOne) SetCreatedBy(i int) *TaskUpdateOne {
 // SetProjectID sets the "project_id" field.
 func (tuo *TaskUpdateOne) SetProjectID(i int) *TaskUpdateOne {
 	tuo.mutation.SetProjectID(i)
+	return tuo
+}
+
+// SetTaskIssueID sets the "task_issue_id" field.
+func (tuo *TaskUpdateOne) SetTaskIssueID(i int) *TaskUpdateOne {
+	tuo.mutation.SetTaskIssueID(i)
+	return tuo
+}
+
+// SetNillableTaskIssueID sets the "task_issue_id" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableTaskIssueID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetTaskIssueID(*i)
+	}
+	return tuo
+}
+
+// ClearTaskIssueID clears the value of the "task_issue_id" field.
+func (tuo *TaskUpdateOne) ClearTaskIssueID() *TaskUpdateOne {
+	tuo.mutation.ClearTaskIssueID()
 	return tuo
 }
 
@@ -523,6 +618,25 @@ func (tuo *TaskUpdateOne) SetMilestone(m *Milestone) *TaskUpdateOne {
 	return tuo.SetMilestoneID(m.ID)
 }
 
+// SetIssuesID sets the "issues" edge to the Issue entity by ID.
+func (tuo *TaskUpdateOne) SetIssuesID(id int) *TaskUpdateOne {
+	tuo.mutation.SetIssuesID(id)
+	return tuo
+}
+
+// SetNillableIssuesID sets the "issues" edge to the Issue entity by ID if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableIssuesID(id *int) *TaskUpdateOne {
+	if id != nil {
+		tuo = tuo.SetIssuesID(*id)
+	}
+	return tuo
+}
+
+// SetIssues sets the "issues" edge to the Issue entity.
+func (tuo *TaskUpdateOne) SetIssues(i *Issue) *TaskUpdateOne {
+	return tuo.SetIssuesID(i.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 	return tuo.mutation
@@ -549,6 +663,12 @@ func (tuo *TaskUpdateOne) ClearProject() *TaskUpdateOne {
 // ClearMilestone clears the "milestone" edge to the Milestone entity.
 func (tuo *TaskUpdateOne) ClearMilestone() *TaskUpdateOne {
 	tuo.mutation.ClearMilestone()
+	return tuo
+}
+
+// ClearIssues clears the "issues" edge to the Issue entity.
+func (tuo *TaskUpdateOne) ClearIssues() *TaskUpdateOne {
+	tuo.mutation.ClearIssues()
 	return tuo
 }
 
@@ -769,6 +889,35 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.IssuesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.IssuesTable,
+			Columns: []string{task.IssuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.IssuesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.IssuesTable,
+			Columns: []string{task.IssuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -39,6 +39,8 @@ const (
 	EdgeTasks = "tasks"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
+	// EdgeIssues holds the string denoting the issues edge name in mutations.
+	EdgeIssues = "issues"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// UsersTable is the table that holds the users relation/edge.
@@ -83,6 +85,13 @@ const (
 	MilestonesInverseTable = "milestones"
 	// MilestonesColumn is the table column denoting the milestones relation/edge.
 	MilestonesColumn = "account_id"
+	// IssuesTable is the table that holds the issues relation/edge.
+	IssuesTable = "issues"
+	// IssuesInverseTable is the table name for the Issue entity.
+	// It exists in this package in order to avoid circular dependency with the "issue" package.
+	IssuesInverseTable = "issues"
+	// IssuesColumn is the table column denoting the issues relation/edge.
+	IssuesColumn = "account_id"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -242,6 +251,20 @@ func ByMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMilestonesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByIssuesCount orders the results by issues count.
+func ByIssuesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIssuesStep(), opts...)
+	}
+}
+
+// ByIssues orders the results by issues terms.
+func ByIssues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIssuesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -282,5 +305,12 @@ func newMilestonesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MilestonesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MilestonesTable, MilestonesColumn),
+	)
+}
+func newIssuesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IssuesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IssuesTable, IssuesColumn),
 	)
 }

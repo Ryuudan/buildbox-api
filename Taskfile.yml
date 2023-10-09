@@ -25,22 +25,22 @@ tasks:
       - go run -mod=mod entgo.io/ent/cmd/ent new {{.name}}
   migrate:lint:
     cmds:
-      - atlas migrate lint --dir "file://ent/generated/migrate/migration" --dev-url "$POSTGRES_CONNECTION_STRING" --latest 1
+      - atlas migrate lint --dir "file://database/migrations" --dev-url "$POSTGRES_CONNECTION_STRING" --latest 1
   migrate:hash:
     cmds:
-      - atlas migrate hash --dir "file://ent/generated/migrate/migration"
+      - atlas migrate hash --dir "file://database/migrations"
   migrate:new:
     desc: Create new migration file
     cmds:
-      - atlas migrate new {{.name}} --dir "file://ent/generated/migrate/migration"
+      - atlas migrate new {{.name}} --dir "file://database/migrations"
   migrate:status:
     desc: Run database migration
     cmds:
-      - atlas migrate status --dir "file://ent/generated/migrate/migration" --url "$POSTGRES_CONNECTION_STRING"
+      - atlas migrate status --dir "file://database/migrations" --url "$POSTGRES_CONNECTION_STRING"
   migrate:apply:
-    desc: Run database migration
+    desc: Run database migrations
     cmds:
-      - atlas migrate apply --dir "file://ent/generated/migrate/migration" --url "$POSTGRES_CONNECTION_STRING"
+      - atlas migrate apply --dir "file://database/migrations" --url "$POSTGRES_CONNECTION_STRING"
   start:
     cmds:
       - ./buildbox-api

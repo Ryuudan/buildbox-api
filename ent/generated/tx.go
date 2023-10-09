@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
+	// Issue is the client for interacting with the Issue builders.
+	Issue *IssueClient
 	// Milestone is the client for interacting with the Milestone builders.
 	Milestone *MilestoneClient
 	// Plan is the client for interacting with the Plan builders.
@@ -160,6 +162,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Account = NewAccountClient(tx.config)
+	tx.Issue = NewIssueClient(tx.config)
 	tx.Milestone = NewMilestoneClient(tx.config)
 	tx.Plan = NewPlanClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
