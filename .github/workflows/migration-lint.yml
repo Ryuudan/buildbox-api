@@ -30,6 +30,6 @@ jobs:
 
       - uses: ariga/atlas-action@v0
         with:
-          dir: database/migration
+          dir: database/migrations
           dir-format: atlas # Or: atlas, goose, dbmate
           dev-url: postgres://postgres:pass@localhost:5432/test?sslmode=disable
