@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
@@ -79,8 +80,13 @@ func (a *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 
 	account, err := a.accountService.GetAccountByID(r.Context(), id)
 	if err != nil {
-		render.Error(w, r, http.StatusInternalServerError, err.Error())
-		return
+		if generated.IsNotFound(err) {
+			render.Error(w, r, http.StatusNotFound, "Account not found")
+			return
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	render.JSON(w, http.StatusOK, account)

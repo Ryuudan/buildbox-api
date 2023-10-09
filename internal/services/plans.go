@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
@@ -51,12 +50,8 @@ func (p *planService) GetPlanByName(ctx context.Context, name string) (*generate
 	plan, err := p.client.Query().Where(
 		plan.NameEQ(name),
 	).First(ctx)
-
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("plan not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 
 	return plan, nil
@@ -66,12 +61,8 @@ func (p *planService) GetPlanByID(ctx context.Context, id int) (*generated.Plan,
 	plan, err := p.client.Query().Where(
 		plan.IDEQ(id),
 	).First(ctx)
-
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("plan not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 
 	return plan, nil

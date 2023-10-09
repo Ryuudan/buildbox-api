@@ -80,8 +80,13 @@ func (m *MilestoneHandler) GetMilestoneByID(w http.ResponseWriter, r *http.Reque
 	project, err := m.milestoneService.GetMilestoneByID(r.Context(), id)
 
 	if err != nil {
-		render.Error(w, r, http.StatusBadRequest, err.Error())
-		return
+		if generated.IsNotFound(err) {
+			render.Error(w, r, http.StatusNotFound, "milestone not found")
+			return
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	render.JSON(w, http.StatusOK, project)

@@ -55,10 +55,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*genera
 	).WithAccount().First(ctx)
 
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("user not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 
 	return user, nil
