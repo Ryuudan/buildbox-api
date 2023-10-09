@@ -9,6 +9,9 @@ import (
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
 
+// Issue is the predicate function for issue builders.
+type Issue func(*sql.Selector)
+
 // Milestone is the predicate function for milestone builders.
 type Milestone func(*sql.Selector)
 

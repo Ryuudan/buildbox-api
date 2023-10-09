@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
@@ -40,6 +41,20 @@ func (tc *TaskCreate) SetCreatedBy(i int) *TaskCreate {
 // SetProjectID sets the "project_id" field.
 func (tc *TaskCreate) SetProjectID(i int) *TaskCreate {
 	tc.mutation.SetProjectID(i)
+	return tc
+}
+
+// SetTaskIssueID sets the "task_issue_id" field.
+func (tc *TaskCreate) SetTaskIssueID(i int) *TaskCreate {
+	tc.mutation.SetTaskIssueID(i)
+	return tc
+}
+
+// SetNillableTaskIssueID sets the "task_issue_id" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableTaskIssueID(i *int) *TaskCreate {
+	if i != nil {
+		tc.SetTaskIssueID(*i)
+	}
 	return tc
 }
 
@@ -163,6 +178,25 @@ func (tc *TaskCreate) SetNillableMilestoneID(id *int) *TaskCreate {
 // SetMilestone sets the "milestone" edge to the Milestone entity.
 func (tc *TaskCreate) SetMilestone(m *Milestone) *TaskCreate {
 	return tc.SetMilestoneID(m.ID)
+}
+
+// SetIssuesID sets the "issues" edge to the Issue entity by ID.
+func (tc *TaskCreate) SetIssuesID(id int) *TaskCreate {
+	tc.mutation.SetIssuesID(id)
+	return tc
+}
+
+// SetNillableIssuesID sets the "issues" edge to the Issue entity by ID if the given value is not nil.
+func (tc *TaskCreate) SetNillableIssuesID(id *int) *TaskCreate {
+	if id != nil {
+		tc = tc.SetIssuesID(*id)
+	}
+	return tc
+}
+
+// SetIssues sets the "issues" edge to the Issue entity.
+func (tc *TaskCreate) SetIssues(i *Issue) *TaskCreate {
+	return tc.SetIssuesID(i.ID)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -379,6 +413,23 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TaskMilestoneID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.IssuesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.IssuesTable,
+			Columns: []string{task.IssuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TaskIssueID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

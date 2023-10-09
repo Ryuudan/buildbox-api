@@ -7,52 +7,50 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
-	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 )
 
-type TaskService interface {
-	CreateTask(ctx context.Context, newTask *generated.Task) (*generated.Task, error)
-	GetTasks(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Task, int, error)
-	GetTaskByID(ctx context.Context, id int) (*generated.Task, error)
+type IssueService interface {
+	CreateIssue(ctx context.Context, newIssue *generated.Issue) (*generated.Issue, error)
+	GetIssues(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Issue, int, error)
+	GetIssueByID(ctx context.Context, id int) (*generated.Issue, error)
 }
 
-type taskService struct {
-	client *generated.TaskClient
+type issueService struct {
+	client *generated.IssueClient
 }
 
-func NewTaskService(client *generated.TaskClient) TaskService {
-	return &taskService{client: client}
+// TODO: complete the fiields
+func NewIssueService(client *generated.IssueClient) IssueService {
+	return &issueService{client: client}
 }
 
-func (s *taskService) CreateTask(ctx context.Context, newTask *generated.Task) (*generated.Task, error) {
-
+func (s *issueService) CreateIssue(ctx context.Context, newIssue *generated.Issue) (*generated.Issue, error) {
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
 		return nil, errors.New("failed to get user claims from context")
 	}
 
-	task, err := s.client.Create().
+	issue, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		SetNillableTaskMilestoneID(newTask.TaskMilestoneID).
-		SetNillableTaskIssueID(newTask.TaskIssueID).
-		SetProjectID(newTask.ProjectID).
-		SetTitle(newTask.Title).
-		SetDescription(newTask.Description).
+		SetProjectID(newIssue.ProjectID).
+		SetTitle(newIssue.Title).
+		SetDescription(newIssue.Description).
 		Save(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	return issue, nil
 }
 
-func (s *taskService) GetTasks(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Task, int, error) {
+func (s *issueService) GetIssues(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Issue, int, error) {
 
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 
@@ -60,20 +58,20 @@ func (s *taskService) GetTasks(ctx context.Context, queryParams *render.QueryPar
 		return nil, 0, errors.New("failed to get user claims from context")
 	}
 
-	baseFilters := []predicate.Task{
-		task.AccountIDEQ(int(claims["account_id"].(float64))),
+	baseFilters := []predicate.Issue{
+		issue.AccountIDEQ(int(claims["account_id"].(float64))),
 	}
 
 	if queryParams.Query != "" {
-		searchFilter := task.Or(
-			task.Title(queryParams.Query),
-			task.DescriptionContains(queryParams.Query),
+		searchFilter := issue.Or(
+			issue.Title(queryParams.Query),
+			issue.DescriptionContains(queryParams.Query),
 		)
 		baseFilters = append(baseFilters, searchFilter)
 	}
 
 	var wg sync.WaitGroup
-	var tasks []*generated.Task
+	var issues []*generated.Issue
 	var totalFiltered int
 	var err1, err2 error
 
@@ -81,17 +79,18 @@ func (s *taskService) GetTasks(ctx context.Context, queryParams *render.QueryPar
 
 	go func() {
 		defer wg.Done()
-		tasks, err1 = s.client.
+		issues, err1 = s.client.
 			Query().
 			Where(baseFilters...).
 			Order(
 				// TODO: Add others ways to sort
-				task.ByCreatedAt(
+				issue.ByCreatedAt(
 					sql.OrderDesc(),
 				),
 			).
 			Offset((queryParams.Page - 1) * queryParams.Limit).
 			Limit(queryParams.Limit).
+			WithUser().
 			All(ctx)
 	}()
 
@@ -113,26 +112,27 @@ func (s *taskService) GetTasks(ctx context.Context, queryParams *render.QueryPar
 		return nil, 0, err2
 	}
 
-	return tasks, totalFiltered, nil
+	return issues, totalFiltered, nil
 }
 
-func (s *taskService) GetTaskByID(ctx context.Context, id int) (*generated.Task, error) {
+func (s *issueService) GetIssueByID(ctx context.Context, id int) (*generated.Issue, error) {
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
 		return nil, errors.New("failed to get user claims from context")
 	}
 
-	task, err := s.client.
+	issue, err := s.client.
 		Query().
 		Where(
-			task.AccountIDEQ(int(claims["account_id"].(float64))),
-			task.IDEQ(id),
+			issue.AccountIDEQ(int(claims["account_id"].(float64))),
+			issue.IDEQ(id),
 		).
+		WithUser().
 		First(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	return issue, nil
 }

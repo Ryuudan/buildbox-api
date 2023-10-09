@@ -11,38 +11,36 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type MilestoneHandler struct {
-	milestoneService services.MilestoneService
-	taskService      services.TaskService
-	projectService   services.ProjectService
+type IssueHandlers struct {
+	issueService   services.IssueService
+	projectService services.ProjectService
 }
 
-func NewMilestoneHandler(milestoneService services.MilestoneService, taskService services.TaskService, projectService services.ProjectService) *MilestoneHandler {
-	return &MilestoneHandler{
-		milestoneService: milestoneService,
-		taskService:      taskService,
-		projectService:   projectService,
+func NewIssueHandlers(issueService services.IssueService, projectService services.ProjectService) *IssueHandlers {
+	return &IssueHandlers{
+		issueService:   issueService,
+		projectService: projectService,
 	}
 }
 
-func (m *MilestoneHandler) CreateMilestone(w http.ResponseWriter, r *http.Request) {
+func (i *IssueHandlers) CreateIssue(w http.ResponseWriter, r *http.Request) {
 	validate := render.Validator()
 
-	var milestone generated.Milestone
+	var issue generated.Issue
 	var validationErrors []render.ValidationErrorDetails
 
-	if err := json.NewDecoder(r.Body).Decode(&milestone); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&issue); err != nil {
 		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
 	// Struct level validation
-	if err := validate.Struct(milestone); err != nil {
+	if err := validate.Struct(issue); err != nil {
 		render.ValidationError(w, r, err)
 		return
 	}
 
-	existingProject, _ := m.projectService.GetProjectByID(r.Context(), milestone.ProjectID)
+	existingProject, _ := i.projectService.GetProjectByID(r.Context(), issue.ProjectID)
 
 	if existingProject == nil {
 		validationErrors = append(validationErrors, render.ValidationErrorDetails{
@@ -57,7 +55,7 @@ func (m *MilestoneHandler) CreateMilestone(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	newMilestone, err := m.milestoneService.CreateMilestone(r.Context(), &milestone)
+	newIssue, err := i.issueService.CreateIssue(r.Context(), &issue)
 
 	if err != nil {
 		render.Error(w, r, http.StatusBadRequest, err.Error())
@@ -65,11 +63,10 @@ func (m *MilestoneHandler) CreateMilestone(w http.ResponseWriter, r *http.Reques
 	}
 
 	defer r.Body.Close()
-
-	render.JSON(w, http.StatusCreated, newMilestone)
+	render.JSON(w, http.StatusCreated, newIssue)
 }
 
-func (m *MilestoneHandler) GetMilestoneByID(w http.ResponseWriter, r *http.Request) {
+func (i *IssueHandlers) GetIssueByID(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.StringToInt(chi.URLParam(r, "id"))
 
 	if err != nil {
@@ -77,11 +74,11 @@ func (m *MilestoneHandler) GetMilestoneByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	project, err := m.milestoneService.GetMilestoneByID(r.Context(), id)
+	project, err := i.issueService.GetIssueByID(r.Context(), id)
 
 	if err != nil {
 		if generated.IsNotFound(err) {
-			render.Error(w, r, http.StatusNotFound, "milestone not found")
+			render.Error(w, r, http.StatusNotFound, "issue not found")
 			return
 		} else {
 			render.Error(w, r, http.StatusInternalServerError, err.Error())
@@ -92,7 +89,7 @@ func (m *MilestoneHandler) GetMilestoneByID(w http.ResponseWriter, r *http.Reque
 	render.JSON(w, http.StatusOK, project)
 }
 
-func (m *MilestoneHandler) GetMilestones(w http.ResponseWriter, r *http.Request) {
+func (i *IssueHandlers) GetIssues(w http.ResponseWriter, r *http.Request) {
 
 	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
 
@@ -101,7 +98,7 @@ func (m *MilestoneHandler) GetMilestones(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	milestones, totalFiltered, err := m.milestoneService.GetMilestones(r.Context(), queryParams)
+	issues, totalFiltered, err := i.issueService.GetIssues(r.Context(), queryParams)
 
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
@@ -109,11 +106,11 @@ func (m *MilestoneHandler) GetMilestones(w http.ResponseWriter, r *http.Request)
 	}
 
 	render.JSON(w, http.StatusOK, &render.PaginatedResults{
-		Results: milestones,
+		Results: issues,
 		Meta: render.GenerateMeta(
 			totalFiltered,
 			queryParams,
-			len(milestones),
+			len(issues),
 		),
 	})
 }

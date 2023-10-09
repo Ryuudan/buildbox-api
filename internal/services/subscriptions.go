@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
@@ -29,10 +28,7 @@ func (s *subscriptionService) GetActiveSubscriptionByAccountID(ctx context.Conte
 	).WithPlan().First(ctx)
 
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("subscription not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 	return subscription, nil
 }
@@ -40,10 +36,7 @@ func (s *subscriptionService) GetActiveSubscriptionByAccountID(ctx context.Conte
 func (s *subscriptionService) UpdateSubscriptionStatusByID(ctx context.Context, id int, status subscription.Status) (*generated.Subscription, error) {
 	updated, err := s.client.UpdateOneID(id).SetStatus(status).Save(ctx)
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("subscription not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 	return updated, nil
 }

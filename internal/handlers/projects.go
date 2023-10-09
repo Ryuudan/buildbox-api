@@ -106,8 +106,13 @@ func (p *ProjectHandler) GetProjectByID(w http.ResponseWriter, r *http.Request) 
 
 	project, err := p.projectService.GetProjectByID(r.Context(), id)
 	if err != nil {
-		render.Error(w, r, http.StatusBadRequest, err.Error())
-		return
+		if generated.IsNotFound(err) {
+			render.Error(w, r, http.StatusNotFound, "project not found")
+			return
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	render.JSON(w, http.StatusOK, project)

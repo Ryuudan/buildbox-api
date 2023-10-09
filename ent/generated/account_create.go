@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
@@ -191,6 +192,21 @@ func (ac *AccountCreate) AddMilestones(m ...*Milestone) *AccountCreate {
 		ids[i] = m[i].ID
 	}
 	return ac.AddMilestoneIDs(ids...)
+}
+
+// AddIssueIDs adds the "issues" edge to the Issue entity by IDs.
+func (ac *AccountCreate) AddIssueIDs(ids ...int) *AccountCreate {
+	ac.mutation.AddIssueIDs(ids...)
+	return ac
+}
+
+// AddIssues adds the "issues" edges to the Issue entity.
+func (ac *AccountCreate) AddIssues(i ...*Issue) *AccountCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ac.AddIssueIDs(ids...)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -404,6 +420,22 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(milestone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.IssuesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.IssuesTable,
+			Columns: []string{account.IssuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

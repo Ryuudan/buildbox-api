@@ -220,10 +220,7 @@ func (s *projectService) GetProjectByID(ctx context.Context, id int) (*generated
 		First(ctx)
 
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("project not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 	return project, nil
 }

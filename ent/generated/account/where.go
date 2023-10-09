@@ -579,6 +579,29 @@ func HasMilestonesWith(preds ...predicate.Milestone) predicate.Account {
 	})
 }
 
+// HasIssues applies the HasEdge predicate on the "issues" edge.
+func HasIssues() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IssuesTable, IssuesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIssuesWith applies the HasEdge predicate on the "issues" edge with a given conditions (other predicates).
+func HasIssuesWith(preds ...predicate.Issue) predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := newIssuesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Account) predicate.Account {
 	return predicate.Account(sql.AndPredicates(predicates...))

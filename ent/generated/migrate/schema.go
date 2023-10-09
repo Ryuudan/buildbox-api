@@ -24,6 +24,45 @@ var (
 		Columns:    AccountsColumns,
 		PrimaryKey: []*schema.Column{AccountsColumns[0]},
 	}
+	// IssuesColumns holds the columns for the "issues" table.
+	IssuesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "deleted", Type: field.TypeBool, Nullable: true, Default: false},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "account_id", Type: field.TypeInt},
+		{Name: "project_id", Type: field.TypeInt},
+		{Name: "created_by", Type: field.TypeInt},
+	}
+	// IssuesTable holds the schema information for the "issues" table.
+	IssuesTable = &schema.Table{
+		Name:       "issues",
+		Columns:    IssuesColumns,
+		PrimaryKey: []*schema.Column{IssuesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "issues_accounts_issues",
+				Columns:    []*schema.Column{IssuesColumns[7]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "issues_projects_issues",
+				Columns:    []*schema.Column{IssuesColumns[8]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "issues_users_issues",
+				Columns:    []*schema.Column{IssuesColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// MilestonesColumns holds the columns for the "milestones" table.
 	MilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -182,6 +221,7 @@ var (
 		{Name: "deleted", Type: field.TypeBool, Nullable: true, Default: false},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
+		{Name: "issue_id", Type: field.TypeInt, Nullable: true},
 		{Name: "milestone_id", Type: field.TypeInt, Nullable: true},
 		{Name: "project_id", Type: field.TypeInt},
 		{Name: "created_by", Type: field.TypeInt},
@@ -199,20 +239,26 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "tasks_milestones_tasks",
+				Symbol:     "tasks_issues_tasks",
 				Columns:    []*schema.Column{TasksColumns[8]},
+				RefColumns: []*schema.Column{IssuesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "tasks_milestones_tasks",
+				Columns:    []*schema.Column{TasksColumns[9]},
 				RefColumns: []*schema.Column{MilestonesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_projects_tasks",
-				Columns:    []*schema.Column{TasksColumns[9]},
+				Columns:    []*schema.Column{TasksColumns[10]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "tasks_users_tasks",
-				Columns:    []*schema.Column{TasksColumns[10]},
+				Columns:    []*schema.Column{TasksColumns[11]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -249,6 +295,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
+		IssuesTable,
 		MilestonesTable,
 		PlansTable,
 		ProjectsTable,
@@ -260,6 +307,9 @@ var (
 )
 
 func init() {
+	IssuesTable.ForeignKeys[0].RefTable = AccountsTable
+	IssuesTable.ForeignKeys[1].RefTable = ProjectsTable
+	IssuesTable.ForeignKeys[2].RefTable = UsersTable
 	MilestonesTable.ForeignKeys[0].RefTable = AccountsTable
 	MilestonesTable.ForeignKeys[1].RefTable = ProjectsTable
 	MilestonesTable.ForeignKeys[2].RefTable = UsersTable
@@ -268,8 +318,9 @@ func init() {
 	SubscriptionsTable.ForeignKeys[0].RefTable = AccountsTable
 	SubscriptionsTable.ForeignKeys[1].RefTable = PlansTable
 	TasksTable.ForeignKeys[0].RefTable = AccountsTable
-	TasksTable.ForeignKeys[1].RefTable = MilestonesTable
-	TasksTable.ForeignKeys[2].RefTable = ProjectsTable
-	TasksTable.ForeignKeys[3].RefTable = UsersTable
+	TasksTable.ForeignKeys[1].RefTable = IssuesTable
+	TasksTable.ForeignKeys[2].RefTable = MilestonesTable
+	TasksTable.ForeignKeys[3].RefTable = ProjectsTable
+	TasksTable.ForeignKeys[4].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable
 }

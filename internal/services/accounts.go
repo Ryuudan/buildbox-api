@@ -86,10 +86,7 @@ func (s *accountService) GetAccounts(ctx context.Context, queryParams *render.Qu
 func (s *accountService) GetAccountByID(ctx context.Context, id int) (*generated.Account, error) {
 	account, err := s.client.Get(ctx, id)
 	if err != nil {
-		if generated.IsNotFound(err) {
-			return nil, errors.New("account not found")
-		}
-		return nil, errors.New("something went wrong, please try again later")
+		return nil, err
 	}
 	return account, nil
 }
