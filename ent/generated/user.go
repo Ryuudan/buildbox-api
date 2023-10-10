@@ -59,9 +59,13 @@ type UserEdges struct {
 	Issues []*Issue `json:"issues,omitempty"`
 	// ServiceProviders holds the value of the service_providers edge.
 	ServiceProviders []*ServiceProvider `json:"service_providers,omitempty"`
+	// Projects holds the value of the projects edge.
+	Projects []*Project `json:"projects,omitempty"`
+	// Roles holds the value of the roles edge.
+	Roles []*Role `json:"roles,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [7]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -111,6 +115,24 @@ func (e UserEdges) ServiceProvidersOrErr() ([]*ServiceProvider, error) {
 		return e.ServiceProviders, nil
 	}
 	return nil, &NotLoadedError{edge: "service_providers"}
+}
+
+// ProjectsOrErr returns the Projects value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[5] {
+		return e.Projects, nil
+	}
+	return nil, &NotLoadedError{edge: "projects"}
+}
+
+// RolesOrErr returns the Roles value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) RolesOrErr() ([]*Role, error) {
+	if e.loadedTypes[6] {
+		return e.Roles, nil
+	}
+	return nil, &NotLoadedError{edge: "roles"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -252,6 +274,16 @@ func (u *User) QueryIssues() *IssueQuery {
 // QueryServiceProviders queries the "service_providers" edge of the User entity.
 func (u *User) QueryServiceProviders() *ServiceProviderQuery {
 	return NewUserClient(u.config).QueryServiceProviders(u)
+}
+
+// QueryProjects queries the "projects" edge of the User entity.
+func (u *User) QueryProjects() *ProjectQuery {
+	return NewUserClient(u.config).QueryProjects(u)
+}
+
+// QueryRoles queries the "roles" edge of the User entity.
+func (u *User) QueryRoles() *RoleQuery {
+	return NewUserClient(u.config).QueryRoles(u)
 }
 
 // Update returns a builder for updating this User.

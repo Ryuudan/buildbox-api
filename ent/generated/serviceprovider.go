@@ -48,19 +48,30 @@ type ServiceProvider struct {
 
 // ServiceProviderEdges holds the relations/edges for other nodes in the graph.
 type ServiceProviderEdges struct {
+	// ServiceProviderProjects holds the value of the service_provider_projects edge.
+	ServiceProviderProjects []*ProjectServiceProvider `json:"service_provider_projects,omitempty"`
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// ServiceProviderProjectsOrErr returns the ServiceProviderProjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e ServiceProviderEdges) ServiceProviderProjectsOrErr() ([]*ProjectServiceProvider, error) {
+	if e.loadedTypes[0] {
+		return e.ServiceProviderProjects, nil
+	}
+	return nil, &NotLoadedError{edge: "service_provider_projects"}
 }
 
 // AccountOrErr returns the Account value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ServiceProviderEdges) AccountOrErr() (*Account, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		if e.Account == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: account.Label}
@@ -73,7 +84,7 @@ func (e ServiceProviderEdges) AccountOrErr() (*Account, error) {
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ServiceProviderEdges) UserOrErr() (*User, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		if e.User == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: user.Label}
@@ -190,6 +201,11 @@ func (sp *ServiceProvider) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (sp *ServiceProvider) Value(name string) (ent.Value, error) {
 	return sp.selectValues.Get(name)
+}
+
+// QueryServiceProviderProjects queries the "service_provider_projects" edge of the ServiceProvider entity.
+func (sp *ServiceProvider) QueryServiceProviderProjects() *ProjectServiceProviderQuery {
+	return NewServiceProviderClient(sp.config).QueryServiceProviderProjects(sp)
 }
 
 // QueryAccount queries the "account" edge of the ServiceProvider entity.

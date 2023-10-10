@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
 )
 
@@ -25,6 +26,12 @@ type RoleCreate struct {
 // SetAccountID sets the "account_id" field.
 func (rc *RoleCreate) SetAccountID(i int) *RoleCreate {
 	rc.mutation.SetAccountID(i)
+	return rc
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (rc *RoleCreate) SetCreatedBy(i int) *RoleCreate {
+	rc.mutation.SetCreatedBy(i)
 	return rc
 }
 
@@ -87,6 +94,17 @@ func (rc *RoleCreate) SetAccount(a *Account) *RoleCreate {
 	return rc.SetAccountID(a.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (rc *RoleCreate) SetUserID(id int) *RoleCreate {
+	rc.mutation.SetUserID(id)
+	return rc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (rc *RoleCreate) SetUser(u *User) *RoleCreate {
+	return rc.SetUserID(u.ID)
+}
+
 // Mutation returns the RoleMutation object of the builder.
 func (rc *RoleCreate) Mutation() *RoleMutation {
 	return rc.mutation
@@ -141,6 +159,9 @@ func (rc *RoleCreate) check() error {
 	if _, ok := rc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account_id", err: errors.New(`generated: missing required field "Role.account_id"`)}
 	}
+	if _, ok := rc.mutation.CreatedBy(); !ok {
+		return &ValidationError{Name: "created_by", err: errors.New(`generated: missing required field "Role.created_by"`)}
+	}
 	if _, ok := rc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Role.name"`)}
 	}
@@ -168,6 +189,9 @@ func (rc *RoleCreate) check() error {
 	}
 	if _, ok := rc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`generated: missing required edge "Role.account"`)}
+	}
+	if _, ok := rc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New(`generated: missing required edge "Role.user"`)}
 	}
 	return nil
 }
@@ -230,6 +254,23 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AccountID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   role.UserTable,
+			Columns: []string{role.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.CreatedBy = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

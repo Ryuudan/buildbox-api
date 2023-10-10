@@ -16,7 +16,9 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
 // ProjectUpdate is the builder for updating Project entities.
@@ -40,14 +42,7 @@ func (pu *ProjectUpdate) SetAccountID(i int) *ProjectUpdate {
 
 // SetCreatedBy sets the "created_by" field.
 func (pu *ProjectUpdate) SetCreatedBy(i int) *ProjectUpdate {
-	pu.mutation.ResetCreatedBy()
 	pu.mutation.SetCreatedBy(i)
-	return pu
-}
-
-// AddCreatedBy adds i to the "created_by" field.
-func (pu *ProjectUpdate) AddCreatedBy(i int) *ProjectUpdate {
-	pu.mutation.AddCreatedBy(i)
 	return pu
 }
 
@@ -297,6 +292,17 @@ func (pu *ProjectUpdate) SetAccount(a *Account) *ProjectUpdate {
 	return pu.SetAccountID(a.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (pu *ProjectUpdate) SetUserID(id int) *ProjectUpdate {
+	pu.mutation.SetUserID(id)
+	return pu
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (pu *ProjectUpdate) SetUser(u *User) *ProjectUpdate {
+	return pu.SetUserID(u.ID)
+}
+
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
 func (pu *ProjectUpdate) AddTaskIDs(ids ...int) *ProjectUpdate {
 	pu.mutation.AddTaskIDs(ids...)
@@ -342,6 +348,21 @@ func (pu *ProjectUpdate) AddIssues(i ...*Issue) *ProjectUpdate {
 	return pu.AddIssueIDs(ids...)
 }
 
+// AddProjectServiceProviderIDs adds the "project_service_providers" edge to the ProjectServiceProvider entity by IDs.
+func (pu *ProjectUpdate) AddProjectServiceProviderIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddProjectServiceProviderIDs(ids...)
+	return pu
+}
+
+// AddProjectServiceProviders adds the "project_service_providers" edges to the ProjectServiceProvider entity.
+func (pu *ProjectUpdate) AddProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddProjectServiceProviderIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -350,6 +371,12 @@ func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 // ClearAccount clears the "account" edge to the Account entity.
 func (pu *ProjectUpdate) ClearAccount() *ProjectUpdate {
 	pu.mutation.ClearAccount()
+	return pu
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (pu *ProjectUpdate) ClearUser() *ProjectUpdate {
+	pu.mutation.ClearUser()
 	return pu
 }
 
@@ -416,6 +443,27 @@ func (pu *ProjectUpdate) RemoveIssues(i ...*Issue) *ProjectUpdate {
 	return pu.RemoveIssueIDs(ids...)
 }
 
+// ClearProjectServiceProviders clears all "project_service_providers" edges to the ProjectServiceProvider entity.
+func (pu *ProjectUpdate) ClearProjectServiceProviders() *ProjectUpdate {
+	pu.mutation.ClearProjectServiceProviders()
+	return pu
+}
+
+// RemoveProjectServiceProviderIDs removes the "project_service_providers" edge to ProjectServiceProvider entities by IDs.
+func (pu *ProjectUpdate) RemoveProjectServiceProviderIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveProjectServiceProviderIDs(ids...)
+	return pu
+}
+
+// RemoveProjectServiceProviders removes "project_service_providers" edges to ProjectServiceProvider entities.
+func (pu *ProjectUpdate) RemoveProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveProjectServiceProviderIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *ProjectUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
@@ -463,6 +511,9 @@ func (pu *ProjectUpdate) check() error {
 	if _, ok := pu.mutation.AccountID(); pu.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Project.account"`)
 	}
+	if _, ok := pu.mutation.UserID(); pu.mutation.UserCleared() && !ok {
+		return errors.New(`generated: clearing a required unique edge "Project.user"`)
+	}
 	return nil
 }
 
@@ -477,12 +528,6 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := pu.mutation.CreatedBy(); ok {
-		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.AddedCreatedBy(); ok {
-		_spec.AddField(project.FieldCreatedBy, field.TypeInt, value)
 	}
 	if value, ok := pu.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeInt, value)
@@ -581,6 +626,35 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UserTable,
+			Columns: []string{project.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UserTable,
+			Columns: []string{project.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -723,6 +797,51 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.ProjectServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedProjectServiceProvidersIDs(); len(nodes) > 0 && !pu.mutation.ProjectServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ProjectServiceProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -751,14 +870,7 @@ func (puo *ProjectUpdateOne) SetAccountID(i int) *ProjectUpdateOne {
 
 // SetCreatedBy sets the "created_by" field.
 func (puo *ProjectUpdateOne) SetCreatedBy(i int) *ProjectUpdateOne {
-	puo.mutation.ResetCreatedBy()
 	puo.mutation.SetCreatedBy(i)
-	return puo
-}
-
-// AddCreatedBy adds i to the "created_by" field.
-func (puo *ProjectUpdateOne) AddCreatedBy(i int) *ProjectUpdateOne {
-	puo.mutation.AddCreatedBy(i)
 	return puo
 }
 
@@ -1008,6 +1120,17 @@ func (puo *ProjectUpdateOne) SetAccount(a *Account) *ProjectUpdateOne {
 	return puo.SetAccountID(a.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (puo *ProjectUpdateOne) SetUserID(id int) *ProjectUpdateOne {
+	puo.mutation.SetUserID(id)
+	return puo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (puo *ProjectUpdateOne) SetUser(u *User) *ProjectUpdateOne {
+	return puo.SetUserID(u.ID)
+}
+
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
 func (puo *ProjectUpdateOne) AddTaskIDs(ids ...int) *ProjectUpdateOne {
 	puo.mutation.AddTaskIDs(ids...)
@@ -1053,6 +1176,21 @@ func (puo *ProjectUpdateOne) AddIssues(i ...*Issue) *ProjectUpdateOne {
 	return puo.AddIssueIDs(ids...)
 }
 
+// AddProjectServiceProviderIDs adds the "project_service_providers" edge to the ProjectServiceProvider entity by IDs.
+func (puo *ProjectUpdateOne) AddProjectServiceProviderIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddProjectServiceProviderIDs(ids...)
+	return puo
+}
+
+// AddProjectServiceProviders adds the "project_service_providers" edges to the ProjectServiceProvider entity.
+func (puo *ProjectUpdateOne) AddProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddProjectServiceProviderIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -1061,6 +1199,12 @@ func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 // ClearAccount clears the "account" edge to the Account entity.
 func (puo *ProjectUpdateOne) ClearAccount() *ProjectUpdateOne {
 	puo.mutation.ClearAccount()
+	return puo
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (puo *ProjectUpdateOne) ClearUser() *ProjectUpdateOne {
+	puo.mutation.ClearUser()
 	return puo
 }
 
@@ -1127,6 +1271,27 @@ func (puo *ProjectUpdateOne) RemoveIssues(i ...*Issue) *ProjectUpdateOne {
 	return puo.RemoveIssueIDs(ids...)
 }
 
+// ClearProjectServiceProviders clears all "project_service_providers" edges to the ProjectServiceProvider entity.
+func (puo *ProjectUpdateOne) ClearProjectServiceProviders() *ProjectUpdateOne {
+	puo.mutation.ClearProjectServiceProviders()
+	return puo
+}
+
+// RemoveProjectServiceProviderIDs removes the "project_service_providers" edge to ProjectServiceProvider entities by IDs.
+func (puo *ProjectUpdateOne) RemoveProjectServiceProviderIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveProjectServiceProviderIDs(ids...)
+	return puo
+}
+
+// RemoveProjectServiceProviders removes "project_service_providers" edges to ProjectServiceProvider entities.
+func (puo *ProjectUpdateOne) RemoveProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveProjectServiceProviderIDs(ids...)
+}
+
 // Where appends a list predicates to the ProjectUpdate builder.
 func (puo *ProjectUpdateOne) Where(ps ...predicate.Project) *ProjectUpdateOne {
 	puo.mutation.Where(ps...)
@@ -1187,6 +1352,9 @@ func (puo *ProjectUpdateOne) check() error {
 	if _, ok := puo.mutation.AccountID(); puo.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Project.account"`)
 	}
+	if _, ok := puo.mutation.UserID(); puo.mutation.UserCleared() && !ok {
+		return errors.New(`generated: clearing a required unique edge "Project.user"`)
+	}
 	return nil
 }
 
@@ -1218,12 +1386,6 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := puo.mutation.CreatedBy(); ok {
-		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.AddedCreatedBy(); ok {
-		_spec.AddField(project.FieldCreatedBy, field.TypeInt, value)
 	}
 	if value, ok := puo.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeInt, value)
@@ -1322,6 +1484,35 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UserTable,
+			Columns: []string{project.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UserTable,
+			Columns: []string{project.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1457,6 +1648,51 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ProjectServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedProjectServiceProvidersIDs(); len(nodes) > 0 && !puo.mutation.ProjectServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ProjectServiceProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

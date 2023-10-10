@@ -20,6 +20,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
@@ -42,6 +43,8 @@ type Client struct {
 	Plan *PlanClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
+	// ProjectServiceProvider is the client for interacting with the ProjectServiceProvider builders.
+	ProjectServiceProvider *ProjectServiceProviderClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// ServiceProvider is the client for interacting with the ServiceProvider builders.
@@ -70,6 +73,7 @@ func (c *Client) init() {
 	c.Milestone = NewMilestoneClient(c.config)
 	c.Plan = NewPlanClient(c.config)
 	c.Project = NewProjectClient(c.config)
+	c.ProjectServiceProvider = NewProjectServiceProviderClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.ServiceProvider = NewServiceProviderClient(c.config)
 	c.Subscription = NewSubscriptionClient(c.config)
@@ -158,18 +162,19 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		Account:         NewAccountClient(cfg),
-		Issue:           NewIssueClient(cfg),
-		Milestone:       NewMilestoneClient(cfg),
-		Plan:            NewPlanClient(cfg),
-		Project:         NewProjectClient(cfg),
-		Role:            NewRoleClient(cfg),
-		ServiceProvider: NewServiceProviderClient(cfg),
-		Subscription:    NewSubscriptionClient(cfg),
-		Task:            NewTaskClient(cfg),
-		User:            NewUserClient(cfg),
+		ctx:                    ctx,
+		config:                 cfg,
+		Account:                NewAccountClient(cfg),
+		Issue:                  NewIssueClient(cfg),
+		Milestone:              NewMilestoneClient(cfg),
+		Plan:                   NewPlanClient(cfg),
+		Project:                NewProjectClient(cfg),
+		ProjectServiceProvider: NewProjectServiceProviderClient(cfg),
+		Role:                   NewRoleClient(cfg),
+		ServiceProvider:        NewServiceProviderClient(cfg),
+		Subscription:           NewSubscriptionClient(cfg),
+		Task:                   NewTaskClient(cfg),
+		User:                   NewUserClient(cfg),
 	}, nil
 }
 
@@ -187,18 +192,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		Account:         NewAccountClient(cfg),
-		Issue:           NewIssueClient(cfg),
-		Milestone:       NewMilestoneClient(cfg),
-		Plan:            NewPlanClient(cfg),
-		Project:         NewProjectClient(cfg),
-		Role:            NewRoleClient(cfg),
-		ServiceProvider: NewServiceProviderClient(cfg),
-		Subscription:    NewSubscriptionClient(cfg),
-		Task:            NewTaskClient(cfg),
-		User:            NewUserClient(cfg),
+		ctx:                    ctx,
+		config:                 cfg,
+		Account:                NewAccountClient(cfg),
+		Issue:                  NewIssueClient(cfg),
+		Milestone:              NewMilestoneClient(cfg),
+		Plan:                   NewPlanClient(cfg),
+		Project:                NewProjectClient(cfg),
+		ProjectServiceProvider: NewProjectServiceProviderClient(cfg),
+		Role:                   NewRoleClient(cfg),
+		ServiceProvider:        NewServiceProviderClient(cfg),
+		Subscription:           NewSubscriptionClient(cfg),
+		Task:                   NewTaskClient(cfg),
+		User:                   NewUserClient(cfg),
 	}, nil
 }
 
@@ -228,8 +234,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Account, c.Issue, c.Milestone, c.Plan, c.Project, c.Role, c.ServiceProvider,
-		c.Subscription, c.Task, c.User,
+		c.Account, c.Issue, c.Milestone, c.Plan, c.Project, c.ProjectServiceProvider,
+		c.Role, c.ServiceProvider, c.Subscription, c.Task, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -239,8 +245,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Account, c.Issue, c.Milestone, c.Plan, c.Project, c.Role, c.ServiceProvider,
-		c.Subscription, c.Task, c.User,
+		c.Account, c.Issue, c.Milestone, c.Plan, c.Project, c.ProjectServiceProvider,
+		c.Role, c.ServiceProvider, c.Subscription, c.Task, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -259,6 +265,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Plan.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
+	case *ProjectServiceProviderMutation:
+		return c.ProjectServiceProvider.mutate(ctx, m)
 	case *RoleMutation:
 		return c.Role.mutate(ctx, m)
 	case *ServiceProviderMutation:
@@ -1202,6 +1210,22 @@ func (c *ProjectClient) QueryAccount(pr *Project) *AccountQuery {
 	return query
 }
 
+// QueryUser queries the user edge of a Project.
+func (c *ProjectClient) QueryUser(pr *Project) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.UserTable, project.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryTasks queries the tasks edge of a Project.
 func (c *ProjectClient) QueryTasks(pr *Project) *TaskQuery {
 	query := (&TaskClient{config: c.config}).Query()
@@ -1250,6 +1274,22 @@ func (c *ProjectClient) QueryIssues(pr *Project) *IssueQuery {
 	return query
 }
 
+// QueryProjectServiceProviders queries the project_service_providers edge of a Project.
+func (c *ProjectClient) QueryProjectServiceProviders(pr *Project) *ProjectServiceProviderQuery {
+	query := (&ProjectServiceProviderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectserviceprovider.Table, projectserviceprovider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectServiceProvidersTable, project.ProjectServiceProvidersColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	return c.hooks.Project
@@ -1272,6 +1312,171 @@ func (c *ProjectClient) mutate(ctx context.Context, m *ProjectMutation) (Value, 
 		return (&ProjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("generated: unknown Project mutation op: %q", m.Op())
+	}
+}
+
+// ProjectServiceProviderClient is a client for the ProjectServiceProvider schema.
+type ProjectServiceProviderClient struct {
+	config
+}
+
+// NewProjectServiceProviderClient returns a client for the ProjectServiceProvider from the given config.
+func NewProjectServiceProviderClient(c config) *ProjectServiceProviderClient {
+	return &ProjectServiceProviderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectserviceprovider.Hooks(f(g(h())))`.
+func (c *ProjectServiceProviderClient) Use(hooks ...Hook) {
+	c.hooks.ProjectServiceProvider = append(c.hooks.ProjectServiceProvider, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `projectserviceprovider.Intercept(f(g(h())))`.
+func (c *ProjectServiceProviderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProjectServiceProvider = append(c.inters.ProjectServiceProvider, interceptors...)
+}
+
+// Create returns a builder for creating a ProjectServiceProvider entity.
+func (c *ProjectServiceProviderClient) Create() *ProjectServiceProviderCreate {
+	mutation := newProjectServiceProviderMutation(c.config, OpCreate)
+	return &ProjectServiceProviderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectServiceProvider entities.
+func (c *ProjectServiceProviderClient) CreateBulk(builders ...*ProjectServiceProviderCreate) *ProjectServiceProviderCreateBulk {
+	return &ProjectServiceProviderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProjectServiceProviderClient) MapCreateBulk(slice any, setFunc func(*ProjectServiceProviderCreate, int)) *ProjectServiceProviderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProjectServiceProviderCreateBulk{err: fmt.Errorf("calling to ProjectServiceProviderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProjectServiceProviderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProjectServiceProviderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectServiceProvider.
+func (c *ProjectServiceProviderClient) Update() *ProjectServiceProviderUpdate {
+	mutation := newProjectServiceProviderMutation(c.config, OpUpdate)
+	return &ProjectServiceProviderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectServiceProviderClient) UpdateOne(psp *ProjectServiceProvider) *ProjectServiceProviderUpdateOne {
+	mutation := newProjectServiceProviderMutation(c.config, OpUpdateOne, withProjectServiceProvider(psp))
+	return &ProjectServiceProviderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectServiceProviderClient) UpdateOneID(id int) *ProjectServiceProviderUpdateOne {
+	mutation := newProjectServiceProviderMutation(c.config, OpUpdateOne, withProjectServiceProviderID(id))
+	return &ProjectServiceProviderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectServiceProvider.
+func (c *ProjectServiceProviderClient) Delete() *ProjectServiceProviderDelete {
+	mutation := newProjectServiceProviderMutation(c.config, OpDelete)
+	return &ProjectServiceProviderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProjectServiceProviderClient) DeleteOne(psp *ProjectServiceProvider) *ProjectServiceProviderDeleteOne {
+	return c.DeleteOneID(psp.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProjectServiceProviderClient) DeleteOneID(id int) *ProjectServiceProviderDeleteOne {
+	builder := c.Delete().Where(projectserviceprovider.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectServiceProviderDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectServiceProvider.
+func (c *ProjectServiceProviderClient) Query() *ProjectServiceProviderQuery {
+	return &ProjectServiceProviderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProjectServiceProvider},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProjectServiceProvider entity by its id.
+func (c *ProjectServiceProviderClient) Get(ctx context.Context, id int) (*ProjectServiceProvider, error) {
+	return c.Query().Where(projectserviceprovider.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectServiceProviderClient) GetX(ctx context.Context, id int) *ProjectServiceProvider {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a ProjectServiceProvider.
+func (c *ProjectServiceProviderClient) QueryProject(psp *ProjectServiceProvider) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := psp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectserviceprovider.Table, projectserviceprovider.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectserviceprovider.ProjectTable, projectserviceprovider.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(psp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServiceProvider queries the service_provider edge of a ProjectServiceProvider.
+func (c *ProjectServiceProviderClient) QueryServiceProvider(psp *ProjectServiceProvider) *ServiceProviderQuery {
+	query := (&ServiceProviderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := psp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectserviceprovider.Table, projectserviceprovider.FieldID, id),
+			sqlgraph.To(serviceprovider.Table, serviceprovider.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectserviceprovider.ServiceProviderTable, projectserviceprovider.ServiceProviderColumn),
+		)
+		fromV = sqlgraph.Neighbors(psp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectServiceProviderClient) Hooks() []Hook {
+	return c.hooks.ProjectServiceProvider
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProjectServiceProviderClient) Interceptors() []Interceptor {
+	return c.inters.ProjectServiceProvider
+}
+
+func (c *ProjectServiceProviderClient) mutate(ctx context.Context, m *ProjectServiceProviderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProjectServiceProviderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProjectServiceProviderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProjectServiceProviderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProjectServiceProviderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("generated: unknown ProjectServiceProvider mutation op: %q", m.Op())
 	}
 }
 
@@ -1392,6 +1597,22 @@ func (c *RoleClient) QueryAccount(r *Role) *AccountQuery {
 			sqlgraph.From(role.Table, role.FieldID, id),
 			sqlgraph.To(account.Table, account.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, role.AccountTable, role.AccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a Role.
+func (c *RoleClient) QueryUser(r *Role) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(role.Table, role.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, role.UserTable, role.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
@@ -1530,6 +1751,22 @@ func (c *ServiceProviderClient) GetX(ctx context.Context, id int) *ServiceProvid
 		panic(err)
 	}
 	return obj
+}
+
+// QueryServiceProviderProjects queries the service_provider_projects edge of a ServiceProvider.
+func (c *ServiceProviderClient) QueryServiceProviderProjects(sp *ServiceProvider) *ProjectServiceProviderQuery {
+	query := (&ProjectServiceProviderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(serviceprovider.Table, serviceprovider.FieldID, id),
+			sqlgraph.To(projectserviceprovider.Table, projectserviceprovider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, serviceprovider.ServiceProviderProjectsTable, serviceprovider.ServiceProviderProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryAccount queries the account edge of a ServiceProvider.
@@ -2155,6 +2392,38 @@ func (c *UserClient) QueryServiceProviders(u *User) *ServiceProviderQuery {
 	return query
 }
 
+// QueryProjects queries the projects edge of a User.
+func (c *UserClient) QueryProjects(u *User) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProjectsTable, user.ProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRoles queries the roles edge of a User.
+func (c *UserClient) QueryRoles(u *User) *RoleQuery {
+	query := (&RoleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(role.Table, role.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.RolesTable, user.RolesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2183,11 +2452,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Account, Issue, Milestone, Plan, Project, Role, ServiceProvider, Subscription,
-		Task, User []ent.Hook
+		Account, Issue, Milestone, Plan, Project, ProjectServiceProvider, Role,
+		ServiceProvider, Subscription, Task, User []ent.Hook
 	}
 	inters struct {
-		Account, Issue, Milestone, Plan, Project, Role, ServiceProvider, Subscription,
-		Task, User []ent.Interceptor
+		Account, Issue, Milestone, Plan, Project, ProjectServiceProvider, Role,
+		ServiceProvider, Subscription, Task, User []ent.Interceptor
 	}
 )

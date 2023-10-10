@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
 )
 
@@ -21,6 +22,8 @@ type Role struct {
 	ID int `json:"id,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID int `json:"account_id,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy int `json:"created_by,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name" validate:"required,min=1,max=100"`
 	// Description holds the value of the "description" field.
@@ -41,9 +44,11 @@ type Role struct {
 type RoleEdges struct {
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -59,12 +64,25 @@ func (e RoleEdges) AccountOrErr() (*Account, error) {
 	return nil, &NotLoadedError{edge: "account"}
 }
 
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RoleEdges) UserOrErr() (*User, error) {
+	if e.loadedTypes[1] {
+		if e.User == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.User, nil
+	}
+	return nil, &NotLoadedError{edge: "user"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Role) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case role.FieldID, role.FieldAccountID:
+		case role.FieldID, role.FieldAccountID, role.FieldCreatedBy:
 			values[i] = new(sql.NullInt64)
 		case role.FieldName, role.FieldDescription:
 			values[i] = new(sql.NullString)
@@ -98,6 +116,12 @@ func (r *Role) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field account_id", values[i])
 			} else if value.Valid {
 				r.AccountID = int(value.Int64)
+			}
+		case role.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				r.CreatedBy = int(value.Int64)
 			}
 		case role.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -147,6 +171,11 @@ func (r *Role) QueryAccount() *AccountQuery {
 	return NewRoleClient(r.config).QueryAccount(r)
 }
 
+// QueryUser queries the "user" edge of the Role entity.
+func (r *Role) QueryUser() *UserQuery {
+	return NewRoleClient(r.config).QueryUser(r)
+}
+
 // Update returns a builder for updating this Role.
 // Note that you need to call Role.Unwrap() before calling this method if this Role
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -172,6 +201,9 @@ func (r *Role) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
 	builder.WriteString("account_id=")
 	builder.WriteString(fmt.Sprintf("%v", r.AccountID))
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(fmt.Sprintf("%v", r.CreatedBy))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(r.Name)

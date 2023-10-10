@@ -581,6 +581,29 @@ func UUIDLTE(v uuid.UUID) predicate.ServiceProvider {
 	return predicate.ServiceProvider(sql.FieldLTE(FieldUUID, v))
 }
 
+// HasServiceProviderProjects applies the HasEdge predicate on the "service_provider_projects" edge.
+func HasServiceProviderProjects() predicate.ServiceProvider {
+	return predicate.ServiceProvider(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ServiceProviderProjectsTable, ServiceProviderProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasServiceProviderProjectsWith applies the HasEdge predicate on the "service_provider_projects" edge with a given conditions (other predicates).
+func HasServiceProviderProjectsWith(preds ...predicate.ProjectServiceProvider) predicate.ServiceProvider {
+	return predicate.ServiceProvider(func(s *sql.Selector) {
+		step := newServiceProviderProjectsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasAccount applies the HasEdge predicate on the "account" edge.
 func HasAccount() predicate.ServiceProvider {
 	return predicate.ServiceProvider(func(s *sql.Selector) {

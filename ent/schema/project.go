@@ -100,8 +100,14 @@ func (Project) Edges() []ent.Edge {
 			Ref("projects").
 			Required().
 			Unique(),
+		edge.From("user", User.Type).
+			Field("created_by").
+			Ref("projects").
+			Required().
+			Unique(),
 		edge.To("tasks", Task.Type),
 		edge.To("milestones", Milestone.Type),
 		edge.To("issues", Issue.Type),
+		edge.To("project_service_providers", ProjectServiceProvider.Type),
 	}
 }

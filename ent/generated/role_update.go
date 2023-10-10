@@ -14,6 +14,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
 // RoleUpdate is the builder for updating Role entities.
@@ -32,6 +33,12 @@ func (ru *RoleUpdate) Where(ps ...predicate.Role) *RoleUpdate {
 // SetAccountID sets the "account_id" field.
 func (ru *RoleUpdate) SetAccountID(i int) *RoleUpdate {
 	ru.mutation.SetAccountID(i)
+	return ru
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (ru *RoleUpdate) SetCreatedBy(i int) *RoleUpdate {
+	ru.mutation.SetCreatedBy(i)
 	return ru
 }
 
@@ -66,6 +73,17 @@ func (ru *RoleUpdate) SetAccount(a *Account) *RoleUpdate {
 	return ru.SetAccountID(a.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (ru *RoleUpdate) SetUserID(id int) *RoleUpdate {
+	ru.mutation.SetUserID(id)
+	return ru
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (ru *RoleUpdate) SetUser(u *User) *RoleUpdate {
+	return ru.SetUserID(u.ID)
+}
+
 // Mutation returns the RoleMutation object of the builder.
 func (ru *RoleUpdate) Mutation() *RoleMutation {
 	return ru.mutation
@@ -74,6 +92,12 @@ func (ru *RoleUpdate) Mutation() *RoleMutation {
 // ClearAccount clears the "account" edge to the Account entity.
 func (ru *RoleUpdate) ClearAccount() *RoleUpdate {
 	ru.mutation.ClearAccount()
+	return ru
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (ru *RoleUpdate) ClearUser() *RoleUpdate {
+	ru.mutation.ClearUser()
 	return ru
 }
 
@@ -118,6 +142,9 @@ func (ru *RoleUpdate) check() error {
 	}
 	if _, ok := ru.mutation.AccountID(); ru.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Role.account"`)
+	}
+	if _, ok := ru.mutation.UserID(); ru.mutation.UserCleared() && !ok {
+		return errors.New(`generated: clearing a required unique edge "Role.user"`)
 	}
 	return nil
 }
@@ -172,6 +199,35 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ru.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   role.UserTable,
+			Columns: []string{role.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   role.UserTable,
+			Columns: []string{role.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{role.Label}
@@ -195,6 +251,12 @@ type RoleUpdateOne struct {
 // SetAccountID sets the "account_id" field.
 func (ruo *RoleUpdateOne) SetAccountID(i int) *RoleUpdateOne {
 	ruo.mutation.SetAccountID(i)
+	return ruo
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (ruo *RoleUpdateOne) SetCreatedBy(i int) *RoleUpdateOne {
+	ruo.mutation.SetCreatedBy(i)
 	return ruo
 }
 
@@ -229,6 +291,17 @@ func (ruo *RoleUpdateOne) SetAccount(a *Account) *RoleUpdateOne {
 	return ruo.SetAccountID(a.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (ruo *RoleUpdateOne) SetUserID(id int) *RoleUpdateOne {
+	ruo.mutation.SetUserID(id)
+	return ruo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (ruo *RoleUpdateOne) SetUser(u *User) *RoleUpdateOne {
+	return ruo.SetUserID(u.ID)
+}
+
 // Mutation returns the RoleMutation object of the builder.
 func (ruo *RoleUpdateOne) Mutation() *RoleMutation {
 	return ruo.mutation
@@ -237,6 +310,12 @@ func (ruo *RoleUpdateOne) Mutation() *RoleMutation {
 // ClearAccount clears the "account" edge to the Account entity.
 func (ruo *RoleUpdateOne) ClearAccount() *RoleUpdateOne {
 	ruo.mutation.ClearAccount()
+	return ruo
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (ruo *RoleUpdateOne) ClearUser() *RoleUpdateOne {
+	ruo.mutation.ClearUser()
 	return ruo
 }
 
@@ -294,6 +373,9 @@ func (ruo *RoleUpdateOne) check() error {
 	}
 	if _, ok := ruo.mutation.AccountID(); ruo.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Role.account"`)
+	}
+	if _, ok := ruo.mutation.UserID(); ruo.mutation.UserCleared() && !ok {
+		return errors.New(`generated: clearing a required unique edge "Role.user"`)
 	}
 	return nil
 }
@@ -358,6 +440,35 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   role.UserTable,
+			Columns: []string{role.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   role.UserTable,
+			Columns: []string{role.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

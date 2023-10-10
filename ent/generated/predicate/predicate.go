@@ -21,6 +21,9 @@ type Plan func(*sql.Selector)
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 
+// ProjectServiceProvider is the predicate function for projectserviceprovider builders.
+type ProjectServiceProvider func(*sql.Selector)
+
 // Role is the predicate function for role builders.
 type Role func(*sql.Selector)
 

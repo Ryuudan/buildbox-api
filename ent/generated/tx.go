@@ -22,6 +22,8 @@ type Tx struct {
 	Plan *PlanClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
+	// ProjectServiceProvider is the client for interacting with the ProjectServiceProvider builders.
+	ProjectServiceProvider *ProjectServiceProviderClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// ServiceProvider is the client for interacting with the ServiceProvider builders.
@@ -168,6 +170,7 @@ func (tx *Tx) init() {
 	tx.Milestone = NewMilestoneClient(tx.config)
 	tx.Plan = NewPlanClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
+	tx.ProjectServiceProvider = NewProjectServiceProviderClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.ServiceProvider = NewServiceProviderClient(tx.config)
 	tx.Subscription = NewSubscriptionClient(tx.config)

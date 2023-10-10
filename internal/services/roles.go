@@ -37,6 +37,7 @@ func (s *rolesService) CreateRole(ctx context.Context, newRole *generated.Role) 
 
 	role, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
+		SetCreatedBy(int(claims["user_id"].(float64))).
 		SetName(newRole.Name).
 		SetDescription(newRole.Description).
 		Save(ctx)

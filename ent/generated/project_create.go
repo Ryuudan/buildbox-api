@@ -14,7 +14,9 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
 )
 
@@ -230,6 +232,17 @@ func (pc *ProjectCreate) SetAccount(a *Account) *ProjectCreate {
 	return pc.SetAccountID(a.ID)
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (pc *ProjectCreate) SetUserID(id int) *ProjectCreate {
+	pc.mutation.SetUserID(id)
+	return pc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (pc *ProjectCreate) SetUser(u *User) *ProjectCreate {
+	return pc.SetUserID(u.ID)
+}
+
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
 func (pc *ProjectCreate) AddTaskIDs(ids ...int) *ProjectCreate {
 	pc.mutation.AddTaskIDs(ids...)
@@ -273,6 +286,21 @@ func (pc *ProjectCreate) AddIssues(i ...*Issue) *ProjectCreate {
 		ids[j] = i[j].ID
 	}
 	return pc.AddIssueIDs(ids...)
+}
+
+// AddProjectServiceProviderIDs adds the "project_service_providers" edge to the ProjectServiceProvider entity by IDs.
+func (pc *ProjectCreate) AddProjectServiceProviderIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddProjectServiceProviderIDs(ids...)
+	return pc
+}
+
+// AddProjectServiceProviders adds the "project_service_providers" edges to the ProjectServiceProvider entity.
+func (pc *ProjectCreate) AddProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddProjectServiceProviderIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -374,6 +402,9 @@ func (pc *ProjectCreate) check() error {
 	if _, ok := pc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`generated: missing required edge "Project.account"`)}
 	}
+	if _, ok := pc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New(`generated: missing required edge "Project.user"`)}
+	}
 	return nil
 }
 
@@ -400,10 +431,6 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_node = &Project{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(project.Table, sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt))
 	)
-	if value, ok := pc.mutation.CreatedBy(); ok {
-		_spec.SetField(project.FieldCreatedBy, field.TypeInt, value)
-		_node.CreatedBy = value
-	}
 	if value, ok := pc.mutation.ClientID(); ok {
 		_spec.SetField(project.FieldClientID, field.TypeInt, value)
 		_node.ClientID = &value
@@ -477,6 +504,23 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_node.AccountID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := pc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UserTable,
+			Columns: []string{project.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.CreatedBy = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := pc.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -518,6 +562,22 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ProjectServiceProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ProjectServiceProvidersTable,
+			Columns: []string{project.ProjectServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -118,7 +118,7 @@ func (s *ServiceProviderHandler) CreateServiceProvider(w http.ResponseWriter, r 
 			})
 		}
 	}()
-	
+
 	wg.Wait()
 
 	// If there are validation errors, return a custom validation error response

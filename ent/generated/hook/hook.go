@@ -69,6 +69,18 @@ func (f ProjectFunc) Mutate(ctx context.Context, m generated.Mutation) (generate
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *generated.ProjectMutation", m)
 }
 
+// The ProjectServiceProviderFunc type is an adapter to allow the use of ordinary
+// function as ProjectServiceProvider mutator.
+type ProjectServiceProviderFunc func(context.Context, *generated.ProjectServiceProviderMutation) (generated.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectServiceProviderFunc) Mutate(ctx context.Context, m generated.Mutation) (generated.Value, error) {
+	if mv, ok := m.(*generated.ProjectServiceProviderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *generated.ProjectServiceProviderMutation", m)
+}
+
 // The RoleFunc type is an adapter to allow the use of ordinary
 // function as Role mutator.
 type RoleFunc func(context.Context, *generated.RoleMutation) (generated.Value, error)

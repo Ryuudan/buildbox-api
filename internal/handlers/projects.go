@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
@@ -13,14 +14,18 @@ import (
 )
 
 type ProjectHandler struct {
-	projectService services.ProjectService
-	accountService services.AccountService
+	projectService                 services.ProjectService
+	accountService                 services.AccountService
+	serviceProviderService         services.ServiceProviderService
+	projectServiceProvidersService services.ProjectServiceProviderService
 }
 
-func NewProjectHandler(projectService services.ProjectService, accountService services.AccountService) *ProjectHandler {
+func NewProjectHandler(projectService services.ProjectService, accountService services.AccountService, serviceProviderService services.ServiceProviderService, projectServiceProvidersService services.ProjectServiceProviderService) *ProjectHandler {
 	return &ProjectHandler{
-		projectService: projectService,
-		accountService: accountService,
+		projectService:                 projectService,
+		accountService:                 accountService,
+		serviceProviderService:         serviceProviderService,
+		projectServiceProvidersService: projectServiceProvidersService,
 	}
 }
 
@@ -116,4 +121,130 @@ func (p *ProjectHandler) GetProjectByID(w http.ResponseWriter, r *http.Request) 
 	}
 
 	render.JSON(w, http.StatusOK, project)
+}
+
+func (p *ProjectHandler) GetProjectServiceProviders(w http.ResponseWriter, r *http.Request) {
+
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	queryParams, err := render.ParseQueryFilterParams(r.URL.RawQuery)
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	service_providers, total, err := p.projectServiceProvidersService.GetProjectServiceProviders(
+		r.Context(),
+		id,
+		queryParams,
+	)
+
+	if err != nil {
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	render.JSON(w, http.StatusOK, &render.PaginatedResults{
+		Results: service_providers,
+		Meta: render.GenerateMeta(
+			total,
+			queryParams,
+			len(service_providers),
+		),
+	})
+}
+
+func (p *ProjectHandler) AddServiceProviderToProject(w http.ResponseWriter, r *http.Request) {
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	validate := render.Validator()
+
+	var payload models.AddServiceProviderToProjectRequest
+	var validationErrors []render.ValidationErrorDetails
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		return
+	}
+
+	// Struct level validation
+	if err := validate.Struct(payload); err != nil {
+		render.ValidationError(w, r, err)
+		return
+	}
+
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		mu.Lock()
+		defer mu.Unlock()
+		existingProject, _ := p.projectService.GetProjectByID(r.Context(), id)
+		if existingProject == nil {
+			validationErrors = append(validationErrors, render.ValidationErrorDetails{
+				Field:   "project_id",
+				Message: "project does not exist",
+			})
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mu.Lock()
+		defer mu.Unlock()
+		existingProject, _ := p.serviceProviderService.GetServiceProviderByID(r.Context(), payload.ServiceProviderID)
+		if existingProject == nil {
+			validationErrors = append(validationErrors, render.ValidationErrorDetails{
+				Field:   "service_provider_id",
+				Message: "service provider does not exist",
+			})
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mu.Lock()
+		defer mu.Unlock()
+		existing, _ := p.projectServiceProvidersService.GetExisting(r.Context(), id, payload.ServiceProviderID)
+		if existing != nil && existing.ProjectProjectID == id && existing.ProjectServiceProviderID == payload.ServiceProviderID {
+			validationErrors = append(validationErrors, render.ValidationErrorDetails{
+				Field:   "service_provider_id",
+				Message: "service provider already exists in the current project",
+			})
+		}
+	}()
+
+	wg.Wait()
+
+	// If there are validation errors, return a custom validation error response
+	if len(validationErrors) > 0 {
+		render.CustomValidationError(w, r, validationErrors)
+		return
+	}
+
+	projectServiceProvider, err := p.projectServiceProvidersService.AddServiceProviderToProject(r.Context(), id, payload.ServiceProviderID)
+
+	if err != nil {
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	defer r.Body.Close()
+
+	render.JSON(w, http.StatusCreated, projectServiceProvider)
 }

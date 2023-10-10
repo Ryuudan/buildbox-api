@@ -13,6 +13,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
 // RoleQuery is the builder for querying Role entities.
@@ -23,6 +24,7 @@ type RoleQuery struct {
 	inters      []Interceptor
 	predicates  []predicate.Role
 	withAccount *AccountQuery
+	withUser    *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -74,6 +76,28 @@ func (rq *RoleQuery) QueryAccount() *AccountQuery {
 			sqlgraph.From(role.Table, role.FieldID, selector),
 			sqlgraph.To(account.Table, account.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, role.AccountTable, role.AccountColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (rq *RoleQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(role.Table, role.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, role.UserTable, role.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -274,6 +298,7 @@ func (rq *RoleQuery) Clone() *RoleQuery {
 		inters:      append([]Interceptor{}, rq.inters...),
 		predicates:  append([]predicate.Role{}, rq.predicates...),
 		withAccount: rq.withAccount.Clone(),
+		withUser:    rq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
@@ -288,6 +313,17 @@ func (rq *RoleQuery) WithAccount(opts ...func(*AccountQuery)) *RoleQuery {
 		opt(query)
 	}
 	rq.withAccount = query
+	return rq
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RoleQuery) WithUser(opts ...func(*UserQuery)) *RoleQuery {
+	query := (&UserClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withUser = query
 	return rq
 }
 
@@ -369,8 +405,9 @@ func (rq *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 	var (
 		nodes       = []*Role{}
 		_spec       = rq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			rq.withAccount != nil,
+			rq.withUser != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -394,6 +431,12 @@ func (rq *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 	if query := rq.withAccount; query != nil {
 		if err := rq.loadAccount(ctx, query, nodes, nil,
 			func(n *Role, e *Account) { n.Edges.Account = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withUser; query != nil {
+		if err := rq.loadUser(ctx, query, nodes, nil,
+			func(n *Role, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -429,6 +472,35 @@ func (rq *RoleQuery) loadAccount(ctx context.Context, query *AccountQuery, nodes
 	}
 	return nil
 }
+func (rq *RoleQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Role, init func(*Role), assign func(*Role, *User)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Role)
+	for i := range nodes {
+		fk := nodes[i].CreatedBy
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "created_by" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (rq *RoleQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
@@ -457,6 +529,9 @@ func (rq *RoleQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if rq.withAccount != nil {
 			_spec.Node.AddColumnOnce(role.FieldAccountID)
+		}
+		if rq.withUser != nil {
+			_spec.Node.AddColumnOnce(role.FieldCreatedBy)
 		}
 	}
 	if ps := rq.predicates; len(ps) > 0 {

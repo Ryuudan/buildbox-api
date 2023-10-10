@@ -10,6 +10,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
@@ -153,26 +154,40 @@ func init() {
 	projectDescCreatedAt := projectFields[15].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
+	projectserviceproviderFields := schema.ProjectServiceProvider{}.Fields()
+	_ = projectserviceproviderFields
+	// projectserviceproviderDescUpdatedAt is the schema descriptor for updated_at field.
+	projectserviceproviderDescUpdatedAt := projectserviceproviderFields[3].Descriptor()
+	// projectserviceprovider.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	projectserviceprovider.DefaultUpdatedAt = projectserviceproviderDescUpdatedAt.Default.(func() time.Time)
+	// projectserviceproviderDescCreatedAt is the schema descriptor for created_at field.
+	projectserviceproviderDescCreatedAt := projectserviceproviderFields[4].Descriptor()
+	// projectserviceprovider.DefaultCreatedAt holds the default value on creation for the created_at field.
+	projectserviceprovider.DefaultCreatedAt = projectserviceproviderDescCreatedAt.Default.(func() time.Time)
+	// projectserviceproviderDescUUID is the schema descriptor for uuid field.
+	projectserviceproviderDescUUID := projectserviceproviderFields[5].Descriptor()
+	// projectserviceprovider.DefaultUUID holds the default value on creation for the uuid field.
+	projectserviceprovider.DefaultUUID = projectserviceproviderDescUUID.Default.(func() uuid.UUID)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.
-	roleDescName := roleFields[1].Descriptor()
+	roleDescName := roleFields[2].Descriptor()
 	// role.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	role.NameValidator = roleDescName.Validators[0].(func(string) error)
 	// roleDescDescription is the schema descriptor for description field.
-	roleDescDescription := roleFields[2].Descriptor()
+	roleDescDescription := roleFields[3].Descriptor()
 	// role.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	role.DescriptionValidator = roleDescDescription.Validators[0].(func(string) error)
 	// roleDescUpdatedAt is the schema descriptor for updated_at field.
-	roleDescUpdatedAt := roleFields[3].Descriptor()
+	roleDescUpdatedAt := roleFields[4].Descriptor()
 	// role.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	role.DefaultUpdatedAt = roleDescUpdatedAt.Default.(func() time.Time)
 	// roleDescCreatedAt is the schema descriptor for created_at field.
-	roleDescCreatedAt := roleFields[4].Descriptor()
+	roleDescCreatedAt := roleFields[5].Descriptor()
 	// role.DefaultCreatedAt holds the default value on creation for the created_at field.
 	role.DefaultCreatedAt = roleDescCreatedAt.Default.(func() time.Time)
 	// roleDescUUID is the schema descriptor for uuid field.
-	roleDescUUID := roleFields[5].Descriptor()
+	roleDescUUID := roleFields[6].Descriptor()
 	// role.DefaultUUID holds the default value on creation for the uuid field.
 	role.DefaultUUID = roleDescUUID.Default.(func() uuid.UUID)
 	serviceproviderFields := schema.ServiceProvider{}.Fields()

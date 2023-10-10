@@ -18,6 +18,7 @@ type Role struct {
 func (Role) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("account_id"),
+		field.Int("created_by"),
 		field.String("name").
 			StructTag(`json:"name" validate:"required,min=1,max=100"`).
 			NotEmpty(),
@@ -40,6 +41,11 @@ func (Role) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("account", Account.Type).
 			Field("account_id").
+			Ref("roles").
+			Required().
+			Unique(),
+		edge.From("user", User.Type).
+			Field("created_by").
 			Ref("roles").
 			Required().
 			Unique(),

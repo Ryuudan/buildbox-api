@@ -15,13 +15,17 @@ func V1Projects(client *generated.Client, router chi.Router) {
 	log.Println("✅ Routes: /projects")
 	projectService := services.NewProjectService(client.Project)
 	accountService := services.NewAccountService(client.Account)
-	project := handlers.NewProjectHandler(projectService, accountService)
+	serviceProviderService := services.NewServiceProviderService(client.ServiceProvider)
+
+	projectServiceProviderService := services.NewProjectServiceProviderService(client.ProjectServiceProvider)
+	project := handlers.NewProjectHandler(projectService, accountService, serviceProviderService, projectServiceProviderService)
 
 	router.Route("/projects", func(r chi.Router) {
 		r.Get("/", project.GetProjects)
 		r.Post("/", project.CreateProject)
 		r.Get("/{id}", project.GetProjectByID)
-
+		r.Get("/{id}/service-providers", project.GetProjectServiceProviders)
+		r.Post("/{id}/service-providers", project.AddServiceProviderToProject)
 		// other approach
 		// r.Route("/{id}", func(r chi.Router) {
 		// 	r.Get("/", project.GetProjectByID)

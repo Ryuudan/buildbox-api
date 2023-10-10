@@ -171,26 +171,6 @@ func CreatedByNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldCreatedBy, vs...))
 }
 
-// CreatedByGT applies the GT predicate on the "created_by" field.
-func CreatedByGT(v int) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldCreatedBy, v))
-}
-
-// CreatedByGTE applies the GTE predicate on the "created_by" field.
-func CreatedByGTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldCreatedBy, v))
-}
-
-// CreatedByLT applies the LT predicate on the "created_by" field.
-func CreatedByLT(v int) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldCreatedBy, v))
-}
-
-// CreatedByLTE applies the LTE predicate on the "created_by" field.
-func CreatedByLTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldCreatedBy, v))
-}
-
 // ClientIDEQ applies the EQ predicate on the "client_id" field.
 func ClientIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldClientID, v))
@@ -924,6 +904,29 @@ func HasAccountWith(preds ...predicate.Account) predicate.Project {
 	})
 }
 
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasTasks applies the HasEdge predicate on the "tasks" edge.
 func HasTasks() predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
@@ -985,6 +988,29 @@ func HasIssues() predicate.Project {
 func HasIssuesWith(preds ...predicate.Issue) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
 		step := newIssuesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProjectServiceProviders applies the HasEdge predicate on the "project_service_providers" edge.
+func HasProjectServiceProviders() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectServiceProvidersTable, ProjectServiceProvidersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectServiceProvidersWith applies the HasEdge predicate on the "project_service_providers" edge with a given conditions (other predicates).
+func HasProjectServiceProvidersWith(preds ...predicate.ProjectServiceProvider) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newProjectServiceProvidersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

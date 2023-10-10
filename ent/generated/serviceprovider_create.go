@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
+	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
@@ -121,6 +122,21 @@ func (spc *ServiceProviderCreate) SetNillableUUID(u *uuid.UUID) *ServiceProvider
 		spc.SetUUID(*u)
 	}
 	return spc
+}
+
+// AddServiceProviderProjectIDs adds the "service_provider_projects" edge to the ProjectServiceProvider entity by IDs.
+func (spc *ServiceProviderCreate) AddServiceProviderProjectIDs(ids ...int) *ServiceProviderCreate {
+	spc.mutation.AddServiceProviderProjectIDs(ids...)
+	return spc
+}
+
+// AddServiceProviderProjects adds the "service_provider_projects" edges to the ProjectServiceProvider entity.
+func (spc *ServiceProviderCreate) AddServiceProviderProjects(p ...*ProjectServiceProvider) *ServiceProviderCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return spc.AddServiceProviderProjectIDs(ids...)
 }
 
 // SetAccount sets the "account" edge to the Account entity.
@@ -285,6 +301,22 @@ func (spc *ServiceProviderCreate) createSpec() (*ServiceProvider, *sqlgraph.Crea
 	if value, ok := spc.mutation.UUID(); ok {
 		_spec.SetField(serviceprovider.FieldUUID, field.TypeUUID, value)
 		_node.UUID = value
+	}
+	if nodes := spc.mutation.ServiceProviderProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   serviceprovider.ServiceProviderProjectsTable,
+			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := spc.mutation.AccountIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
+	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
 )
 
@@ -61,15 +62,19 @@ type Project struct {
 type ProjectEdges struct {
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
 	// Milestones holds the value of the milestones edge.
 	Milestones []*Milestone `json:"milestones,omitempty"`
 	// Issues holds the value of the issues edge.
 	Issues []*Issue `json:"issues,omitempty"`
+	// ProjectServiceProviders holds the value of the project_service_providers edge.
+	ProjectServiceProviders []*ProjectServiceProvider `json:"project_service_providers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -85,10 +90,23 @@ func (e ProjectEdges) AccountOrErr() (*Account, error) {
 	return nil, &NotLoadedError{edge: "account"}
 }
 
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProjectEdges) UserOrErr() (*User, error) {
+	if e.loadedTypes[1] {
+		if e.User == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.User, nil
+	}
+	return nil, &NotLoadedError{edge: "user"}
+}
+
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -97,7 +115,7 @@ func (e ProjectEdges) TasksOrErr() ([]*Task, error) {
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) MilestonesOrErr() ([]*Milestone, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
@@ -106,10 +124,19 @@ func (e ProjectEdges) MilestonesOrErr() ([]*Milestone, error) {
 // IssuesOrErr returns the Issues value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) IssuesOrErr() ([]*Issue, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Issues, nil
 	}
 	return nil, &NotLoadedError{edge: "issues"}
+}
+
+// ProjectServiceProvidersOrErr returns the ProjectServiceProviders value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) ProjectServiceProvidersOrErr() ([]*ProjectServiceProvider, error) {
+	if e.loadedTypes[5] {
+		return e.ProjectServiceProviders, nil
+	}
+	return nil, &NotLoadedError{edge: "project_service_providers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -273,6 +300,11 @@ func (pr *Project) QueryAccount() *AccountQuery {
 	return NewProjectClient(pr.config).QueryAccount(pr)
 }
 
+// QueryUser queries the "user" edge of the Project entity.
+func (pr *Project) QueryUser() *UserQuery {
+	return NewProjectClient(pr.config).QueryUser(pr)
+}
+
 // QueryTasks queries the "tasks" edge of the Project entity.
 func (pr *Project) QueryTasks() *TaskQuery {
 	return NewProjectClient(pr.config).QueryTasks(pr)
@@ -286,6 +318,11 @@ func (pr *Project) QueryMilestones() *MilestoneQuery {
 // QueryIssues queries the "issues" edge of the Project entity.
 func (pr *Project) QueryIssues() *IssueQuery {
 	return NewProjectClient(pr.config).QueryIssues(pr)
+}
+
+// QueryProjectServiceProviders queries the "project_service_providers" edge of the Project entity.
+func (pr *Project) QueryProjectServiceProviders() *ProjectServiceProviderQuery {
+	return NewProjectClient(pr.config).QueryProjectServiceProviders(pr)
 }
 
 // Update returns a builder for updating this Project.

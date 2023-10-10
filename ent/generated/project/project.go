@@ -50,12 +50,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeAccount holds the string denoting the account edge name in mutations.
 	EdgeAccount = "account"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
 	// EdgeIssues holds the string denoting the issues edge name in mutations.
 	EdgeIssues = "issues"
+	// EdgeProjectServiceProviders holds the string denoting the project_service_providers edge name in mutations.
+	EdgeProjectServiceProviders = "project_service_providers"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
 	// AccountTable is the table that holds the account relation/edge.
@@ -65,6 +69,13 @@ const (
 	AccountInverseTable = "accounts"
 	// AccountColumn is the table column denoting the account relation/edge.
 	AccountColumn = "account_id"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "projects"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "created_by"
 	// TasksTable is the table that holds the tasks relation/edge.
 	TasksTable = "tasks"
 	// TasksInverseTable is the table name for the Task entity.
@@ -86,6 +97,13 @@ const (
 	IssuesInverseTable = "issues"
 	// IssuesColumn is the table column denoting the issues relation/edge.
 	IssuesColumn = "project_id"
+	// ProjectServiceProvidersTable is the table that holds the project_service_providers relation/edge.
+	ProjectServiceProvidersTable = "project_service_providers"
+	// ProjectServiceProvidersInverseTable is the table name for the ProjectServiceProvider entity.
+	// It exists in this package in order to avoid circular dependency with the "projectserviceprovider" package.
+	ProjectServiceProvidersInverseTable = "project_service_providers"
+	// ProjectServiceProvidersColumn is the table column denoting the project_service_providers relation/edge.
+	ProjectServiceProvidersColumn = "project_id"
 )
 
 // Columns holds all SQL columns for project fields.
@@ -270,6 +288,13 @@ func ByAccountField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByTasksCount orders the results by tasks count.
 func ByTasksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -311,11 +336,32 @@ func ByIssues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIssuesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByProjectServiceProvidersCount orders the results by project_service_providers count.
+func ByProjectServiceProvidersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectServiceProvidersStep(), opts...)
+	}
+}
+
+// ByProjectServiceProviders orders the results by project_service_providers terms.
+func ByProjectServiceProviders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectServiceProvidersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAccountStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AccountInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, AccountTable, AccountColumn),
+	)
+}
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }
 func newTasksStep() *sqlgraph.Step {
@@ -337,5 +383,12 @@ func newIssuesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IssuesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, IssuesTable, IssuesColumn),
+	)
+}
+func newProjectServiceProvidersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectServiceProvidersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProjectServiceProvidersTable, ProjectServiceProvidersColumn),
 	)
 }

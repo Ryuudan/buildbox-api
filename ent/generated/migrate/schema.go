@@ -122,7 +122,6 @@ var (
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "created_by", Type: field.TypeInt},
 		{Name: "client_id", Type: field.TypeInt, Nullable: true},
 		{Name: "manager_id", Type: field.TypeInt, Nullable: true},
 		{Name: "name", Type: field.TypeString},
@@ -138,6 +137,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "account_id", Type: field.TypeInt},
+		{Name: "created_by", Type: field.TypeInt},
 	}
 	// ProjectsTable holds the schema information for the "projects" table.
 	ProjectsTable = &schema.Table{
@@ -147,9 +147,45 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "projects_accounts_projects",
-				Columns:    []*schema.Column{ProjectsColumns[16]},
+				Columns:    []*schema.Column{ProjectsColumns[15]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "projects_users_projects",
+				Columns:    []*schema.Column{ProjectsColumns[16]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ProjectServiceProvidersColumns holds the columns for the "project_service_providers" table.
+	ProjectServiceProvidersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_by", Type: field.TypeInt},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "project_id", Type: field.TypeInt, Nullable: true},
+		{Name: "service_provider_id", Type: field.TypeInt, Nullable: true},
+	}
+	// ProjectServiceProvidersTable holds the schema information for the "project_service_providers" table.
+	ProjectServiceProvidersTable = &schema.Table{
+		Name:       "project_service_providers",
+		Columns:    ProjectServiceProvidersColumns,
+		PrimaryKey: []*schema.Column{ProjectServiceProvidersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_service_providers_projects_project_service_providers",
+				Columns:    []*schema.Column{ProjectServiceProvidersColumns[5]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "project_service_providers_service_providers_service_provider_projects",
+				Columns:    []*schema.Column{ProjectServiceProvidersColumns[6]},
+				RefColumns: []*schema.Column{ServiceProvidersColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -162,6 +198,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
+		{Name: "created_by", Type: field.TypeInt},
 	}
 	// RolesTable holds the schema information for the "roles" table.
 	RolesTable = &schema.Table{
@@ -173,6 +210,12 @@ var (
 				Symbol:     "roles_accounts_roles",
 				Columns:    []*schema.Column{RolesColumns[6]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "roles_users_roles",
+				Columns:    []*schema.Column{RolesColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -334,6 +377,7 @@ var (
 		MilestonesTable,
 		PlansTable,
 		ProjectsTable,
+		ProjectServiceProvidersTable,
 		RolesTable,
 		ServiceProvidersTable,
 		SubscriptionsTable,
@@ -350,7 +394,11 @@ func init() {
 	MilestonesTable.ForeignKeys[1].RefTable = ProjectsTable
 	MilestonesTable.ForeignKeys[2].RefTable = UsersTable
 	ProjectsTable.ForeignKeys[0].RefTable = AccountsTable
+	ProjectsTable.ForeignKeys[1].RefTable = UsersTable
+	ProjectServiceProvidersTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectServiceProvidersTable.ForeignKeys[1].RefTable = ServiceProvidersTable
 	RolesTable.ForeignKeys[0].RefTable = AccountsTable
+	RolesTable.ForeignKeys[1].RefTable = UsersTable
 	ServiceProvidersTable.ForeignKeys[0].RefTable = AccountsTable
 	ServiceProvidersTable.ForeignKeys[1].RefTable = UsersTable
 	SubscriptionsTable.ForeignKeys[0].RefTable = AccountsTable

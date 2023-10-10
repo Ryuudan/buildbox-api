@@ -64,13 +64,19 @@ func (User) Edges() []ent.Edge {
 		// There are users who can create these following items
 		// This is for tracking who created or invited who
 		// Example:
+		// "Mark Vergel" created a new project
 		// "Mark Vergel" created a new task
 		// "Mark Vergel" invited a new service provider
 		// "Mark Vergel" added a new milestone
 		// "Mark Vergel" created an issue
+		// "Mark Vergel" assigned "Service Provider 1" to "Project 1"
+		// "Mark Vergel" added a new role
 		edge.To("tasks", Task.Type),
 		edge.To("milestones", Milestone.Type),
 		edge.To("issues", Issue.Type),
 		edge.To("service_providers", ServiceProvider.Type),
+		edge.To("projects", Project.Type),
+		// edge.To("project_service_providers", ProjectServiceProvider.Type),
+		edge.To("roles", Role.Type),
 	}
 }
