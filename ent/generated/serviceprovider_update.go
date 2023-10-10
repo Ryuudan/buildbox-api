@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Pyakz/buildbox-api/ent/generated/account"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
-	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
@@ -121,21 +120,6 @@ func (spu *ServiceProviderUpdate) ClearUpdatedAt() *ServiceProviderUpdate {
 	return spu
 }
 
-// AddServiceProviderProjectIDs adds the "service_provider_projects" edge to the ProjectServiceProvider entity by IDs.
-func (spu *ServiceProviderUpdate) AddServiceProviderProjectIDs(ids ...int) *ServiceProviderUpdate {
-	spu.mutation.AddServiceProviderProjectIDs(ids...)
-	return spu
-}
-
-// AddServiceProviderProjects adds the "service_provider_projects" edges to the ProjectServiceProvider entity.
-func (spu *ServiceProviderUpdate) AddServiceProviderProjects(p ...*ProjectServiceProvider) *ServiceProviderUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return spu.AddServiceProviderProjectIDs(ids...)
-}
-
 // SetAccount sets the "account" edge to the Account entity.
 func (spu *ServiceProviderUpdate) SetAccount(a *Account) *ServiceProviderUpdate {
 	return spu.SetAccountID(a.ID)
@@ -155,27 +139,6 @@ func (spu *ServiceProviderUpdate) SetUser(u *User) *ServiceProviderUpdate {
 // Mutation returns the ServiceProviderMutation object of the builder.
 func (spu *ServiceProviderUpdate) Mutation() *ServiceProviderMutation {
 	return spu.mutation
-}
-
-// ClearServiceProviderProjects clears all "service_provider_projects" edges to the ProjectServiceProvider entity.
-func (spu *ServiceProviderUpdate) ClearServiceProviderProjects() *ServiceProviderUpdate {
-	spu.mutation.ClearServiceProviderProjects()
-	return spu
-}
-
-// RemoveServiceProviderProjectIDs removes the "service_provider_projects" edge to ProjectServiceProvider entities by IDs.
-func (spu *ServiceProviderUpdate) RemoveServiceProviderProjectIDs(ids ...int) *ServiceProviderUpdate {
-	spu.mutation.RemoveServiceProviderProjectIDs(ids...)
-	return spu
-}
-
-// RemoveServiceProviderProjects removes "service_provider_projects" edges to ProjectServiceProvider entities.
-func (spu *ServiceProviderUpdate) RemoveServiceProviderProjects(p ...*ProjectServiceProvider) *ServiceProviderUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return spu.RemoveServiceProviderProjectIDs(ids...)
 }
 
 // ClearAccount clears the "account" edge to the Account entity.
@@ -279,51 +242,6 @@ func (spu *ServiceProviderUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if spu.mutation.CreatedAtCleared() {
 		_spec.ClearField(serviceprovider.FieldCreatedAt, field.TypeTime)
-	}
-	if spu.mutation.ServiceProviderProjectsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   serviceprovider.ServiceProviderProjectsTable,
-			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spu.mutation.RemovedServiceProviderProjectsIDs(); len(nodes) > 0 && !spu.mutation.ServiceProviderProjectsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   serviceprovider.ServiceProviderProjectsTable,
-			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spu.mutation.ServiceProviderProjectsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   serviceprovider.ServiceProviderProjectsTable,
-			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if spu.mutation.AccountCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -493,21 +411,6 @@ func (spuo *ServiceProviderUpdateOne) ClearUpdatedAt() *ServiceProviderUpdateOne
 	return spuo
 }
 
-// AddServiceProviderProjectIDs adds the "service_provider_projects" edge to the ProjectServiceProvider entity by IDs.
-func (spuo *ServiceProviderUpdateOne) AddServiceProviderProjectIDs(ids ...int) *ServiceProviderUpdateOne {
-	spuo.mutation.AddServiceProviderProjectIDs(ids...)
-	return spuo
-}
-
-// AddServiceProviderProjects adds the "service_provider_projects" edges to the ProjectServiceProvider entity.
-func (spuo *ServiceProviderUpdateOne) AddServiceProviderProjects(p ...*ProjectServiceProvider) *ServiceProviderUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return spuo.AddServiceProviderProjectIDs(ids...)
-}
-
 // SetAccount sets the "account" edge to the Account entity.
 func (spuo *ServiceProviderUpdateOne) SetAccount(a *Account) *ServiceProviderUpdateOne {
 	return spuo.SetAccountID(a.ID)
@@ -527,27 +430,6 @@ func (spuo *ServiceProviderUpdateOne) SetUser(u *User) *ServiceProviderUpdateOne
 // Mutation returns the ServiceProviderMutation object of the builder.
 func (spuo *ServiceProviderUpdateOne) Mutation() *ServiceProviderMutation {
 	return spuo.mutation
-}
-
-// ClearServiceProviderProjects clears all "service_provider_projects" edges to the ProjectServiceProvider entity.
-func (spuo *ServiceProviderUpdateOne) ClearServiceProviderProjects() *ServiceProviderUpdateOne {
-	spuo.mutation.ClearServiceProviderProjects()
-	return spuo
-}
-
-// RemoveServiceProviderProjectIDs removes the "service_provider_projects" edge to ProjectServiceProvider entities by IDs.
-func (spuo *ServiceProviderUpdateOne) RemoveServiceProviderProjectIDs(ids ...int) *ServiceProviderUpdateOne {
-	spuo.mutation.RemoveServiceProviderProjectIDs(ids...)
-	return spuo
-}
-
-// RemoveServiceProviderProjects removes "service_provider_projects" edges to ProjectServiceProvider entities.
-func (spuo *ServiceProviderUpdateOne) RemoveServiceProviderProjects(p ...*ProjectServiceProvider) *ServiceProviderUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return spuo.RemoveServiceProviderProjectIDs(ids...)
 }
 
 // ClearAccount clears the "account" edge to the Account entity.
@@ -681,51 +563,6 @@ func (spuo *ServiceProviderUpdateOne) sqlSave(ctx context.Context) (_node *Servi
 	}
 	if spuo.mutation.CreatedAtCleared() {
 		_spec.ClearField(serviceprovider.FieldCreatedAt, field.TypeTime)
-	}
-	if spuo.mutation.ServiceProviderProjectsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   serviceprovider.ServiceProviderProjectsTable,
-			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spuo.mutation.RemovedServiceProviderProjectsIDs(); len(nodes) > 0 && !spuo.mutation.ServiceProviderProjectsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   serviceprovider.ServiceProviderProjectsTable,
-			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spuo.mutation.ServiceProviderProjectsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   serviceprovider.ServiceProviderProjectsTable,
-			Columns: []string{serviceprovider.ServiceProviderProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if spuo.mutation.AccountCleared() {
 		edge := &sqlgraph.EdgeSpec{

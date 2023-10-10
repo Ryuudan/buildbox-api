@@ -10,9 +10,9 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
-	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
+	"github.com/Pyakz/buildbox-api/ent/generated/serviceproviderprojects"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -154,20 +154,6 @@ func init() {
 	projectDescCreatedAt := projectFields[15].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
-	projectserviceproviderFields := schema.ProjectServiceProvider{}.Fields()
-	_ = projectserviceproviderFields
-	// projectserviceproviderDescUpdatedAt is the schema descriptor for updated_at field.
-	projectserviceproviderDescUpdatedAt := projectserviceproviderFields[3].Descriptor()
-	// projectserviceprovider.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	projectserviceprovider.DefaultUpdatedAt = projectserviceproviderDescUpdatedAt.Default.(func() time.Time)
-	// projectserviceproviderDescCreatedAt is the schema descriptor for created_at field.
-	projectserviceproviderDescCreatedAt := projectserviceproviderFields[4].Descriptor()
-	// projectserviceprovider.DefaultCreatedAt holds the default value on creation for the created_at field.
-	projectserviceprovider.DefaultCreatedAt = projectserviceproviderDescCreatedAt.Default.(func() time.Time)
-	// projectserviceproviderDescUUID is the schema descriptor for uuid field.
-	projectserviceproviderDescUUID := projectserviceproviderFields[5].Descriptor()
-	// projectserviceprovider.DefaultUUID holds the default value on creation for the uuid field.
-	projectserviceprovider.DefaultUUID = projectserviceproviderDescUUID.Default.(func() uuid.UUID)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.
@@ -208,6 +194,20 @@ func init() {
 	serviceproviderDescUUID := serviceproviderFields[9].Descriptor()
 	// serviceprovider.DefaultUUID holds the default value on creation for the uuid field.
 	serviceprovider.DefaultUUID = serviceproviderDescUUID.Default.(func() uuid.UUID)
+	serviceproviderprojectsFields := schema.ServiceProviderProjects{}.Fields()
+	_ = serviceproviderprojectsFields
+	// serviceproviderprojectsDescUpdatedAt is the schema descriptor for updated_at field.
+	serviceproviderprojectsDescUpdatedAt := serviceproviderprojectsFields[3].Descriptor()
+	// serviceproviderprojects.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	serviceproviderprojects.DefaultUpdatedAt = serviceproviderprojectsDescUpdatedAt.Default.(func() time.Time)
+	// serviceproviderprojectsDescCreatedAt is the schema descriptor for created_at field.
+	serviceproviderprojectsDescCreatedAt := serviceproviderprojectsFields[4].Descriptor()
+	// serviceproviderprojects.DefaultCreatedAt holds the default value on creation for the created_at field.
+	serviceproviderprojects.DefaultCreatedAt = serviceproviderprojectsDescCreatedAt.Default.(func() time.Time)
+	// serviceproviderprojectsDescUUID is the schema descriptor for uuid field.
+	serviceproviderprojectsDescUUID := serviceproviderprojectsFields[5].Descriptor()
+	// serviceproviderprojects.DefaultUUID holds the default value on creation for the uuid field.
+	serviceproviderprojects.DefaultUUID = serviceproviderprojectsDescUUID.Default.(func() uuid.UUID)
 	subscriptionFields := schema.Subscription{}.Fields()
 	_ = subscriptionFields
 	// subscriptionDescStartDate is the schema descriptor for start_date field.

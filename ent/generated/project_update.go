@@ -16,7 +16,6 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
-	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
@@ -348,21 +347,6 @@ func (pu *ProjectUpdate) AddIssues(i ...*Issue) *ProjectUpdate {
 	return pu.AddIssueIDs(ids...)
 }
 
-// AddProjectServiceProviderIDs adds the "project_service_providers" edge to the ProjectServiceProvider entity by IDs.
-func (pu *ProjectUpdate) AddProjectServiceProviderIDs(ids ...int) *ProjectUpdate {
-	pu.mutation.AddProjectServiceProviderIDs(ids...)
-	return pu
-}
-
-// AddProjectServiceProviders adds the "project_service_providers" edges to the ProjectServiceProvider entity.
-func (pu *ProjectUpdate) AddProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.AddProjectServiceProviderIDs(ids...)
-}
-
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -441,27 +425,6 @@ func (pu *ProjectUpdate) RemoveIssues(i ...*Issue) *ProjectUpdate {
 		ids[j] = i[j].ID
 	}
 	return pu.RemoveIssueIDs(ids...)
-}
-
-// ClearProjectServiceProviders clears all "project_service_providers" edges to the ProjectServiceProvider entity.
-func (pu *ProjectUpdate) ClearProjectServiceProviders() *ProjectUpdate {
-	pu.mutation.ClearProjectServiceProviders()
-	return pu
-}
-
-// RemoveProjectServiceProviderIDs removes the "project_service_providers" edge to ProjectServiceProvider entities by IDs.
-func (pu *ProjectUpdate) RemoveProjectServiceProviderIDs(ids ...int) *ProjectUpdate {
-	pu.mutation.RemoveProjectServiceProviderIDs(ids...)
-	return pu
-}
-
-// RemoveProjectServiceProviders removes "project_service_providers" edges to ProjectServiceProvider entities.
-func (pu *ProjectUpdate) RemoveProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.RemoveProjectServiceProviderIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -790,51 +753,6 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if pu.mutation.ProjectServiceProvidersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ProjectServiceProvidersTable,
-			Columns: []string{project.ProjectServiceProvidersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedProjectServiceProvidersIDs(); len(nodes) > 0 && !pu.mutation.ProjectServiceProvidersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ProjectServiceProvidersTable,
-			Columns: []string{project.ProjectServiceProvidersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.ProjectServiceProvidersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ProjectServiceProvidersTable,
-			Columns: []string{project.ProjectServiceProvidersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1176,21 +1094,6 @@ func (puo *ProjectUpdateOne) AddIssues(i ...*Issue) *ProjectUpdateOne {
 	return puo.AddIssueIDs(ids...)
 }
 
-// AddProjectServiceProviderIDs adds the "project_service_providers" edge to the ProjectServiceProvider entity by IDs.
-func (puo *ProjectUpdateOne) AddProjectServiceProviderIDs(ids ...int) *ProjectUpdateOne {
-	puo.mutation.AddProjectServiceProviderIDs(ids...)
-	return puo
-}
-
-// AddProjectServiceProviders adds the "project_service_providers" edges to the ProjectServiceProvider entity.
-func (puo *ProjectUpdateOne) AddProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.AddProjectServiceProviderIDs(ids...)
-}
-
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -1269,27 +1172,6 @@ func (puo *ProjectUpdateOne) RemoveIssues(i ...*Issue) *ProjectUpdateOne {
 		ids[j] = i[j].ID
 	}
 	return puo.RemoveIssueIDs(ids...)
-}
-
-// ClearProjectServiceProviders clears all "project_service_providers" edges to the ProjectServiceProvider entity.
-func (puo *ProjectUpdateOne) ClearProjectServiceProviders() *ProjectUpdateOne {
-	puo.mutation.ClearProjectServiceProviders()
-	return puo
-}
-
-// RemoveProjectServiceProviderIDs removes the "project_service_providers" edge to ProjectServiceProvider entities by IDs.
-func (puo *ProjectUpdateOne) RemoveProjectServiceProviderIDs(ids ...int) *ProjectUpdateOne {
-	puo.mutation.RemoveProjectServiceProviderIDs(ids...)
-	return puo
-}
-
-// RemoveProjectServiceProviders removes "project_service_providers" edges to ProjectServiceProvider entities.
-func (puo *ProjectUpdateOne) RemoveProjectServiceProviders(p ...*ProjectServiceProvider) *ProjectUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.RemoveProjectServiceProviderIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -1648,51 +1530,6 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if puo.mutation.ProjectServiceProvidersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ProjectServiceProvidersTable,
-			Columns: []string{project.ProjectServiceProvidersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedProjectServiceProvidersIDs(); len(nodes) > 0 && !puo.mutation.ProjectServiceProvidersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ProjectServiceProvidersTable,
-			Columns: []string{project.ProjectServiceProvidersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.ProjectServiceProvidersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ProjectServiceProvidersTable,
-			Columns: []string{project.ProjectServiceProvidersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectserviceprovider.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -36,21 +36,12 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUUID holds the string denoting the uuid field in the database.
 	FieldUUID = "uuid"
-	// EdgeServiceProviderProjects holds the string denoting the service_provider_projects edge name in mutations.
-	EdgeServiceProviderProjects = "service_provider_projects"
 	// EdgeAccount holds the string denoting the account edge name in mutations.
 	EdgeAccount = "account"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the serviceprovider in the database.
 	Table = "service_providers"
-	// ServiceProviderProjectsTable is the table that holds the service_provider_projects relation/edge.
-	ServiceProviderProjectsTable = "project_service_providers"
-	// ServiceProviderProjectsInverseTable is the table name for the ProjectServiceProvider entity.
-	// It exists in this package in order to avoid circular dependency with the "projectserviceprovider" package.
-	ServiceProviderProjectsInverseTable = "project_service_providers"
-	// ServiceProviderProjectsColumn is the table column denoting the service_provider_projects relation/edge.
-	ServiceProviderProjectsColumn = "service_provider_id"
 	// AccountTable is the table that holds the account relation/edge.
 	AccountTable = "service_providers"
 	// AccountInverseTable is the table name for the Account entity.
@@ -187,20 +178,6 @@ func ByUUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUUID, opts...).ToFunc()
 }
 
-// ByServiceProviderProjectsCount orders the results by service_provider_projects count.
-func ByServiceProviderProjectsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newServiceProviderProjectsStep(), opts...)
-	}
-}
-
-// ByServiceProviderProjects orders the results by service_provider_projects terms.
-func ByServiceProviderProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newServiceProviderProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByAccountField orders the results by account field.
 func ByAccountField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -213,13 +190,6 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
-}
-func newServiceProviderProjectsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ServiceProviderProjectsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ServiceProviderProjectsTable, ServiceProviderProjectsColumn),
-	)
 }
 func newAccountStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

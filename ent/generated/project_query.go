@@ -16,7 +16,6 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
-	"github.com/Pyakz/buildbox-api/ent/generated/projectserviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
@@ -24,16 +23,15 @@ import (
 // ProjectQuery is the builder for querying Project entities.
 type ProjectQuery struct {
 	config
-	ctx                         *QueryContext
-	order                       []project.OrderOption
-	inters                      []Interceptor
-	predicates                  []predicate.Project
-	withAccount                 *AccountQuery
-	withUser                    *UserQuery
-	withTasks                   *TaskQuery
-	withMilestones              *MilestoneQuery
-	withIssues                  *IssueQuery
-	withProjectServiceProviders *ProjectServiceProviderQuery
+	ctx            *QueryContext
+	order          []project.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Project
+	withAccount    *AccountQuery
+	withUser       *UserQuery
+	withTasks      *TaskQuery
+	withMilestones *MilestoneQuery
+	withIssues     *IssueQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -173,28 +171,6 @@ func (pq *ProjectQuery) QueryIssues() *IssueQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(issue.Table, issue.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.IssuesTable, project.IssuesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryProjectServiceProviders chains the current query on the "project_service_providers" edge.
-func (pq *ProjectQuery) QueryProjectServiceProviders() *ProjectServiceProviderQuery {
-	query := (&ProjectServiceProviderClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(project.Table, project.FieldID, selector),
-			sqlgraph.To(projectserviceprovider.Table, projectserviceprovider.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectServiceProvidersTable, project.ProjectServiceProvidersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -389,17 +365,16 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:                      pq.config,
-		ctx:                         pq.ctx.Clone(),
-		order:                       append([]project.OrderOption{}, pq.order...),
-		inters:                      append([]Interceptor{}, pq.inters...),
-		predicates:                  append([]predicate.Project{}, pq.predicates...),
-		withAccount:                 pq.withAccount.Clone(),
-		withUser:                    pq.withUser.Clone(),
-		withTasks:                   pq.withTasks.Clone(),
-		withMilestones:              pq.withMilestones.Clone(),
-		withIssues:                  pq.withIssues.Clone(),
-		withProjectServiceProviders: pq.withProjectServiceProviders.Clone(),
+		config:         pq.config,
+		ctx:            pq.ctx.Clone(),
+		order:          append([]project.OrderOption{}, pq.order...),
+		inters:         append([]Interceptor{}, pq.inters...),
+		predicates:     append([]predicate.Project{}, pq.predicates...),
+		withAccount:    pq.withAccount.Clone(),
+		withUser:       pq.withUser.Clone(),
+		withTasks:      pq.withTasks.Clone(),
+		withMilestones: pq.withMilestones.Clone(),
+		withIssues:     pq.withIssues.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -458,17 +433,6 @@ func (pq *ProjectQuery) WithIssues(opts ...func(*IssueQuery)) *ProjectQuery {
 		opt(query)
 	}
 	pq.withIssues = query
-	return pq
-}
-
-// WithProjectServiceProviders tells the query-builder to eager-load the nodes that are connected to
-// the "project_service_providers" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *ProjectQuery) WithProjectServiceProviders(opts ...func(*ProjectServiceProviderQuery)) *ProjectQuery {
-	query := (&ProjectServiceProviderClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withProjectServiceProviders = query
 	return pq
 }
 
@@ -550,13 +514,12 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [5]bool{
 			pq.withAccount != nil,
 			pq.withUser != nil,
 			pq.withTasks != nil,
 			pq.withMilestones != nil,
 			pq.withIssues != nil,
-			pq.withProjectServiceProviders != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -607,15 +570,6 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 		if err := pq.loadIssues(ctx, query, nodes,
 			func(n *Project) { n.Edges.Issues = []*Issue{} },
 			func(n *Project, e *Issue) { n.Edges.Issues = append(n.Edges.Issues, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := pq.withProjectServiceProviders; query != nil {
-		if err := pq.loadProjectServiceProviders(ctx, query, nodes,
-			func(n *Project) { n.Edges.ProjectServiceProviders = []*ProjectServiceProvider{} },
-			func(n *Project, e *ProjectServiceProvider) {
-				n.Edges.ProjectServiceProviders = append(n.Edges.ProjectServiceProviders, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -765,36 +719,6 @@ func (pq *ProjectQuery) loadIssues(ctx context.Context, query *IssueQuery, nodes
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (pq *ProjectQuery) loadProjectServiceProviders(ctx context.Context, query *ProjectServiceProviderQuery, nodes []*Project, init func(*Project), assign func(*Project, *ProjectServiceProvider)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Project)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(projectserviceprovider.FieldProjectProjectID)
-	}
-	query.Where(predicate.ProjectServiceProvider(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(project.ProjectServiceProvidersColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ProjectProjectID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "project_project_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

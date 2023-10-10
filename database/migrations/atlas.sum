@@ -1,4 +1,4 @@
-h1:jvJ4NbTiyL8r8NLmb2livK/eIjMaa2g/QpWyKm2GFZo=
+h1:4gWcu4t5Eyg+Zfwh3Nv9D7DpkALQ04sQ52sRBBrFhOM=
 20230929041617_init_tables.sql h1:jp3kySL1d95OXRd1IJNuXlz5l7kcX9QLmoSckfjep2k=
 20231007134832_init_milestone_table.sql h1:m5zlcwPMJ2pAIiiEEtD1wNjtrITPkRJOCbgkuh33REE=
 20231007143404_add_milestone_id.sql h1:JMXSniDQl+FG5vj+bhtKJ/px8ZSITrWBw1PjGZCuEDA=
@@ -10,6 +10,4 @@ h1:jvJ4NbTiyL8r8NLmb2livK/eIjMaa2g/QpWyKm2GFZo=
 20231009144853_task_issue_id.sql h1:vtf0ZIR1vfmnQ9McZ+7NXrj5QMqeo9gnWk6cEMHM/uE=
 20231009153858_unique_phone_number.sql h1:HpbC0d7CApbVv0r/JjYU1A+n3N5M2oVcBW/0hoh+/Z4=
 20231010064230_clients_table.sql h1:m/NM/2O6nfhu7D66gERycUElqT1cUrTJWqEs8bu6NIc=
-20231010082004_project_service_providers.sql h1:1Nq8JwRXOSQSY6WCYhULF6UqC2nbyYse74bN5ZbzGEM=
-20231010083325_add_timestamp.sql h1:9aQMwRGyBIcac1HdzcmlxrsMLPBnZ0hr5HZA0p2Unkg=
-20231010085507_role_created_by.sql h1:xshxAISGVWy0+vUm5SUbi4pKOnm7xEDUG9p3DrCYGyc=
+20231010085507_role_created_by.sql h1:v/pc4cgGKLVDwCNnNtxWFGbp+HO7zYEPV5fF04t3zts=

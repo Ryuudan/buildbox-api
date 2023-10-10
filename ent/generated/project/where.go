@@ -996,29 +996,6 @@ func HasIssuesWith(preds ...predicate.Issue) predicate.Project {
 	})
 }
 
-// HasProjectServiceProviders applies the HasEdge predicate on the "project_service_providers" edge.
-func HasProjectServiceProviders() predicate.Project {
-	return predicate.Project(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProjectServiceProvidersTable, ProjectServiceProvidersColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasProjectServiceProvidersWith applies the HasEdge predicate on the "project_service_providers" edge with a given conditions (other predicates).
-func HasProjectServiceProvidersWith(preds ...predicate.ProjectServiceProvider) predicate.Project {
-	return predicate.Project(func(s *sql.Selector) {
-		step := newProjectServiceProvidersStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Project) predicate.Project {
 	return predicate.Project(sql.AndPredicates(predicates...))

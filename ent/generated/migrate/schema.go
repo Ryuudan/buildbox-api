@@ -159,36 +159,6 @@ var (
 			},
 		},
 	}
-	// ProjectServiceProvidersColumns holds the columns for the "project_service_providers" table.
-	ProjectServiceProvidersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "created_by", Type: field.TypeInt},
-		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime, Nullable: true},
-		{Name: "uuid", Type: field.TypeUUID},
-		{Name: "project_id", Type: field.TypeInt, Nullable: true},
-		{Name: "service_provider_id", Type: field.TypeInt, Nullable: true},
-	}
-	// ProjectServiceProvidersTable holds the schema information for the "project_service_providers" table.
-	ProjectServiceProvidersTable = &schema.Table{
-		Name:       "project_service_providers",
-		Columns:    ProjectServiceProvidersColumns,
-		PrimaryKey: []*schema.Column{ProjectServiceProvidersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "project_service_providers_projects_project_service_providers",
-				Columns:    []*schema.Column{ProjectServiceProvidersColumns[5]},
-				RefColumns: []*schema.Column{ProjectsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "project_service_providers_service_providers_service_provider_projects",
-				Columns:    []*schema.Column{ProjectServiceProvidersColumns[6]},
-				RefColumns: []*schema.Column{ServiceProvidersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -253,6 +223,22 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+	}
+	// ServiceProviderProjectsColumns holds the columns for the "service_provider_projects" table.
+	ServiceProviderProjectsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_by", Type: field.TypeInt},
+		{Name: "service_provider_id", Type: field.TypeInt, Nullable: true},
+		{Name: "project_id", Type: field.TypeInt, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
+	}
+	// ServiceProviderProjectsTable holds the schema information for the "service_provider_projects" table.
+	ServiceProviderProjectsTable = &schema.Table{
+		Name:       "service_provider_projects",
+		Columns:    ServiceProviderProjectsColumns,
+		PrimaryKey: []*schema.Column{ServiceProviderProjectsColumns[0]},
 	}
 	// SubscriptionsColumns holds the columns for the "subscriptions" table.
 	SubscriptionsColumns = []*schema.Column{
@@ -377,9 +363,9 @@ var (
 		MilestonesTable,
 		PlansTable,
 		ProjectsTable,
-		ProjectServiceProvidersTable,
 		RolesTable,
 		ServiceProvidersTable,
+		ServiceProviderProjectsTable,
 		SubscriptionsTable,
 		TasksTable,
 		UsersTable,
@@ -395,8 +381,6 @@ func init() {
 	MilestonesTable.ForeignKeys[2].RefTable = UsersTable
 	ProjectsTable.ForeignKeys[0].RefTable = AccountsTable
 	ProjectsTable.ForeignKeys[1].RefTable = UsersTable
-	ProjectServiceProvidersTable.ForeignKeys[0].RefTable = ProjectsTable
-	ProjectServiceProvidersTable.ForeignKeys[1].RefTable = ServiceProvidersTable
 	RolesTable.ForeignKeys[0].RefTable = AccountsTable
 	RolesTable.ForeignKeys[1].RefTable = UsersTable
 	ServiceProvidersTable.ForeignKeys[0].RefTable = AccountsTable

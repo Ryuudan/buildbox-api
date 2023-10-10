@@ -57,7 +57,6 @@ func (ServiceProvider) Fields() []ent.Field {
 // Edges of the ServiceProvider.
 func (ServiceProvider) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("service_provider_projects", ProjectServiceProvider.Type),
 		edge.From("account", Account.Type).
 			Field("account_id").
 			Ref("service_providers").
