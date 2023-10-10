@@ -17,6 +17,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -192,6 +193,21 @@ func (au *AccountUpdate) AddIssues(i ...*Issue) *AccountUpdate {
 	return au.AddIssueIDs(ids...)
 }
 
+// AddServiceProviderIDs adds the "service_providers" edge to the ServiceProvider entity by IDs.
+func (au *AccountUpdate) AddServiceProviderIDs(ids ...int) *AccountUpdate {
+	au.mutation.AddServiceProviderIDs(ids...)
+	return au
+}
+
+// AddServiceProviders adds the "service_providers" edges to the ServiceProvider entity.
+func (au *AccountUpdate) AddServiceProviders(s ...*ServiceProvider) *AccountUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return au.AddServiceProviderIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (au *AccountUpdate) Mutation() *AccountMutation {
 	return au.mutation
@@ -342,6 +358,27 @@ func (au *AccountUpdate) RemoveIssues(i ...*Issue) *AccountUpdate {
 		ids[j] = i[j].ID
 	}
 	return au.RemoveIssueIDs(ids...)
+}
+
+// ClearServiceProviders clears all "service_providers" edges to the ServiceProvider entity.
+func (au *AccountUpdate) ClearServiceProviders() *AccountUpdate {
+	au.mutation.ClearServiceProviders()
+	return au
+}
+
+// RemoveServiceProviderIDs removes the "service_providers" edge to ServiceProvider entities by IDs.
+func (au *AccountUpdate) RemoveServiceProviderIDs(ids ...int) *AccountUpdate {
+	au.mutation.RemoveServiceProviderIDs(ids...)
+	return au
+}
+
+// RemoveServiceProviders removes "service_providers" edges to ServiceProvider entities.
+func (au *AccountUpdate) RemoveServiceProviders(s ...*ServiceProvider) *AccountUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return au.RemoveServiceProviderIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -739,6 +776,51 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.ServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.ServiceProvidersTable,
+			Columns: []string{account.ServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedServiceProvidersIDs(); len(nodes) > 0 && !au.mutation.ServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.ServiceProvidersTable,
+			Columns: []string{account.ServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.ServiceProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.ServiceProvidersTable,
+			Columns: []string{account.ServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -916,6 +998,21 @@ func (auo *AccountUpdateOne) AddIssues(i ...*Issue) *AccountUpdateOne {
 	return auo.AddIssueIDs(ids...)
 }
 
+// AddServiceProviderIDs adds the "service_providers" edge to the ServiceProvider entity by IDs.
+func (auo *AccountUpdateOne) AddServiceProviderIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.AddServiceProviderIDs(ids...)
+	return auo
+}
+
+// AddServiceProviders adds the "service_providers" edges to the ServiceProvider entity.
+func (auo *AccountUpdateOne) AddServiceProviders(s ...*ServiceProvider) *AccountUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auo.AddServiceProviderIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (auo *AccountUpdateOne) Mutation() *AccountMutation {
 	return auo.mutation
@@ -1066,6 +1163,27 @@ func (auo *AccountUpdateOne) RemoveIssues(i ...*Issue) *AccountUpdateOne {
 		ids[j] = i[j].ID
 	}
 	return auo.RemoveIssueIDs(ids...)
+}
+
+// ClearServiceProviders clears all "service_providers" edges to the ServiceProvider entity.
+func (auo *AccountUpdateOne) ClearServiceProviders() *AccountUpdateOne {
+	auo.mutation.ClearServiceProviders()
+	return auo
+}
+
+// RemoveServiceProviderIDs removes the "service_providers" edge to ServiceProvider entities by IDs.
+func (auo *AccountUpdateOne) RemoveServiceProviderIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.RemoveServiceProviderIDs(ids...)
+	return auo
+}
+
+// RemoveServiceProviders removes "service_providers" edges to ServiceProvider entities.
+func (auo *AccountUpdateOne) RemoveServiceProviders(s ...*ServiceProvider) *AccountUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auo.RemoveServiceProviderIDs(ids...)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -1486,6 +1604,51 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(issue.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.ServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.ServiceProvidersTable,
+			Columns: []string{account.ServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedServiceProvidersIDs(); len(nodes) > 0 && !auo.mutation.ServiceProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.ServiceProvidersTable,
+			Columns: []string{account.ServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.ServiceProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.ServiceProvidersTable,
+			Columns: []string{account.ServiceProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

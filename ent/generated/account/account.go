@@ -41,6 +41,8 @@ const (
 	EdgeMilestones = "milestones"
 	// EdgeIssues holds the string denoting the issues edge name in mutations.
 	EdgeIssues = "issues"
+	// EdgeServiceProviders holds the string denoting the service_providers edge name in mutations.
+	EdgeServiceProviders = "service_providers"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// UsersTable is the table that holds the users relation/edge.
@@ -92,6 +94,13 @@ const (
 	IssuesInverseTable = "issues"
 	// IssuesColumn is the table column denoting the issues relation/edge.
 	IssuesColumn = "account_id"
+	// ServiceProvidersTable is the table that holds the service_providers relation/edge.
+	ServiceProvidersTable = "service_providers"
+	// ServiceProvidersInverseTable is the table name for the ServiceProvider entity.
+	// It exists in this package in order to avoid circular dependency with the "serviceprovider" package.
+	ServiceProvidersInverseTable = "service_providers"
+	// ServiceProvidersColumn is the table column denoting the service_providers relation/edge.
+	ServiceProvidersColumn = "account_id"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -265,6 +274,20 @@ func ByIssues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIssuesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByServiceProvidersCount orders the results by service_providers count.
+func ByServiceProvidersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newServiceProvidersStep(), opts...)
+	}
+}
+
+// ByServiceProviders orders the results by service_providers terms.
+func ByServiceProviders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newServiceProvidersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -312,5 +335,12 @@ func newIssuesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IssuesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, IssuesTable, IssuesColumn),
+	)
+}
+func newServiceProvidersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ServiceProvidersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ServiceProvidersTable, ServiceProvidersColumn),
 	)
 }

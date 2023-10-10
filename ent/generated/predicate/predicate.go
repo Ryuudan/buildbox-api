@@ -24,6 +24,9 @@ type Project func(*sql.Selector)
 // Role is the predicate function for role builders.
 type Role func(*sql.Selector)
 
+// ServiceProvider is the predicate function for serviceprovider builders.
+type ServiceProvider func(*sql.Selector)
+
 // Subscription is the predicate function for subscription builders.
 type Subscription func(*sql.Selector)
 

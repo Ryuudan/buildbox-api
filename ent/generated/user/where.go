@@ -823,6 +823,29 @@ func HasIssuesWith(preds ...predicate.Issue) predicate.User {
 	})
 }
 
+// HasServiceProviders applies the HasEdge predicate on the "service_providers" edge.
+func HasServiceProviders() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ServiceProvidersTable, ServiceProvidersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasServiceProvidersWith applies the HasEdge predicate on the "service_providers" edge with a given conditions (other predicates).
+func HasServiceProvidersWith(preds ...predicate.ServiceProvider) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newServiceProvidersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

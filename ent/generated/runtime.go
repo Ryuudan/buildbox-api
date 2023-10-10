@@ -11,6 +11,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -174,6 +175,24 @@ func init() {
 	roleDescUUID := roleFields[5].Descriptor()
 	// role.DefaultUUID holds the default value on creation for the uuid field.
 	role.DefaultUUID = roleDescUUID.Default.(func() uuid.UUID)
+	serviceproviderFields := schema.ServiceProvider{}.Fields()
+	_ = serviceproviderFields
+	// serviceproviderDescName is the schema descriptor for name field.
+	serviceproviderDescName := serviceproviderFields[2].Descriptor()
+	// serviceprovider.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	serviceprovider.NameValidator = serviceproviderDescName.Validators[0].(func(string) error)
+	// serviceproviderDescUpdatedAt is the schema descriptor for updated_at field.
+	serviceproviderDescUpdatedAt := serviceproviderFields[7].Descriptor()
+	// serviceprovider.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	serviceprovider.DefaultUpdatedAt = serviceproviderDescUpdatedAt.Default.(func() time.Time)
+	// serviceproviderDescCreatedAt is the schema descriptor for created_at field.
+	serviceproviderDescCreatedAt := serviceproviderFields[8].Descriptor()
+	// serviceprovider.DefaultCreatedAt holds the default value on creation for the created_at field.
+	serviceprovider.DefaultCreatedAt = serviceproviderDescCreatedAt.Default.(func() time.Time)
+	// serviceproviderDescUUID is the schema descriptor for uuid field.
+	serviceproviderDescUUID := serviceproviderFields[9].Descriptor()
+	// serviceprovider.DefaultUUID holds the default value on creation for the uuid field.
+	serviceprovider.DefaultUUID = serviceproviderDescUUID.Default.(func() uuid.UUID)
 	subscriptionFields := schema.Subscription{}.Fields()
 	_ = subscriptionFields
 	// subscriptionDescStartDate is the schema descriptor for start_date field.

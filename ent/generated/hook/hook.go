@@ -81,6 +81,18 @@ func (f RoleFunc) Mutate(ctx context.Context, m generated.Mutation) (generated.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *generated.RoleMutation", m)
 }
 
+// The ServiceProviderFunc type is an adapter to allow the use of ordinary
+// function as ServiceProvider mutator.
+type ServiceProviderFunc func(context.Context, *generated.ServiceProviderMutation) (generated.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ServiceProviderFunc) Mutate(ctx context.Context, m generated.Mutation) (generated.Value, error) {
+	if mv, ok := m.(*generated.ServiceProviderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *generated.ServiceProviderMutation", m)
+}
+
 // The SubscriptionFunc type is an adapter to allow the use of ordinary
 // function as Subscription mutator.
 type SubscriptionFunc func(context.Context, *generated.SubscriptionMutation) (generated.Value, error)

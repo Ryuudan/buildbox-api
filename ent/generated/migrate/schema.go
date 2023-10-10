@@ -177,6 +177,40 @@ var (
 			},
 		},
 	}
+	// ServiceProvidersColumns holds the columns for the "service_providers" table.
+	ServiceProvidersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Nullable: true, Enums: []string{"active", "inactive"}, Default: "active"},
+		{Name: "phone_number", Type: field.TypeString, Unique: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "account_id", Type: field.TypeInt},
+		{Name: "created_by", Type: field.TypeInt},
+	}
+	// ServiceProvidersTable holds the schema information for the "service_providers" table.
+	ServiceProvidersTable = &schema.Table{
+		Name:       "service_providers",
+		Columns:    ServiceProvidersColumns,
+		PrimaryKey: []*schema.Column{ServiceProvidersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "service_providers_accounts_service_providers",
+				Columns:    []*schema.Column{ServiceProvidersColumns[9]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "service_providers_users_service_providers",
+				Columns:    []*schema.Column{ServiceProvidersColumns[10]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// SubscriptionsColumns holds the columns for the "subscriptions" table.
 	SubscriptionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -301,6 +335,7 @@ var (
 		PlansTable,
 		ProjectsTable,
 		RolesTable,
+		ServiceProvidersTable,
 		SubscriptionsTable,
 		TasksTable,
 		UsersTable,
@@ -316,6 +351,8 @@ func init() {
 	MilestonesTable.ForeignKeys[2].RefTable = UsersTable
 	ProjectsTable.ForeignKeys[0].RefTable = AccountsTable
 	RolesTable.ForeignKeys[0].RefTable = AccountsTable
+	ServiceProvidersTable.ForeignKeys[0].RefTable = AccountsTable
+	ServiceProvidersTable.ForeignKeys[1].RefTable = UsersTable
 	SubscriptionsTable.ForeignKeys[0].RefTable = AccountsTable
 	SubscriptionsTable.ForeignKeys[1].RefTable = PlansTable
 	TasksTable.ForeignKeys[0].RefTable = AccountsTable

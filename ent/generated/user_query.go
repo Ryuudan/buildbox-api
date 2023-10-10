@@ -15,6 +15,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/issue"
 	"github.com/Pyakz/buildbox-api/ent/generated/milestone"
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
+	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
@@ -22,14 +23,15 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx            *QueryContext
-	order          []user.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.User
-	withAccount    *AccountQuery
-	withTasks      *TaskQuery
-	withMilestones *MilestoneQuery
-	withIssues     *IssueQuery
+	ctx                  *QueryContext
+	order                []user.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.User
+	withAccount          *AccountQuery
+	withTasks            *TaskQuery
+	withMilestones       *MilestoneQuery
+	withIssues           *IssueQuery
+	withServiceProviders *ServiceProviderQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -147,6 +149,28 @@ func (uq *UserQuery) QueryIssues() *IssueQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(issue.Table, issue.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.IssuesTable, user.IssuesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryServiceProviders chains the current query on the "service_providers" edge.
+func (uq *UserQuery) QueryServiceProviders() *ServiceProviderQuery {
+	query := (&ServiceProviderClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(serviceprovider.Table, serviceprovider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ServiceProvidersTable, user.ServiceProvidersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -341,15 +365,16 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:         uq.config,
-		ctx:            uq.ctx.Clone(),
-		order:          append([]user.OrderOption{}, uq.order...),
-		inters:         append([]Interceptor{}, uq.inters...),
-		predicates:     append([]predicate.User{}, uq.predicates...),
-		withAccount:    uq.withAccount.Clone(),
-		withTasks:      uq.withTasks.Clone(),
-		withMilestones: uq.withMilestones.Clone(),
-		withIssues:     uq.withIssues.Clone(),
+		config:               uq.config,
+		ctx:                  uq.ctx.Clone(),
+		order:                append([]user.OrderOption{}, uq.order...),
+		inters:               append([]Interceptor{}, uq.inters...),
+		predicates:           append([]predicate.User{}, uq.predicates...),
+		withAccount:          uq.withAccount.Clone(),
+		withTasks:            uq.withTasks.Clone(),
+		withMilestones:       uq.withMilestones.Clone(),
+		withIssues:           uq.withIssues.Clone(),
+		withServiceProviders: uq.withServiceProviders.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -397,6 +422,17 @@ func (uq *UserQuery) WithIssues(opts ...func(*IssueQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withIssues = query
+	return uq
+}
+
+// WithServiceProviders tells the query-builder to eager-load the nodes that are connected to
+// the "service_providers" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithServiceProviders(opts ...func(*ServiceProviderQuery)) *UserQuery {
+	query := (&ServiceProviderClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withServiceProviders = query
 	return uq
 }
 
@@ -478,11 +514,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			uq.withAccount != nil,
 			uq.withTasks != nil,
 			uq.withMilestones != nil,
 			uq.withIssues != nil,
+			uq.withServiceProviders != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -527,6 +564,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadIssues(ctx, query, nodes,
 			func(n *User) { n.Edges.Issues = []*Issue{} },
 			func(n *User, e *Issue) { n.Edges.Issues = append(n.Edges.Issues, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withServiceProviders; query != nil {
+		if err := uq.loadServiceProviders(ctx, query, nodes,
+			func(n *User) { n.Edges.ServiceProviders = []*ServiceProvider{} },
+			func(n *User, e *ServiceProvider) { n.Edges.ServiceProviders = append(n.Edges.ServiceProviders, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -637,6 +681,36 @@ func (uq *UserQuery) loadIssues(ctx context.Context, query *IssueQuery, nodes []
 	}
 	query.Where(predicate.Issue(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.IssuesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CreatedBy
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadServiceProviders(ctx context.Context, query *ServiceProviderQuery, nodes []*User, init func(*User), assign func(*User, *ServiceProvider)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(serviceprovider.FieldCreatedBy)
+	}
+	query.Where(predicate.ServiceProvider(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ServiceProvidersColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

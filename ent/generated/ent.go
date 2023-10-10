@@ -18,6 +18,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/plan"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -81,15 +82,16 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			account.Table:      account.ValidColumn,
-			issue.Table:        issue.ValidColumn,
-			milestone.Table:    milestone.ValidColumn,
-			plan.Table:         plan.ValidColumn,
-			project.Table:      project.ValidColumn,
-			role.Table:         role.ValidColumn,
-			subscription.Table: subscription.ValidColumn,
-			task.Table:         task.ValidColumn,
-			user.Table:         user.ValidColumn,
+			account.Table:         account.ValidColumn,
+			issue.Table:           issue.ValidColumn,
+			milestone.Table:       milestone.ValidColumn,
+			plan.Table:            plan.ValidColumn,
+			project.Table:         project.ValidColumn,
+			role.Table:            role.ValidColumn,
+			serviceprovider.Table: serviceprovider.ValidColumn,
+			subscription.Table:    subscription.ValidColumn,
+			task.Table:            task.ValidColumn,
+			user.Table:            user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

@@ -17,6 +17,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/predicate"
 	"github.com/Pyakz/buildbox-api/ent/generated/project"
 	"github.com/Pyakz/buildbox-api/ent/generated/role"
+	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
@@ -25,17 +26,18 @@ import (
 // AccountQuery is the builder for querying Account entities.
 type AccountQuery struct {
 	config
-	ctx               *QueryContext
-	order             []account.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.Account
-	withUsers         *UserQuery
-	withProjects      *ProjectQuery
-	withSubscriptions *SubscriptionQuery
-	withRoles         *RoleQuery
-	withTasks         *TaskQuery
-	withMilestones    *MilestoneQuery
-	withIssues        *IssueQuery
+	ctx                  *QueryContext
+	order                []account.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.Account
+	withUsers            *UserQuery
+	withProjects         *ProjectQuery
+	withSubscriptions    *SubscriptionQuery
+	withRoles            *RoleQuery
+	withTasks            *TaskQuery
+	withMilestones       *MilestoneQuery
+	withIssues           *IssueQuery
+	withServiceProviders *ServiceProviderQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -219,6 +221,28 @@ func (aq *AccountQuery) QueryIssues() *IssueQuery {
 			sqlgraph.From(account.Table, account.FieldID, selector),
 			sqlgraph.To(issue.Table, issue.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, account.IssuesTable, account.IssuesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryServiceProviders chains the current query on the "service_providers" edge.
+func (aq *AccountQuery) QueryServiceProviders() *ServiceProviderQuery {
+	query := (&ServiceProviderClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(account.Table, account.FieldID, selector),
+			sqlgraph.To(serviceprovider.Table, serviceprovider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, account.ServiceProvidersTable, account.ServiceProvidersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -413,18 +437,19 @@ func (aq *AccountQuery) Clone() *AccountQuery {
 		return nil
 	}
 	return &AccountQuery{
-		config:            aq.config,
-		ctx:               aq.ctx.Clone(),
-		order:             append([]account.OrderOption{}, aq.order...),
-		inters:            append([]Interceptor{}, aq.inters...),
-		predicates:        append([]predicate.Account{}, aq.predicates...),
-		withUsers:         aq.withUsers.Clone(),
-		withProjects:      aq.withProjects.Clone(),
-		withSubscriptions: aq.withSubscriptions.Clone(),
-		withRoles:         aq.withRoles.Clone(),
-		withTasks:         aq.withTasks.Clone(),
-		withMilestones:    aq.withMilestones.Clone(),
-		withIssues:        aq.withIssues.Clone(),
+		config:               aq.config,
+		ctx:                  aq.ctx.Clone(),
+		order:                append([]account.OrderOption{}, aq.order...),
+		inters:               append([]Interceptor{}, aq.inters...),
+		predicates:           append([]predicate.Account{}, aq.predicates...),
+		withUsers:            aq.withUsers.Clone(),
+		withProjects:         aq.withProjects.Clone(),
+		withSubscriptions:    aq.withSubscriptions.Clone(),
+		withRoles:            aq.withRoles.Clone(),
+		withTasks:            aq.withTasks.Clone(),
+		withMilestones:       aq.withMilestones.Clone(),
+		withIssues:           aq.withIssues.Clone(),
+		withServiceProviders: aq.withServiceProviders.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -508,6 +533,17 @@ func (aq *AccountQuery) WithIssues(opts ...func(*IssueQuery)) *AccountQuery {
 	return aq
 }
 
+// WithServiceProviders tells the query-builder to eager-load the nodes that are connected to
+// the "service_providers" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AccountQuery) WithServiceProviders(opts ...func(*ServiceProviderQuery)) *AccountQuery {
+	query := (&ServiceProviderClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withServiceProviders = query
+	return aq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -586,7 +622,7 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 	var (
 		nodes       = []*Account{}
 		_spec       = aq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			aq.withUsers != nil,
 			aq.withProjects != nil,
 			aq.withSubscriptions != nil,
@@ -594,6 +630,7 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 			aq.withTasks != nil,
 			aq.withMilestones != nil,
 			aq.withIssues != nil,
+			aq.withServiceProviders != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -660,6 +697,13 @@ func (aq *AccountQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acco
 		if err := aq.loadIssues(ctx, query, nodes,
 			func(n *Account) { n.Edges.Issues = []*Issue{} },
 			func(n *Account, e *Issue) { n.Edges.Issues = append(n.Edges.Issues, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withServiceProviders; query != nil {
+		if err := aq.loadServiceProviders(ctx, query, nodes,
+			func(n *Account) { n.Edges.ServiceProviders = []*ServiceProvider{} },
+			func(n *Account, e *ServiceProvider) { n.Edges.ServiceProviders = append(n.Edges.ServiceProviders, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -861,6 +905,36 @@ func (aq *AccountQuery) loadIssues(ctx context.Context, query *IssueQuery, nodes
 	}
 	query.Where(predicate.Issue(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(account.IssuesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AccountID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "account_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *AccountQuery) loadServiceProviders(ctx context.Context, query *ServiceProviderQuery, nodes []*Account, init func(*Account), assign func(*Account, *ServiceProvider)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Account)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(serviceprovider.FieldAccountID)
+	}
+	query.Where(predicate.ServiceProvider(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(account.ServiceProvidersColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

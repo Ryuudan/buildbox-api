@@ -28,6 +28,7 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 		V1Tasks(client, v1)
 		V1Milestones(client, v1)
 		V1Issues(client, v1)
+		V1ServiceProviders(client, v1)
 		// TODO: Search route
 	})
 

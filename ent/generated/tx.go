@@ -24,6 +24,8 @@ type Tx struct {
 	Project *ProjectClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
+	// ServiceProvider is the client for interacting with the ServiceProvider builders.
+	ServiceProvider *ServiceProviderClient
 	// Subscription is the client for interacting with the Subscription builders.
 	Subscription *SubscriptionClient
 	// Task is the client for interacting with the Task builders.
@@ -167,6 +169,7 @@ func (tx *Tx) init() {
 	tx.Plan = NewPlanClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
+	tx.ServiceProvider = NewServiceProviderClient(tx.config)
 	tx.Subscription = NewSubscriptionClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.User = NewUserClient(tx.config)

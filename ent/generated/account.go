@@ -52,9 +52,11 @@ type AccountEdges struct {
 	Milestones []*Milestone `json:"milestones,omitempty"`
 	// Issues holds the value of the issues edge.
 	Issues []*Issue `json:"issues,omitempty"`
+	// ServiceProviders holds the value of the service_providers edge.
+	ServiceProviders []*ServiceProvider `json:"service_providers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -118,6 +120,15 @@ func (e AccountEdges) IssuesOrErr() ([]*Issue, error) {
 		return e.Issues, nil
 	}
 	return nil, &NotLoadedError{edge: "issues"}
+}
+
+// ServiceProvidersOrErr returns the ServiceProviders value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) ServiceProvidersOrErr() ([]*ServiceProvider, error) {
+	if e.loadedTypes[7] {
+		return e.ServiceProviders, nil
+	}
+	return nil, &NotLoadedError{edge: "service_providers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -236,6 +247,11 @@ func (a *Account) QueryMilestones() *MilestoneQuery {
 // QueryIssues queries the "issues" edge of the Account entity.
 func (a *Account) QueryIssues() *IssueQuery {
 	return NewAccountClient(a.config).QueryIssues(a)
+}
+
+// QueryServiceProviders queries the "service_providers" edge of the Account entity.
+func (a *Account) QueryServiceProviders() *ServiceProviderQuery {
+	return NewAccountClient(a.config).QueryServiceProviders(a)
 }
 
 // Update returns a builder for updating this Account.
