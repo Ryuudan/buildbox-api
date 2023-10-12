@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Pyakz/buildbox-api/constants"
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
@@ -73,7 +74,7 @@ func (m *MilestoneHandler) GetMilestoneByID(w http.ResponseWriter, r *http.Reque
 	id, err := utils.StringToInt(chi.URLParam(r, "id"))
 
 	if err != nil {
-		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
+		render.Error(w, r, http.StatusBadRequest, constants.INVALID_FORMAT_ID)
 		return
 	}
 

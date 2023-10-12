@@ -15,6 +15,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceproviderprojects"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
+	"github.com/Pyakz/buildbox-api/ent/generated/team"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/Pyakz/buildbox-api/ent/schema"
 	"github.com/google/uuid"
@@ -252,6 +253,24 @@ func init() {
 	taskDescUUID := taskFields[10].Descriptor()
 	// task.DefaultUUID holds the default value on creation for the uuid field.
 	task.DefaultUUID = taskDescUUID.Default.(func() uuid.UUID)
+	teamFields := schema.Team{}.Fields()
+	_ = teamFields
+	// teamDescName is the schema descriptor for name field.
+	teamDescName := teamFields[2].Descriptor()
+	// team.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	team.NameValidator = teamDescName.Validators[0].(func(string) error)
+	// teamDescUpdatedAt is the schema descriptor for updated_at field.
+	teamDescUpdatedAt := teamFields[5].Descriptor()
+	// team.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	team.DefaultUpdatedAt = teamDescUpdatedAt.Default.(func() time.Time)
+	// teamDescCreatedAt is the schema descriptor for created_at field.
+	teamDescCreatedAt := teamFields[6].Descriptor()
+	// team.DefaultCreatedAt holds the default value on creation for the created_at field.
+	team.DefaultCreatedAt = teamDescCreatedAt.Default.(func() time.Time)
+	// teamDescUUID is the schema descriptor for uuid field.
+	teamDescUUID := teamFields[7].Descriptor()
+	// team.DefaultUUID holds the default value on creation for the uuid field.
+	team.DefaultUUID = teamDescUUID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUpdatedAt is the schema descriptor for updated_at field.

@@ -108,5 +108,6 @@ func (Project) Edges() []ent.Edge {
 		edge.To("tasks", Task.Type),
 		edge.To("milestones", Milestone.Type),
 		edge.To("issues", Issue.Type),
+		edge.To("teams", Team.Type),
 	}
 }

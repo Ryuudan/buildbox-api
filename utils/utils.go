@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -28,9 +29,16 @@ func ConsoleLog(message interface{}) {
 
 // StringToInt returns the integer value of a string or an error if the conversion fails.
 func StringToInt(str string) (int, error) {
+
+	if str == "" {
+		return 0, errors.New("provided string is empty")
+	}
+
 	intValue, err := strconv.Atoi(str)
+
 	if err != nil {
 		return 0, err
 	}
+
 	return intValue, nil
 }

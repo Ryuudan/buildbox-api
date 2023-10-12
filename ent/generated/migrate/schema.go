@@ -327,6 +327,39 @@ var (
 			},
 		},
 	}
+	// TeamsColumns holds the columns for the "teams" table.
+	TeamsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_by", Type: field.TypeInt},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Nullable: true, Enums: []string{"active", "inactive"}, Default: "active"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "account_id", Type: field.TypeInt},
+		{Name: "project_teams", Type: field.TypeInt, Nullable: true},
+	}
+	// TeamsTable holds the schema information for the "teams" table.
+	TeamsTable = &schema.Table{
+		Name:       "teams",
+		Columns:    TeamsColumns,
+		PrimaryKey: []*schema.Column{TeamsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "teams_accounts_teams",
+				Columns:    []*schema.Column{TeamsColumns[8]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "teams_projects_teams",
+				Columns:    []*schema.Column{TeamsColumns[9]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -368,6 +401,7 @@ var (
 		ServiceProviderProjectsTable,
 		SubscriptionsTable,
 		TasksTable,
+		TeamsTable,
 		UsersTable,
 	}
 )
@@ -392,5 +426,7 @@ func init() {
 	TasksTable.ForeignKeys[2].RefTable = MilestonesTable
 	TasksTable.ForeignKeys[3].RefTable = ProjectsTable
 	TasksTable.ForeignKeys[4].RefTable = UsersTable
+	TeamsTable.ForeignKeys[0].RefTable = AccountsTable
+	TeamsTable.ForeignKeys[1].RefTable = ProjectsTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable
 }

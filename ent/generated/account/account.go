@@ -43,6 +43,8 @@ const (
 	EdgeIssues = "issues"
 	// EdgeServiceProviders holds the string denoting the service_providers edge name in mutations.
 	EdgeServiceProviders = "service_providers"
+	// EdgeTeams holds the string denoting the teams edge name in mutations.
+	EdgeTeams = "teams"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// UsersTable is the table that holds the users relation/edge.
@@ -101,6 +103,13 @@ const (
 	ServiceProvidersInverseTable = "service_providers"
 	// ServiceProvidersColumn is the table column denoting the service_providers relation/edge.
 	ServiceProvidersColumn = "account_id"
+	// TeamsTable is the table that holds the teams relation/edge.
+	TeamsTable = "teams"
+	// TeamsInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	TeamsInverseTable = "teams"
+	// TeamsColumn is the table column denoting the teams relation/edge.
+	TeamsColumn = "account_id"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -288,6 +297,20 @@ func ByServiceProviders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newServiceProvidersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTeamsCount orders the results by teams count.
+func ByTeamsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTeamsStep(), opts...)
+	}
+}
+
+// ByTeams orders the results by teams terms.
+func ByTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -342,5 +365,12 @@ func newServiceProvidersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ServiceProvidersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ServiceProvidersTable, ServiceProvidersColumn),
+	)
+}
+func newTeamsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeamsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TeamsTable, TeamsColumn),
 	)
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
+	"github.com/Pyakz/buildbox-api/ent/generated/team"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
@@ -208,6 +209,21 @@ func (au *AccountUpdate) AddServiceProviders(s ...*ServiceProvider) *AccountUpda
 	return au.AddServiceProviderIDs(ids...)
 }
 
+// AddTeamIDs adds the "teams" edge to the Team entity by IDs.
+func (au *AccountUpdate) AddTeamIDs(ids ...int) *AccountUpdate {
+	au.mutation.AddTeamIDs(ids...)
+	return au
+}
+
+// AddTeams adds the "teams" edges to the Team entity.
+func (au *AccountUpdate) AddTeams(t ...*Team) *AccountUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.AddTeamIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (au *AccountUpdate) Mutation() *AccountMutation {
 	return au.mutation
@@ -379,6 +395,27 @@ func (au *AccountUpdate) RemoveServiceProviders(s ...*ServiceProvider) *AccountU
 		ids[i] = s[i].ID
 	}
 	return au.RemoveServiceProviderIDs(ids...)
+}
+
+// ClearTeams clears all "teams" edges to the Team entity.
+func (au *AccountUpdate) ClearTeams() *AccountUpdate {
+	au.mutation.ClearTeams()
+	return au
+}
+
+// RemoveTeamIDs removes the "teams" edge to Team entities by IDs.
+func (au *AccountUpdate) RemoveTeamIDs(ids ...int) *AccountUpdate {
+	au.mutation.RemoveTeamIDs(ids...)
+	return au
+}
+
+// RemoveTeams removes "teams" edges to Team entities.
+func (au *AccountUpdate) RemoveTeams(t ...*Team) *AccountUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.RemoveTeamIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -821,6 +858,51 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.TeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !au.mutation.TeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.TeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -1013,6 +1095,21 @@ func (auo *AccountUpdateOne) AddServiceProviders(s ...*ServiceProvider) *Account
 	return auo.AddServiceProviderIDs(ids...)
 }
 
+// AddTeamIDs adds the "teams" edge to the Team entity by IDs.
+func (auo *AccountUpdateOne) AddTeamIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.AddTeamIDs(ids...)
+	return auo
+}
+
+// AddTeams adds the "teams" edges to the Team entity.
+func (auo *AccountUpdateOne) AddTeams(t ...*Team) *AccountUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.AddTeamIDs(ids...)
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (auo *AccountUpdateOne) Mutation() *AccountMutation {
 	return auo.mutation
@@ -1184,6 +1281,27 @@ func (auo *AccountUpdateOne) RemoveServiceProviders(s ...*ServiceProvider) *Acco
 		ids[i] = s[i].ID
 	}
 	return auo.RemoveServiceProviderIDs(ids...)
+}
+
+// ClearTeams clears all "teams" edges to the Team entity.
+func (auo *AccountUpdateOne) ClearTeams() *AccountUpdateOne {
+	auo.mutation.ClearTeams()
+	return auo
+}
+
+// RemoveTeamIDs removes the "teams" edge to Team entities by IDs.
+func (auo *AccountUpdateOne) RemoveTeamIDs(ids ...int) *AccountUpdateOne {
+	auo.mutation.RemoveTeamIDs(ids...)
+	return auo
+}
+
+// RemoveTeams removes "teams" edges to Team entities.
+func (auo *AccountUpdateOne) RemoveTeams(t ...*Team) *AccountUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.RemoveTeamIDs(ids...)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -1649,6 +1767,51 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.TeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !auo.mutation.TeamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.TeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

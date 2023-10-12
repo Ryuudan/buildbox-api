@@ -18,6 +18,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceprovider"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
+	"github.com/Pyakz/buildbox-api/ent/generated/team"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 	"github.com/google/uuid"
 )
@@ -215,6 +216,21 @@ func (ac *AccountCreate) AddServiceProviders(s ...*ServiceProvider) *AccountCrea
 		ids[i] = s[i].ID
 	}
 	return ac.AddServiceProviderIDs(ids...)
+}
+
+// AddTeamIDs adds the "teams" edge to the Team entity by IDs.
+func (ac *AccountCreate) AddTeamIDs(ids ...int) *AccountCreate {
+	ac.mutation.AddTeamIDs(ids...)
+	return ac
+}
+
+// AddTeams adds the "teams" edges to the Team entity.
+func (ac *AccountCreate) AddTeams(t ...*Team) *AccountCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ac.AddTeamIDs(ids...)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -463,6 +479,22 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(serviceprovider.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.TeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   account.TeamsTable,
+			Columns: []string{account.TeamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

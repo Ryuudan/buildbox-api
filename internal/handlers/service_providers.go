@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/Pyakz/buildbox-api/constants"
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/services"
 	"github.com/Pyakz/buildbox-api/utils"
@@ -51,7 +52,7 @@ func (s *ServiceProviderHandler) GetServiceProviderByID(w http.ResponseWriter, r
 	id, err := utils.StringToInt(chi.URLParam(r, "id"))
 
 	if err != nil {
-		render.Error(w, r, http.StatusBadRequest, "Invalid ID")
+		render.Error(w, r, http.StatusBadRequest, constants.INVALID_FORMAT_ID)
 		return
 	}
 
@@ -95,10 +96,10 @@ func (s *ServiceProviderHandler) CreateServiceProvider(w http.ResponseWriter, r 
 
 	go func() {
 		defer wg.Done()
-		mu.Lock()
-		defer mu.Unlock()
 		existingPhoneNumber, _ := s.serviceProviderService.GetServiceProviderByPhone(r.Context(), service_provider.PhoneNumber)
 		if existingPhoneNumber != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			validationErrors = append(validationErrors, render.ValidationErrorDetails{
 				Field:   "phone_number",
 				Message: "phone number already exists, please try another one",
@@ -108,10 +109,10 @@ func (s *ServiceProviderHandler) CreateServiceProvider(w http.ResponseWriter, r 
 
 	go func() {
 		defer wg.Done()
-		mu.Lock()
-		defer mu.Unlock()
 		existingEmail, _ := s.serviceProviderService.GetServiceProviderByEmail(r.Context(), service_provider.Email)
 		if existingEmail != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			validationErrors = append(validationErrors, render.ValidationErrorDetails{
 				Field:   "email",
 				Message: "email already exists, please try another one",

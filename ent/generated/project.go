@@ -70,9 +70,11 @@ type ProjectEdges struct {
 	Milestones []*Milestone `json:"milestones,omitempty"`
 	// Issues holds the value of the issues edge.
 	Issues []*Issue `json:"issues,omitempty"`
+	// Teams holds the value of the teams edge.
+	Teams []*Team `json:"teams,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -126,6 +128,15 @@ func (e ProjectEdges) IssuesOrErr() ([]*Issue, error) {
 		return e.Issues, nil
 	}
 	return nil, &NotLoadedError{edge: "issues"}
+}
+
+// TeamsOrErr returns the Teams value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) TeamsOrErr() ([]*Team, error) {
+	if e.loadedTypes[5] {
+		return e.Teams, nil
+	}
+	return nil, &NotLoadedError{edge: "teams"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -307,6 +318,11 @@ func (pr *Project) QueryMilestones() *MilestoneQuery {
 // QueryIssues queries the "issues" edge of the Project entity.
 func (pr *Project) QueryIssues() *IssueQuery {
 	return NewProjectClient(pr.config).QueryIssues(pr)
+}
+
+// QueryTeams queries the "teams" edge of the Project entity.
+func (pr *Project) QueryTeams() *TeamQuery {
+	return NewProjectClient(pr.config).QueryTeams(pr)
 }
 
 // Update returns a builder for updating this Project.

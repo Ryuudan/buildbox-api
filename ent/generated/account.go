@@ -54,9 +54,11 @@ type AccountEdges struct {
 	Issues []*Issue `json:"issues,omitempty"`
 	// ServiceProviders holds the value of the service_providers edge.
 	ServiceProviders []*ServiceProvider `json:"service_providers,omitempty"`
+	// Teams holds the value of the teams edge.
+	Teams []*Team `json:"teams,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -129,6 +131,15 @@ func (e AccountEdges) ServiceProvidersOrErr() ([]*ServiceProvider, error) {
 		return e.ServiceProviders, nil
 	}
 	return nil, &NotLoadedError{edge: "service_providers"}
+}
+
+// TeamsOrErr returns the Teams value or an error if the edge
+// was not loaded in eager-loading.
+func (e AccountEdges) TeamsOrErr() ([]*Team, error) {
+	if e.loadedTypes[8] {
+		return e.Teams, nil
+	}
+	return nil, &NotLoadedError{edge: "teams"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -252,6 +263,11 @@ func (a *Account) QueryIssues() *IssueQuery {
 // QueryServiceProviders queries the "service_providers" edge of the Account entity.
 func (a *Account) QueryServiceProviders() *ServiceProviderQuery {
 	return NewAccountClient(a.config).QueryServiceProviders(a)
+}
+
+// QueryTeams queries the "teams" edge of the Account entity.
+func (a *Account) QueryTeams() *TeamQuery {
+	return NewAccountClient(a.config).QueryTeams(a)
 }
 
 // Update returns a builder for updating this Account.

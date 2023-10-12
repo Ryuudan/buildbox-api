@@ -3,6 +3,7 @@ package middlewares
 import (
 	"net/http"
 
+	"github.com/Pyakz/buildbox-api/constants"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
@@ -23,7 +24,7 @@ func EnforceAccountAuthorization(next http.Handler) http.Handler {
 		id, err := utils.StringToInt(chi.URLParam(r, "id"))
 
 		if err != nil {
-			render.Error(w, r, http.StatusBadRequest, "Invalid ID")
+			render.Error(w, r, http.StatusBadRequest, constants.INVALID_FORMAT_ID)
 			return
 		}
 

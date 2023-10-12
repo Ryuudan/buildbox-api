@@ -22,6 +22,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated/serviceproviderprojects"
 	"github.com/Pyakz/buildbox-api/ent/generated/subscription"
 	"github.com/Pyakz/buildbox-api/ent/generated/task"
+	"github.com/Pyakz/buildbox-api/ent/generated/team"
 	"github.com/Pyakz/buildbox-api/ent/generated/user"
 )
 
@@ -93,6 +94,7 @@ func checkColumn(table, column string) error {
 			serviceproviderprojects.Table: serviceproviderprojects.ValidColumn,
 			subscription.Table:            subscription.ValidColumn,
 			task.Table:                    task.ValidColumn,
+			team.Table:                    team.ValidColumn,
 			user.Table:                    user.ValidColumn,
 		})
 	})
