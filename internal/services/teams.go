@@ -40,7 +40,7 @@ func (s *teamService) CreateTeam(ctx context.Context, newTeam *generated.Team) (
 	team, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		SetName(newTeam.Name).
+		SetNillableName(newTeam.Name).
 		SetNillableStatus(newTeam.Status).
 		SetNillableDescription(newTeam.Description).
 		Save(ctx)
@@ -138,11 +138,19 @@ func (s *teamService) GetTeamByID(ctx context.Context, id int) (*generated.Team,
 
 func (s *teamService) UpdateTeam(ctx context.Context, id int, updatedTeam *generated.Team) (*generated.Team, error) {
 
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
 	team, err := s.client.UpdateOneID(id).
-		SetName(updatedTeam.Name).
+		SetNillableName(updatedTeam.Name).
 		SetNillableStatus(updatedTeam.Status).
 		SetNillableDescription(updatedTeam.Description).
 		SetUpdatedAt(time.Now()).
+		Where(
+			team.AccountIDEQ(int(claims["account_id"].(float64))),
+		).
 		Save(ctx)
 
 	if err != nil {

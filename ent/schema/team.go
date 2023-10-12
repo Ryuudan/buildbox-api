@@ -21,7 +21,9 @@ func (Team) Fields() []ent.Field {
 		field.Int("created_by"),
 		field.String("name").
 			NotEmpty().
-			StructTag(`json:"name" validate:"required,min=1"`),
+			StructTag(`json:"name" validate:"required,min=1"`).
+			Optional().
+			Nillable(),
 		field.String("description").
 			StructTag(`json:"description" validate:"omitempty,min=1,max=300"`).
 			Optional().

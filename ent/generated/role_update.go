@@ -48,9 +48,37 @@ func (ru *RoleUpdate) SetName(s string) *RoleUpdate {
 	return ru
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableName(s *string) *RoleUpdate {
+	if s != nil {
+		ru.SetName(*s)
+	}
+	return ru
+}
+
+// ClearName clears the value of the "name" field.
+func (ru *RoleUpdate) ClearName() *RoleUpdate {
+	ru.mutation.ClearName()
+	return ru
+}
+
 // SetDescription sets the "description" field.
 func (ru *RoleUpdate) SetDescription(s string) *RoleUpdate {
 	ru.mutation.SetDescription(s)
+	return ru
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableDescription(s *string) *RoleUpdate {
+	if s != nil {
+		ru.SetDescription(*s)
+	}
+	return ru
+}
+
+// ClearDescription clears the value of the "description" field.
+func (ru *RoleUpdate) ClearDescription() *RoleUpdate {
+	ru.mutation.ClearDescription()
 	return ru
 }
 
@@ -130,16 +158,6 @@ func (ru *RoleUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ru *RoleUpdate) check() error {
-	if v, ok := ru.mutation.Name(); ok {
-		if err := role.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Role.name": %w`, err)}
-		}
-	}
-	if v, ok := ru.mutation.Description(); ok {
-		if err := role.DescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "description", err: fmt.Errorf(`generated: validator failed for field "Role.description": %w`, err)}
-		}
-	}
 	if _, ok := ru.mutation.AccountID(); ru.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Role.account"`)
 	}
@@ -164,8 +182,14 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ru.mutation.Name(); ok {
 		_spec.SetField(role.FieldName, field.TypeString, value)
 	}
+	if ru.mutation.NameCleared() {
+		_spec.ClearField(role.FieldName, field.TypeString)
+	}
 	if value, ok := ru.mutation.Description(); ok {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
+	}
+	if ru.mutation.DescriptionCleared() {
+		_spec.ClearField(role.FieldDescription, field.TypeString)
 	}
 	if value, ok := ru.mutation.UpdatedAt(); ok {
 		_spec.SetField(role.FieldUpdatedAt, field.TypeTime, value)
@@ -266,9 +290,37 @@ func (ruo *RoleUpdateOne) SetName(s string) *RoleUpdateOne {
 	return ruo
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableName(s *string) *RoleUpdateOne {
+	if s != nil {
+		ruo.SetName(*s)
+	}
+	return ruo
+}
+
+// ClearName clears the value of the "name" field.
+func (ruo *RoleUpdateOne) ClearName() *RoleUpdateOne {
+	ruo.mutation.ClearName()
+	return ruo
+}
+
 // SetDescription sets the "description" field.
 func (ruo *RoleUpdateOne) SetDescription(s string) *RoleUpdateOne {
 	ruo.mutation.SetDescription(s)
+	return ruo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableDescription(s *string) *RoleUpdateOne {
+	if s != nil {
+		ruo.SetDescription(*s)
+	}
+	return ruo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (ruo *RoleUpdateOne) ClearDescription() *RoleUpdateOne {
+	ruo.mutation.ClearDescription()
 	return ruo
 }
 
@@ -361,16 +413,6 @@ func (ruo *RoleUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ruo *RoleUpdateOne) check() error {
-	if v, ok := ruo.mutation.Name(); ok {
-		if err := role.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Role.name": %w`, err)}
-		}
-	}
-	if v, ok := ruo.mutation.Description(); ok {
-		if err := role.DescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "description", err: fmt.Errorf(`generated: validator failed for field "Role.description": %w`, err)}
-		}
-	}
 	if _, ok := ruo.mutation.AccountID(); ruo.mutation.AccountCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Role.account"`)
 	}
@@ -412,8 +454,14 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 	if value, ok := ruo.mutation.Name(); ok {
 		_spec.SetField(role.FieldName, field.TypeString, value)
 	}
+	if ruo.mutation.NameCleared() {
+		_spec.ClearField(role.FieldName, field.TypeString)
+	}
 	if value, ok := ruo.mutation.Description(); ok {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
+	}
+	if ruo.mutation.DescriptionCleared() {
+		_spec.ClearField(role.FieldDescription, field.TypeString)
 	}
 	if value, ok := ruo.mutation.UpdatedAt(); ok {
 		_spec.SetField(role.FieldUpdatedAt, field.TypeTime, value)

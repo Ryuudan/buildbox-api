@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Pyakz/buildbox-api/ent/generated"
@@ -18,6 +19,7 @@ type RolesService interface {
 	CreateRole(ctx context.Context, newRole *generated.Role) (*generated.Role, error)
 	GetRoles(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Role, int, error)
 	GetRoleByName(ctx context.Context, name string) (*generated.Role, error)
+	UpdateRole(ctx context.Context, id int, role *generated.Role) (*generated.Role, error)
 }
 
 type rolesService struct {
@@ -38,8 +40,8 @@ func (s *rolesService) CreateRole(ctx context.Context, newRole *generated.Role) 
 	role, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		SetName(newRole.Name).
-		SetDescription(newRole.Description).
+		SetNillableName(newRole.Name).
+		SetNillableDescription(newRole.Description).
 		Save(ctx)
 
 	if err != nil {
@@ -125,6 +127,30 @@ func (s *rolesService) GetRoleByName(ctx context.Context, name string) (*generat
 			role.NameEQ(name),
 		).
 		First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return role, nil
+}
+
+func (s *rolesService) UpdateRole(ctx context.Context, id int, updateRole *generated.Role) (*generated.Role, error) {
+
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	role, err := s.client.
+		UpdateOneID(id).
+		SetNillableName(updateRole.Name).
+		SetNillableDescription(updateRole.Description).
+		SetUpdatedAt(time.Now()).
+		Where(
+			role.AccountIDEQ(int(claims["account_id"].(float64))),
+		).
+		Save(ctx)
 
 	if err != nil {
 		return nil, err

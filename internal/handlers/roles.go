@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Pyakz/buildbox-api/constants"
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
+	"github.com/go-chi/chi/v5"
 )
 
 type RolesHandlers struct {
@@ -40,13 +43,13 @@ func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existingName, _ := ro.rolesService.GetRoleByName(r.Context(), role.Name)
+	existingName, _ := ro.rolesService.GetRoleByName(r.Context(), *role.Name)
 
 	if existingName != nil {
 		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
 			{
 				Field:   "name",
-				Message: fmt.Sprintf("Role with name '%s' already exists in this account.", role.Name),
+				Message: fmt.Sprintf("Role with name '%s' already exists in this account.", *role.Name),
 			},
 		})
 		return
@@ -105,4 +108,56 @@ func (ro *RolesHandlers) GetRoles(w http.ResponseWriter, r *http.Request) {
 			len(roles),
 		),
 	})
+}
+
+func (ro *RolesHandlers) UpdateRole(w http.ResponseWriter, r *http.Request) {
+	validate := render.Validator()
+
+	var payload models.UpdateRolePayload
+	var validationErrors []render.ValidationErrorDetails
+
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, constants.INVALID_FORMAT_ID)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
+		return
+	}
+
+	// Struct level validation
+	if err := validate.Struct(payload); err != nil {
+		render.ValidationError(w, r, err)
+		return
+	}
+
+	utils.ConsoleLog(payload)
+
+	// TODO: there might be more validation to do here
+	if len(validationErrors) > 0 {
+		render.CustomValidationError(w, r, validationErrors)
+		return
+	}
+
+	defer r.Body.Close()
+
+	updatedRole, err := ro.rolesService.UpdateRole(r.Context(), id, &generated.Role{
+		Name:        payload.Name,
+		Description: payload.Description,
+	})
+
+	if err != nil {
+		if generated.IsNotFound(err) {
+			render.Error(w, r, http.StatusNotFound, "role not found")
+			return
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	render.JSON(w, http.StatusOK, updatedRole)
 }

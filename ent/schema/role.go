@@ -20,11 +20,9 @@ func (Role) Fields() []ent.Field {
 		field.Int("account_id"),
 		field.Int("created_by"),
 		field.String("name").
-			StructTag(`json:"name" validate:"required,min=1,max=100"`).
-			NotEmpty(),
+			StructTag(`json:"name" validate:"required,min=1,max=100"`).Optional().Nillable(),
 		field.String("description").
-			StructTag(`json:"description" validate:"required,min=1,max=100"`).
-			NotEmpty(),
+			StructTag(`json:"description" validate:"required,min=1,max=100"`).Optional().Nillable(),
 		field.Time("updated_at").
 			Default(time.Now),
 		field.Time("created_at").

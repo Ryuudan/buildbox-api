@@ -25,9 +25,9 @@ type Role struct {
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy int `json:"created_by,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name" validate:"required,min=1,max=100"`
+	Name *string `json:"name" validate:"required,min=1,max=100"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description" validate:"required,min=1,max=100"`
+	Description *string `json:"description" validate:"required,min=1,max=100"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -127,13 +127,15 @@ func (r *Role) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				r.Name = value.String
+				r.Name = new(string)
+				*r.Name = value.String
 			}
 		case role.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				r.Description = value.String
+				r.Description = new(string)
+				*r.Description = value.String
 			}
 		case role.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -205,11 +207,15 @@ func (r *Role) String() string {
 	builder.WriteString("created_by=")
 	builder.WriteString(fmt.Sprintf("%v", r.CreatedBy))
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(r.Name)
+	if v := r.Name; v != nil {
+		builder.WriteString("name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(r.Description)
+	if v := r.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(r.UpdatedAt.Format(time.ANSIC))

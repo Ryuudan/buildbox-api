@@ -6445,7 +6445,7 @@ func (m *RoleMutation) Name() (r string, exists bool) {
 // OldName returns the old "name" field's value of the Role entity.
 // If the Role object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *RoleMutation) OldName(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
@@ -6459,9 +6459,22 @@ func (m *RoleMutation) OldName(ctx context.Context) (v string, err error) {
 	return oldValue.Name, nil
 }
 
+// ClearName clears the value of the "name" field.
+func (m *RoleMutation) ClearName() {
+	m.name = nil
+	m.clearedFields[role.FieldName] = struct{}{}
+}
+
+// NameCleared returns if the "name" field was cleared in this mutation.
+func (m *RoleMutation) NameCleared() bool {
+	_, ok := m.clearedFields[role.FieldName]
+	return ok
+}
+
 // ResetName resets all changes to the "name" field.
 func (m *RoleMutation) ResetName() {
 	m.name = nil
+	delete(m.clearedFields, role.FieldName)
 }
 
 // SetDescription sets the "description" field.
@@ -6481,7 +6494,7 @@ func (m *RoleMutation) Description() (r string, exists bool) {
 // OldDescription returns the old "description" field's value of the Role entity.
 // If the Role object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *RoleMutation) OldDescription(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -6495,9 +6508,22 @@ func (m *RoleMutation) OldDescription(ctx context.Context) (v string, err error)
 	return oldValue.Description, nil
 }
 
+// ClearDescription clears the value of the "description" field.
+func (m *RoleMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[role.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *RoleMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[role.FieldDescription]
+	return ok
+}
+
 // ResetDescription resets all changes to the "description" field.
 func (m *RoleMutation) ResetDescription() {
 	m.description = nil
+	delete(m.clearedFields, role.FieldDescription)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -6866,7 +6892,14 @@ func (m *RoleMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *RoleMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(role.FieldName) {
+		fields = append(fields, role.FieldName)
+	}
+	if m.FieldCleared(role.FieldDescription) {
+		fields = append(fields, role.FieldDescription)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -6879,6 +6912,14 @@ func (m *RoleMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *RoleMutation) ClearField(name string) error {
+	switch name {
+	case role.FieldName:
+		m.ClearName()
+		return nil
+	case role.FieldDescription:
+		m.ClearDescription()
+		return nil
+	}
 	return fmt.Errorf("unknown Role nullable field %s", name)
 }
 
@@ -11252,7 +11293,7 @@ func (m *TeamMutation) Name() (r string, exists bool) {
 // OldName returns the old "name" field's value of the Team entity.
 // If the Team object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TeamMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *TeamMutation) OldName(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
@@ -11266,9 +11307,22 @@ func (m *TeamMutation) OldName(ctx context.Context) (v string, err error) {
 	return oldValue.Name, nil
 }
 
+// ClearName clears the value of the "name" field.
+func (m *TeamMutation) ClearName() {
+	m.name = nil
+	m.clearedFields[team.FieldName] = struct{}{}
+}
+
+// NameCleared returns if the "name" field was cleared in this mutation.
+func (m *TeamMutation) NameCleared() bool {
+	_, ok := m.clearedFields[team.FieldName]
+	return ok
+}
+
 // ResetName resets all changes to the "name" field.
 func (m *TeamMutation) ResetName() {
 	m.name = nil
+	delete(m.clearedFields, team.FieldName)
 }
 
 // SetDescription sets the "description" field.
@@ -11748,6 +11802,9 @@ func (m *TeamMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TeamMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(team.FieldName) {
+		fields = append(fields, team.FieldName)
+	}
 	if m.FieldCleared(team.FieldDescription) {
 		fields = append(fields, team.FieldDescription)
 	}
@@ -11774,6 +11831,9 @@ func (m *TeamMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TeamMutation) ClearField(name string) error {
 	switch name {
+	case team.FieldName:
+		m.ClearName()
+		return nil
 	case team.FieldDescription:
 		m.ClearDescription()
 		return nil

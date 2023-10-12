@@ -157,14 +157,6 @@ func init() {
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
-	// roleDescName is the schema descriptor for name field.
-	roleDescName := roleFields[2].Descriptor()
-	// role.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	role.NameValidator = roleDescName.Validators[0].(func(string) error)
-	// roleDescDescription is the schema descriptor for description field.
-	roleDescDescription := roleFields[3].Descriptor()
-	// role.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
-	role.DescriptionValidator = roleDescDescription.Validators[0].(func(string) error)
 	// roleDescUpdatedAt is the schema descriptor for updated_at field.
 	roleDescUpdatedAt := roleFields[4].Descriptor()
 	// role.DefaultUpdatedAt holds the default value on creation for the updated_at field.

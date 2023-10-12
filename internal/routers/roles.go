@@ -14,10 +14,11 @@ func V1Roles(client *generated.Client, router chi.Router) {
 	log.Println("✅ Routes: /roles")
 
 	rolesService := services.NewRolesService(client.Role)
-	rolesHandler := handlers.NewRolesHandlers(rolesService)
+	handler := handlers.NewRolesHandlers(rolesService)
 
 	router.Route("/roles", func(r chi.Router) {
-		r.Post("/", rolesHandler.CreateRole)
-		r.Get("/", rolesHandler.GetRoles)
+		r.Post("/", handler.CreateRole)
+		r.Get("/", handler.GetRoles)
+		r.Patch("/{id}", handler.UpdateRole)
 	})
 }

@@ -54,6 +54,20 @@ func (tu *TeamUpdate) SetName(s string) *TeamUpdate {
 	return tu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tu *TeamUpdate) SetNillableName(s *string) *TeamUpdate {
+	if s != nil {
+		tu.SetName(*s)
+	}
+	return tu
+}
+
+// ClearName clears the value of the "name" field.
+func (tu *TeamUpdate) ClearName() *TeamUpdate {
+	tu.mutation.ClearName()
+	return tu
+}
+
 // SetDescription sets the "description" field.
 func (tu *TeamUpdate) SetDescription(s string) *TeamUpdate {
 	tu.mutation.SetDescription(s)
@@ -196,6 +210,9 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 	}
+	if tu.mutation.NameCleared() {
+		_spec.ClearField(team.FieldName, field.TypeString)
+	}
 	if value, ok := tu.mutation.Description(); ok {
 		_spec.SetField(team.FieldDescription, field.TypeString, value)
 	}
@@ -288,6 +305,20 @@ func (tuo *TeamUpdateOne) AddCreatedBy(i int) *TeamUpdateOne {
 // SetName sets the "name" field.
 func (tuo *TeamUpdateOne) SetName(s string) *TeamUpdateOne {
 	tuo.mutation.SetName(s)
+	return tuo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tuo *TeamUpdateOne) SetNillableName(s *string) *TeamUpdateOne {
+	if s != nil {
+		tuo.SetName(*s)
+	}
+	return tuo
+}
+
+// ClearName clears the value of the "name" field.
+func (tuo *TeamUpdateOne) ClearName() *TeamUpdateOne {
+	tuo.mutation.ClearName()
 	return tuo
 }
 
@@ -462,6 +493,9 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
+	}
+	if tuo.mutation.NameCleared() {
+		_spec.ClearField(team.FieldName, field.TypeString)
 	}
 	if value, ok := tuo.mutation.Description(); ok {
 		_spec.SetField(team.FieldDescription, field.TypeString, value)

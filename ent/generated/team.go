@@ -24,7 +24,7 @@ type Team struct {
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy int `json:"created_by,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name" validate:"required,min=1"`
+	Name *string `json:"name" validate:"required,min=1"`
 	// Description holds the value of the "description" field.
 	Description *string `json:"description" validate:"omitempty,min=1,max=300"`
 	// Status holds the value of the "status" field.
@@ -116,7 +116,8 @@ func (t *Team) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				t.Name = value.String
+				t.Name = new(string)
+				*t.Name = value.String
 			}
 		case team.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -204,8 +205,10 @@ func (t *Team) String() string {
 	builder.WriteString("created_by=")
 	builder.WriteString(fmt.Sprintf("%v", t.CreatedBy))
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(t.Name)
+	if v := t.Name; v != nil {
+		builder.WriteString("name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	if v := t.Description; v != nil {
 		builder.WriteString("description=")
