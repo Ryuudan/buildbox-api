@@ -36,9 +36,25 @@ func (su *SubscriptionUpdate) SetAccountID(i int) *SubscriptionUpdate {
 	return su
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (su *SubscriptionUpdate) SetNillableAccountID(i *int) *SubscriptionUpdate {
+	if i != nil {
+		su.SetAccountID(*i)
+	}
+	return su
+}
+
 // SetPlanID sets the "plan_id" field.
 func (su *SubscriptionUpdate) SetPlanID(i int) *SubscriptionUpdate {
 	su.mutation.SetPlanID(i)
+	return su
+}
+
+// SetNillablePlanID sets the "plan_id" field if the given value is not nil.
+func (su *SubscriptionUpdate) SetNillablePlanID(i *int) *SubscriptionUpdate {
+	if i != nil {
+		su.SetPlanID(*i)
+	}
 	return su
 }
 
@@ -355,9 +371,25 @@ func (suo *SubscriptionUpdateOne) SetAccountID(i int) *SubscriptionUpdateOne {
 	return suo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (suo *SubscriptionUpdateOne) SetNillableAccountID(i *int) *SubscriptionUpdateOne {
+	if i != nil {
+		suo.SetAccountID(*i)
+	}
+	return suo
+}
+
 // SetPlanID sets the "plan_id" field.
 func (suo *SubscriptionUpdateOne) SetPlanID(i int) *SubscriptionUpdateOne {
 	suo.mutation.SetPlanID(i)
+	return suo
+}
+
+// SetNillablePlanID sets the "plan_id" field if the given value is not nil.
+func (suo *SubscriptionUpdateOne) SetNillablePlanID(i *int) *SubscriptionUpdateOne {
+	if i != nil {
+		suo.SetPlanID(*i)
+	}
 	return suo
 }
 

@@ -43,13 +43,13 @@ func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existingName, _ := ro.rolesService.GetRoleByName(r.Context(), *role.Name)
+	existingName, _ := ro.rolesService.GetRoleByName(r.Context(), role.Name)
 
 	if existingName != nil {
 		render.CustomValidationError(w, r, []render.ValidationErrorDetails{
 			{
 				Field:   "name",
-				Message: fmt.Sprintf("Role with name '%s' already exists in this account.", *role.Name),
+				Message: fmt.Sprintf("Role with name '%s' already exists in this account.", role.Name),
 			},
 		})
 		return
@@ -134,8 +134,6 @@ func (ro *RolesHandlers) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.ConsoleLog(payload)
-
 	// TODO: there might be more validation to do here
 	if len(validationErrors) > 0 {
 		render.CustomValidationError(w, r, validationErrors)
@@ -144,10 +142,7 @@ func (ro *RolesHandlers) UpdateRole(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	updatedRole, err := ro.rolesService.UpdateRole(r.Context(), id, &generated.Role{
-		Name:        payload.Name,
-		Description: payload.Description,
-	})
+	updatedRole, err := ro.rolesService.UpdateRole(r.Context(), id, payload)
 
 	if err != nil {
 		if generated.IsNotFound(err) {
@@ -160,4 +155,27 @@ func (ro *RolesHandlers) UpdateRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, http.StatusOK, updatedRole)
+}
+
+func (ro *RolesHandlers) GetRole(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.StringToInt(chi.URLParam(r, "id"))
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, constants.INVALID_FORMAT_ID)
+		return
+	}
+
+	role, err := ro.rolesService.GetRoleByID(r.Context(), id)
+
+	if err != nil {
+		if generated.IsNotFound(err) {
+			render.Error(w, r, http.StatusNotFound, "role not found")
+			return
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	render.JSON(w, http.StatusOK, role)
 }

@@ -19,7 +19,7 @@ type TeamService interface {
 	CreateTeam(ctx context.Context, newTeam *generated.Team) (*generated.Team, error)
 	GetTeams(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Team, int, error)
 	GetTeamByID(ctx context.Context, id int) (*generated.Team, error)
-	UpdateTeam(ctx context.Context, id int, updatedTeam *generated.Team) (*generated.Team, error)
+	UpdateTeam(ctx context.Context, id int, updatedTeam models.UpdateTeamPayload) (*generated.Team, error)
 }
 
 type teamService struct {
@@ -40,7 +40,7 @@ func (s *teamService) CreateTeam(ctx context.Context, newTeam *generated.Team) (
 	team, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		SetNillableName(newTeam.Name).
+		SetName(newTeam.Name).
 		SetNillableStatus(newTeam.Status).
 		SetNillableDescription(newTeam.Description).
 		Save(ctx)
@@ -136,7 +136,7 @@ func (s *teamService) GetTeamByID(ctx context.Context, id int) (*generated.Team,
 	return teams, nil
 }
 
-func (s *teamService) UpdateTeam(ctx context.Context, id int, updatedTeam *generated.Team) (*generated.Team, error) {
+func (s *teamService) UpdateTeam(ctx context.Context, id int, updatedTeam models.UpdateTeamPayload) (*generated.Team, error) {
 
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {

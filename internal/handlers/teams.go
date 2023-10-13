@@ -107,7 +107,7 @@ func (t *TeamHandler) GetTeamByID(w http.ResponseWriter, r *http.Request) {
 func (t *TeamHandler) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 	validate := render.Validator()
 
-	var updateTeam models.UpdateTeamPayload
+	var updated models.UpdateTeamPayload
 	var validationErrors []render.ValidationErrorDetails
 
 	id, err := utils.StringToInt(chi.URLParam(r, "id"))
@@ -117,13 +117,13 @@ func (t *TeamHandler) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&updateTeam); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
 		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
 
 	// Struct level validation
-	if err := validate.Struct(updateTeam); err != nil {
+	if err := validate.Struct(updated); err != nil {
 		render.ValidationError(w, r, err)
 		return
 	}
@@ -136,11 +136,7 @@ func (t *TeamHandler) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	updatedTeam, err := t.teamService.UpdateTeam(r.Context(), id, &generated.Team{
-		Name:        updateTeam.Name,
-		Description: updateTeam.Description,
-		Status:      updateTeam.Status,
-	})
+	updatedTeam, err := t.teamService.UpdateTeam(r.Context(), id, updated)
 
 	if err != nil {
 		if generated.IsNotFound(err) {

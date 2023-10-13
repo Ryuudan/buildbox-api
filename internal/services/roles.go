@@ -19,7 +19,8 @@ type RolesService interface {
 	CreateRole(ctx context.Context, newRole *generated.Role) (*generated.Role, error)
 	GetRoles(ctx context.Context, queryParams *render.QueryParams) ([]*generated.Role, int, error)
 	GetRoleByName(ctx context.Context, name string) (*generated.Role, error)
-	UpdateRole(ctx context.Context, id int, role *generated.Role) (*generated.Role, error)
+	GetRoleByID(ctx context.Context, id int) (*generated.Role, error)
+	UpdateRole(ctx context.Context, id int, updatedRole models.UpdateRolePayload) (*generated.Role, error)
 }
 
 type rolesService struct {
@@ -40,9 +41,30 @@ func (s *rolesService) CreateRole(ctx context.Context, newRole *generated.Role) 
 	role, err := s.client.Create().
 		SetAccountID(int(claims["account_id"].(float64))).
 		SetCreatedBy(int(claims["user_id"].(float64))).
-		SetNillableName(newRole.Name).
-		SetNillableDescription(newRole.Description).
+		SetName(newRole.Name).
+		SetDescription(newRole.Description).
 		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return role, nil
+}
+
+func (s *rolesService) GetRoleByID(ctx context.Context, id int) (*generated.Role, error) {
+	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("failed to get user claims from context")
+	}
+
+	role, err := s.client.
+		Query().
+		Where(
+			role.AccountIDEQ(int(claims["account_id"].(float64))),
+			role.IDEQ(id),
+		).
+		First(ctx)
 
 	if err != nil {
 		return nil, err
@@ -135,7 +157,7 @@ func (s *rolesService) GetRoleByName(ctx context.Context, name string) (*generat
 	return role, nil
 }
 
-func (s *rolesService) UpdateRole(ctx context.Context, id int, updateRole *generated.Role) (*generated.Role, error) {
+func (s *rolesService) UpdateRole(ctx context.Context, id int, updatedRole models.UpdateRolePayload) (*generated.Role, error) {
 
 	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
 	if !ok {
@@ -144,8 +166,8 @@ func (s *rolesService) UpdateRole(ctx context.Context, id int, updateRole *gener
 
 	role, err := s.client.
 		UpdateOneID(id).
-		SetNillableName(updateRole.Name).
-		SetNillableDescription(updateRole.Description).
+		SetNillableName(updatedRole.Name).
+		SetNillableDescription(updatedRole.Description).
 		SetUpdatedAt(time.Now()).
 		Where(
 			role.AccountIDEQ(int(claims["account_id"].(float64))),

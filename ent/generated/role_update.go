@@ -36,9 +36,25 @@ func (ru *RoleUpdate) SetAccountID(i int) *RoleUpdate {
 	return ru
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableAccountID(i *int) *RoleUpdate {
+	if i != nil {
+		ru.SetAccountID(*i)
+	}
+	return ru
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (ru *RoleUpdate) SetCreatedBy(i int) *RoleUpdate {
 	ru.mutation.SetCreatedBy(i)
+	return ru
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableCreatedBy(i *int) *RoleUpdate {
+	if i != nil {
+		ru.SetCreatedBy(*i)
+	}
 	return ru
 }
 
@@ -56,12 +72,6 @@ func (ru *RoleUpdate) SetNillableName(s *string) *RoleUpdate {
 	return ru
 }
 
-// ClearName clears the value of the "name" field.
-func (ru *RoleUpdate) ClearName() *RoleUpdate {
-	ru.mutation.ClearName()
-	return ru
-}
-
 // SetDescription sets the "description" field.
 func (ru *RoleUpdate) SetDescription(s string) *RoleUpdate {
 	ru.mutation.SetDescription(s)
@@ -73,12 +83,6 @@ func (ru *RoleUpdate) SetNillableDescription(s *string) *RoleUpdate {
 	if s != nil {
 		ru.SetDescription(*s)
 	}
-	return ru
-}
-
-// ClearDescription clears the value of the "description" field.
-func (ru *RoleUpdate) ClearDescription() *RoleUpdate {
-	ru.mutation.ClearDescription()
 	return ru
 }
 
@@ -182,14 +186,8 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ru.mutation.Name(); ok {
 		_spec.SetField(role.FieldName, field.TypeString, value)
 	}
-	if ru.mutation.NameCleared() {
-		_spec.ClearField(role.FieldName, field.TypeString)
-	}
 	if value, ok := ru.mutation.Description(); ok {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
-	}
-	if ru.mutation.DescriptionCleared() {
-		_spec.ClearField(role.FieldDescription, field.TypeString)
 	}
 	if value, ok := ru.mutation.UpdatedAt(); ok {
 		_spec.SetField(role.FieldUpdatedAt, field.TypeTime, value)
@@ -278,9 +276,25 @@ func (ruo *RoleUpdateOne) SetAccountID(i int) *RoleUpdateOne {
 	return ruo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableAccountID(i *int) *RoleUpdateOne {
+	if i != nil {
+		ruo.SetAccountID(*i)
+	}
+	return ruo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (ruo *RoleUpdateOne) SetCreatedBy(i int) *RoleUpdateOne {
 	ruo.mutation.SetCreatedBy(i)
+	return ruo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableCreatedBy(i *int) *RoleUpdateOne {
+	if i != nil {
+		ruo.SetCreatedBy(*i)
+	}
 	return ruo
 }
 
@@ -298,12 +312,6 @@ func (ruo *RoleUpdateOne) SetNillableName(s *string) *RoleUpdateOne {
 	return ruo
 }
 
-// ClearName clears the value of the "name" field.
-func (ruo *RoleUpdateOne) ClearName() *RoleUpdateOne {
-	ruo.mutation.ClearName()
-	return ruo
-}
-
 // SetDescription sets the "description" field.
 func (ruo *RoleUpdateOne) SetDescription(s string) *RoleUpdateOne {
 	ruo.mutation.SetDescription(s)
@@ -315,12 +323,6 @@ func (ruo *RoleUpdateOne) SetNillableDescription(s *string) *RoleUpdateOne {
 	if s != nil {
 		ruo.SetDescription(*s)
 	}
-	return ruo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (ruo *RoleUpdateOne) ClearDescription() *RoleUpdateOne {
-	ruo.mutation.ClearDescription()
 	return ruo
 }
 
@@ -454,14 +456,8 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 	if value, ok := ruo.mutation.Name(); ok {
 		_spec.SetField(role.FieldName, field.TypeString, value)
 	}
-	if ruo.mutation.NameCleared() {
-		_spec.ClearField(role.FieldName, field.TypeString)
-	}
 	if value, ok := ruo.mutation.Description(); ok {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
-	}
-	if ruo.mutation.DescriptionCleared() {
-		_spec.ClearField(role.FieldDescription, field.TypeString)
 	}
 	if value, ok := ruo.mutation.UpdatedAt(); ok {
 		_spec.SetField(role.FieldUpdatedAt, field.TypeTime, value)

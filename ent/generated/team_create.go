@@ -40,14 +40,6 @@ func (tc *TeamCreate) SetName(s string) *TeamCreate {
 	return tc
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tc *TeamCreate) SetNillableName(s *string) *TeamCreate {
-	if s != nil {
-		tc.SetName(*s)
-	}
-	return tc
-}
-
 // SetDescription sets the "description" field.
 func (tc *TeamCreate) SetDescription(s string) *TeamCreate {
 	tc.mutation.SetDescription(s)
@@ -184,6 +176,9 @@ func (tc *TeamCreate) check() error {
 	if _, ok := tc.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`generated: missing required field "Team.created_by"`)}
 	}
+	if _, ok := tc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Team.name"`)}
+	}
 	if v, ok := tc.mutation.Name(); ok {
 		if err := team.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Team.name": %w`, err)}
@@ -232,7 +227,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
-		_node.Name = &value
+		_node.Name = value
 	}
 	if value, ok := tc.mutation.Description(); ok {
 		_spec.SetField(team.FieldDescription, field.TypeString, value)

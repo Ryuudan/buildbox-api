@@ -206,16 +206,6 @@ func DescriptionHasSuffix(v string) predicate.Plan {
 	return predicate.Plan(sql.FieldHasSuffix(FieldDescription, v))
 }
 
-// DescriptionIsNil applies the IsNil predicate on the "description" field.
-func DescriptionIsNil() predicate.Plan {
-	return predicate.Plan(sql.FieldIsNull(FieldDescription))
-}
-
-// DescriptionNotNil applies the NotNil predicate on the "description" field.
-func DescriptionNotNil() predicate.Plan {
-	return predicate.Plan(sql.FieldNotNull(FieldDescription))
-}
-
 // DescriptionEqualFold applies the EqualFold predicate on the "description" field.
 func DescriptionEqualFold(v string) predicate.Plan {
 	return predicate.Plan(sql.FieldEqualFold(FieldDescription, v))

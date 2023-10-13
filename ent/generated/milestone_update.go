@@ -38,9 +38,25 @@ func (mu *MilestoneUpdate) SetAccountID(i int) *MilestoneUpdate {
 	return mu
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (mu *MilestoneUpdate) SetNillableAccountID(i *int) *MilestoneUpdate {
+	if i != nil {
+		mu.SetAccountID(*i)
+	}
+	return mu
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (mu *MilestoneUpdate) SetCreatedBy(i int) *MilestoneUpdate {
 	mu.mutation.SetCreatedBy(i)
+	return mu
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (mu *MilestoneUpdate) SetNillableCreatedBy(i *int) *MilestoneUpdate {
+	if i != nil {
+		mu.SetCreatedBy(*i)
+	}
 	return mu
 }
 
@@ -50,9 +66,25 @@ func (mu *MilestoneUpdate) SetProjectID(i int) *MilestoneUpdate {
 	return mu
 }
 
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (mu *MilestoneUpdate) SetNillableProjectID(i *int) *MilestoneUpdate {
+	if i != nil {
+		mu.SetProjectID(*i)
+	}
+	return mu
+}
+
 // SetTitle sets the "title" field.
 func (mu *MilestoneUpdate) SetTitle(s string) *MilestoneUpdate {
 	mu.mutation.SetTitle(s)
+	return mu
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (mu *MilestoneUpdate) SetNillableTitle(s *string) *MilestoneUpdate {
+	if s != nil {
+		mu.SetTitle(*s)
+	}
 	return mu
 }
 
@@ -62,9 +94,25 @@ func (mu *MilestoneUpdate) SetDescription(s string) *MilestoneUpdate {
 	return mu
 }
 
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (mu *MilestoneUpdate) SetNillableDescription(s *string) *MilestoneUpdate {
+	if s != nil {
+		mu.SetDescription(*s)
+	}
+	return mu
+}
+
 // SetEndDate sets the "end_date" field.
 func (mu *MilestoneUpdate) SetEndDate(t time.Time) *MilestoneUpdate {
 	mu.mutation.SetEndDate(t)
+	return mu
+}
+
+// SetNillableEndDate sets the "end_date" field if the given value is not nil.
+func (mu *MilestoneUpdate) SetNillableEndDate(t *time.Time) *MilestoneUpdate {
+	if t != nil {
+		mu.SetEndDate(*t)
+	}
 	return mu
 }
 
@@ -421,9 +469,25 @@ func (muo *MilestoneUpdateOne) SetAccountID(i int) *MilestoneUpdateOne {
 	return muo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (muo *MilestoneUpdateOne) SetNillableAccountID(i *int) *MilestoneUpdateOne {
+	if i != nil {
+		muo.SetAccountID(*i)
+	}
+	return muo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (muo *MilestoneUpdateOne) SetCreatedBy(i int) *MilestoneUpdateOne {
 	muo.mutation.SetCreatedBy(i)
+	return muo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (muo *MilestoneUpdateOne) SetNillableCreatedBy(i *int) *MilestoneUpdateOne {
+	if i != nil {
+		muo.SetCreatedBy(*i)
+	}
 	return muo
 }
 
@@ -433,9 +497,25 @@ func (muo *MilestoneUpdateOne) SetProjectID(i int) *MilestoneUpdateOne {
 	return muo
 }
 
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (muo *MilestoneUpdateOne) SetNillableProjectID(i *int) *MilestoneUpdateOne {
+	if i != nil {
+		muo.SetProjectID(*i)
+	}
+	return muo
+}
+
 // SetTitle sets the "title" field.
 func (muo *MilestoneUpdateOne) SetTitle(s string) *MilestoneUpdateOne {
 	muo.mutation.SetTitle(s)
+	return muo
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (muo *MilestoneUpdateOne) SetNillableTitle(s *string) *MilestoneUpdateOne {
+	if s != nil {
+		muo.SetTitle(*s)
+	}
 	return muo
 }
 
@@ -445,9 +525,25 @@ func (muo *MilestoneUpdateOne) SetDescription(s string) *MilestoneUpdateOne {
 	return muo
 }
 
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (muo *MilestoneUpdateOne) SetNillableDescription(s *string) *MilestoneUpdateOne {
+	if s != nil {
+		muo.SetDescription(*s)
+	}
+	return muo
+}
+
 // SetEndDate sets the "end_date" field.
 func (muo *MilestoneUpdateOne) SetEndDate(t time.Time) *MilestoneUpdateOne {
 	muo.mutation.SetEndDate(t)
+	return muo
+}
+
+// SetNillableEndDate sets the "end_date" field if the given value is not nil.
+func (muo *MilestoneUpdateOne) SetNillableEndDate(t *time.Time) *MilestoneUpdateOne {
+	if t != nil {
+		muo.SetEndDate(*t)
+	}
 	return muo
 }
 

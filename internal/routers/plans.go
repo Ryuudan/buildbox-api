@@ -13,7 +13,8 @@ func V1Plans(client *generated.Client, router chi.Router) {
 	planHandler := handlers.NewPlanHandler(planService)
 
 	router.Route("/plans", func(r chi.Router) {
-		r.Post("/", planHandler.CreatePlan)
+		r.Get("/{id}", planHandler.GetPlan)
+		r.Patch("/{id}", planHandler.UpdatePlan)
 	})
 
 }
@@ -26,5 +27,6 @@ func V1PublicPlans(client *generated.Client, router chi.Router) {
 	router.Route("/plans", func(r chi.Router) {
 		r.Get("/", planHandler.GetPlans)
 		r.Post("/", planHandler.CreatePlan)
+
 	})
 }

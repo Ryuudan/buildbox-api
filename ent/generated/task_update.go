@@ -39,15 +39,39 @@ func (tu *TaskUpdate) SetAccountID(i int) *TaskUpdate {
 	return tu
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableAccountID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetAccountID(*i)
+	}
+	return tu
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (tu *TaskUpdate) SetCreatedBy(i int) *TaskUpdate {
 	tu.mutation.SetCreatedBy(i)
 	return tu
 }
 
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableCreatedBy(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetCreatedBy(*i)
+	}
+	return tu
+}
+
 // SetProjectID sets the "project_id" field.
 func (tu *TaskUpdate) SetProjectID(i int) *TaskUpdate {
 	tu.mutation.SetProjectID(i)
+	return tu
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableProjectID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetProjectID(*i)
+	}
 	return tu
 }
 
@@ -97,9 +121,25 @@ func (tu *TaskUpdate) SetTitle(s string) *TaskUpdate {
 	return tu
 }
 
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableTitle(s *string) *TaskUpdate {
+	if s != nil {
+		tu.SetTitle(*s)
+	}
+	return tu
+}
+
 // SetDescription sets the "description" field.
 func (tu *TaskUpdate) SetDescription(s string) *TaskUpdate {
 	tu.mutation.SetDescription(s)
+	return tu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableDescription(s *string) *TaskUpdate {
+	if s != nil {
+		tu.SetDescription(*s)
+	}
 	return tu
 }
 
@@ -480,15 +520,39 @@ func (tuo *TaskUpdateOne) SetAccountID(i int) *TaskUpdateOne {
 	return tuo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableAccountID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetAccountID(*i)
+	}
+	return tuo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (tuo *TaskUpdateOne) SetCreatedBy(i int) *TaskUpdateOne {
 	tuo.mutation.SetCreatedBy(i)
 	return tuo
 }
 
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableCreatedBy(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetCreatedBy(*i)
+	}
+	return tuo
+}
+
 // SetProjectID sets the "project_id" field.
 func (tuo *TaskUpdateOne) SetProjectID(i int) *TaskUpdateOne {
 	tuo.mutation.SetProjectID(i)
+	return tuo
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableProjectID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetProjectID(*i)
+	}
 	return tuo
 }
 
@@ -538,9 +602,25 @@ func (tuo *TaskUpdateOne) SetTitle(s string) *TaskUpdateOne {
 	return tuo
 }
 
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableTitle(s *string) *TaskUpdateOne {
+	if s != nil {
+		tuo.SetTitle(*s)
+	}
+	return tuo
+}
+
 // SetDescription sets the "description" field.
 func (tuo *TaskUpdateOne) SetDescription(s string) *TaskUpdateOne {
 	tuo.mutation.SetDescription(s)
+	return tuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableDescription(s *string) *TaskUpdateOne {
+	if s != nil {
+		tuo.SetDescription(*s)
+	}
 	return tuo
 }
 

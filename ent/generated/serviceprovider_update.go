@@ -36,9 +36,25 @@ func (spu *ServiceProviderUpdate) SetAccountID(i int) *ServiceProviderUpdate {
 	return spu
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (spu *ServiceProviderUpdate) SetNillableAccountID(i *int) *ServiceProviderUpdate {
+	if i != nil {
+		spu.SetAccountID(*i)
+	}
+	return spu
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (spu *ServiceProviderUpdate) SetCreatedBy(i int) *ServiceProviderUpdate {
 	spu.mutation.SetCreatedBy(i)
+	return spu
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (spu *ServiceProviderUpdate) SetNillableCreatedBy(i *int) *ServiceProviderUpdate {
+	if i != nil {
+		spu.SetCreatedBy(*i)
+	}
 	return spu
 }
 
@@ -48,9 +64,25 @@ func (spu *ServiceProviderUpdate) SetName(s string) *ServiceProviderUpdate {
 	return spu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (spu *ServiceProviderUpdate) SetNillableName(s *string) *ServiceProviderUpdate {
+	if s != nil {
+		spu.SetName(*s)
+	}
+	return spu
+}
+
 // SetEmail sets the "email" field.
 func (spu *ServiceProviderUpdate) SetEmail(s string) *ServiceProviderUpdate {
 	spu.mutation.SetEmail(s)
+	return spu
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (spu *ServiceProviderUpdate) SetNillableEmail(s *string) *ServiceProviderUpdate {
+	if s != nil {
+		spu.SetEmail(*s)
+	}
 	return spu
 }
 
@@ -97,6 +129,14 @@ func (spu *ServiceProviderUpdate) ClearStatus() *ServiceProviderUpdate {
 // SetPhoneNumber sets the "phone_number" field.
 func (spu *ServiceProviderUpdate) SetPhoneNumber(s string) *ServiceProviderUpdate {
 	spu.mutation.SetPhoneNumber(s)
+	return spu
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (spu *ServiceProviderUpdate) SetNillablePhoneNumber(s *string) *ServiceProviderUpdate {
+	if s != nil {
+		spu.SetPhoneNumber(*s)
+	}
 	return spu
 }
 
@@ -327,9 +367,25 @@ func (spuo *ServiceProviderUpdateOne) SetAccountID(i int) *ServiceProviderUpdate
 	return spuo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (spuo *ServiceProviderUpdateOne) SetNillableAccountID(i *int) *ServiceProviderUpdateOne {
+	if i != nil {
+		spuo.SetAccountID(*i)
+	}
+	return spuo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (spuo *ServiceProviderUpdateOne) SetCreatedBy(i int) *ServiceProviderUpdateOne {
 	spuo.mutation.SetCreatedBy(i)
+	return spuo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (spuo *ServiceProviderUpdateOne) SetNillableCreatedBy(i *int) *ServiceProviderUpdateOne {
+	if i != nil {
+		spuo.SetCreatedBy(*i)
+	}
 	return spuo
 }
 
@@ -339,9 +395,25 @@ func (spuo *ServiceProviderUpdateOne) SetName(s string) *ServiceProviderUpdateOn
 	return spuo
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (spuo *ServiceProviderUpdateOne) SetNillableName(s *string) *ServiceProviderUpdateOne {
+	if s != nil {
+		spuo.SetName(*s)
+	}
+	return spuo
+}
+
 // SetEmail sets the "email" field.
 func (spuo *ServiceProviderUpdateOne) SetEmail(s string) *ServiceProviderUpdateOne {
 	spuo.mutation.SetEmail(s)
+	return spuo
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (spuo *ServiceProviderUpdateOne) SetNillableEmail(s *string) *ServiceProviderUpdateOne {
+	if s != nil {
+		spuo.SetEmail(*s)
+	}
 	return spuo
 }
 
@@ -388,6 +460,14 @@ func (spuo *ServiceProviderUpdateOne) ClearStatus() *ServiceProviderUpdateOne {
 // SetPhoneNumber sets the "phone_number" field.
 func (spuo *ServiceProviderUpdateOne) SetPhoneNumber(s string) *ServiceProviderUpdateOne {
 	spuo.mutation.SetPhoneNumber(s)
+	return spuo
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (spuo *ServiceProviderUpdateOne) SetNillablePhoneNumber(s *string) *ServiceProviderUpdateOne {
+	if s != nil {
+		spuo.SetPhoneNumber(*s)
+	}
 	return spuo
 }
 

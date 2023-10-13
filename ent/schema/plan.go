@@ -22,11 +22,10 @@ func (Plan) Fields() []ent.Field {
 			StructTag(`json:"name" validate:"required,min=3"`).
 			Unique(),
 		field.Text("description").
-			StructTag(`json:"description" validate:"required,min=10"`).
-			Optional(),
+			StructTag(`json:"description" validate:"required,min=10"`),
 		field.Float("price").
-			Nillable().
 			StructTag(`json:"price" validate:"required,gte=0"`).
+			Nillable().
 			Default(0),
 		field.Time("updated_at").
 			Optional().

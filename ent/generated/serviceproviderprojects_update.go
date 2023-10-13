@@ -35,6 +35,14 @@ func (sppu *ServiceProviderProjectsUpdate) SetCreatedBy(i int) *ServiceProviderP
 	return sppu
 }
 
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (sppu *ServiceProviderProjectsUpdate) SetNillableCreatedBy(i *int) *ServiceProviderProjectsUpdate {
+	if i != nil {
+		sppu.SetCreatedBy(*i)
+	}
+	return sppu
+}
+
 // AddCreatedBy adds i to the "created_by" field.
 func (sppu *ServiceProviderProjectsUpdate) AddCreatedBy(i int) *ServiceProviderProjectsUpdate {
 	sppu.mutation.AddCreatedBy(i)
@@ -213,6 +221,14 @@ type ServiceProviderProjectsUpdateOne struct {
 func (sppuo *ServiceProviderProjectsUpdateOne) SetCreatedBy(i int) *ServiceProviderProjectsUpdateOne {
 	sppuo.mutation.ResetCreatedBy()
 	sppuo.mutation.SetCreatedBy(i)
+	return sppuo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (sppuo *ServiceProviderProjectsUpdateOne) SetNillableCreatedBy(i *int) *ServiceProviderProjectsUpdateOne {
+	if i != nil {
+		sppuo.SetCreatedBy(*i)
+	}
 	return sppuo
 }
 

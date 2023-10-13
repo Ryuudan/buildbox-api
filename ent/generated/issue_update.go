@@ -38,9 +38,25 @@ func (iu *IssueUpdate) SetAccountID(i int) *IssueUpdate {
 	return iu
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (iu *IssueUpdate) SetNillableAccountID(i *int) *IssueUpdate {
+	if i != nil {
+		iu.SetAccountID(*i)
+	}
+	return iu
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (iu *IssueUpdate) SetCreatedBy(i int) *IssueUpdate {
 	iu.mutation.SetCreatedBy(i)
+	return iu
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (iu *IssueUpdate) SetNillableCreatedBy(i *int) *IssueUpdate {
+	if i != nil {
+		iu.SetCreatedBy(*i)
+	}
 	return iu
 }
 
@@ -50,15 +66,39 @@ func (iu *IssueUpdate) SetProjectID(i int) *IssueUpdate {
 	return iu
 }
 
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (iu *IssueUpdate) SetNillableProjectID(i *int) *IssueUpdate {
+	if i != nil {
+		iu.SetProjectID(*i)
+	}
+	return iu
+}
+
 // SetTitle sets the "title" field.
 func (iu *IssueUpdate) SetTitle(s string) *IssueUpdate {
 	iu.mutation.SetTitle(s)
 	return iu
 }
 
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (iu *IssueUpdate) SetNillableTitle(s *string) *IssueUpdate {
+	if s != nil {
+		iu.SetTitle(*s)
+	}
+	return iu
+}
+
 // SetDescription sets the "description" field.
 func (iu *IssueUpdate) SetDescription(s string) *IssueUpdate {
 	iu.mutation.SetDescription(s)
+	return iu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (iu *IssueUpdate) SetNillableDescription(s *string) *IssueUpdate {
+	if s != nil {
+		iu.SetDescription(*s)
+	}
 	return iu
 }
 
@@ -412,9 +452,25 @@ func (iuo *IssueUpdateOne) SetAccountID(i int) *IssueUpdateOne {
 	return iuo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (iuo *IssueUpdateOne) SetNillableAccountID(i *int) *IssueUpdateOne {
+	if i != nil {
+		iuo.SetAccountID(*i)
+	}
+	return iuo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (iuo *IssueUpdateOne) SetCreatedBy(i int) *IssueUpdateOne {
 	iuo.mutation.SetCreatedBy(i)
+	return iuo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (iuo *IssueUpdateOne) SetNillableCreatedBy(i *int) *IssueUpdateOne {
+	if i != nil {
+		iuo.SetCreatedBy(*i)
+	}
 	return iuo
 }
 
@@ -424,15 +480,39 @@ func (iuo *IssueUpdateOne) SetProjectID(i int) *IssueUpdateOne {
 	return iuo
 }
 
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (iuo *IssueUpdateOne) SetNillableProjectID(i *int) *IssueUpdateOne {
+	if i != nil {
+		iuo.SetProjectID(*i)
+	}
+	return iuo
+}
+
 // SetTitle sets the "title" field.
 func (iuo *IssueUpdateOne) SetTitle(s string) *IssueUpdateOne {
 	iuo.mutation.SetTitle(s)
 	return iuo
 }
 
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (iuo *IssueUpdateOne) SetNillableTitle(s *string) *IssueUpdateOne {
+	if s != nil {
+		iuo.SetTitle(*s)
+	}
+	return iuo
+}
+
 // SetDescription sets the "description" field.
 func (iuo *IssueUpdateOne) SetDescription(s string) *IssueUpdateOne {
 	iuo.mutation.SetDescription(s)
+	return iuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (iuo *IssueUpdateOne) SetNillableDescription(s *string) *IssueUpdateOne {
+	if s != nil {
+		iuo.SetDescription(*s)
+	}
 	return iuo
 }
 

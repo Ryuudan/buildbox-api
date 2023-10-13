@@ -35,6 +35,14 @@ func (pu *PlanUpdate) SetName(s string) *PlanUpdate {
 	return pu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (pu *PlanUpdate) SetNillableName(s *string) *PlanUpdate {
+	if s != nil {
+		pu.SetName(*s)
+	}
+	return pu
+}
+
 // SetDescription sets the "description" field.
 func (pu *PlanUpdate) SetDescription(s string) *PlanUpdate {
 	pu.mutation.SetDescription(s)
@@ -46,12 +54,6 @@ func (pu *PlanUpdate) SetNillableDescription(s *string) *PlanUpdate {
 	if s != nil {
 		pu.SetDescription(*s)
 	}
-	return pu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (pu *PlanUpdate) ClearDescription() *PlanUpdate {
-	pu.mutation.ClearDescription()
 	return pu
 }
 
@@ -192,9 +194,6 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Description(); ok {
 		_spec.SetField(plan.FieldDescription, field.TypeString, value)
 	}
-	if pu.mutation.DescriptionCleared() {
-		_spec.ClearField(plan.FieldDescription, field.TypeString)
-	}
 	if value, ok := pu.mutation.Price(); ok {
 		_spec.SetField(plan.FieldPrice, field.TypeFloat64, value)
 	}
@@ -281,6 +280,14 @@ func (puo *PlanUpdateOne) SetName(s string) *PlanUpdateOne {
 	return puo
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (puo *PlanUpdateOne) SetNillableName(s *string) *PlanUpdateOne {
+	if s != nil {
+		puo.SetName(*s)
+	}
+	return puo
+}
+
 // SetDescription sets the "description" field.
 func (puo *PlanUpdateOne) SetDescription(s string) *PlanUpdateOne {
 	puo.mutation.SetDescription(s)
@@ -292,12 +299,6 @@ func (puo *PlanUpdateOne) SetNillableDescription(s *string) *PlanUpdateOne {
 	if s != nil {
 		puo.SetDescription(*s)
 	}
-	return puo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (puo *PlanUpdateOne) ClearDescription() *PlanUpdateOne {
-	puo.mutation.ClearDescription()
 	return puo
 }
 
@@ -467,9 +468,6 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	}
 	if value, ok := puo.mutation.Description(); ok {
 		_spec.SetField(plan.FieldDescription, field.TypeString, value)
-	}
-	if puo.mutation.DescriptionCleared() {
-		_spec.ClearField(plan.FieldDescription, field.TypeString)
 	}
 	if value, ok := puo.mutation.Price(); ok {
 		_spec.SetField(plan.FieldPrice, field.TypeFloat64, value)

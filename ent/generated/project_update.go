@@ -40,9 +40,25 @@ func (pu *ProjectUpdate) SetAccountID(i int) *ProjectUpdate {
 	return pu
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableAccountID(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetAccountID(*i)
+	}
+	return pu
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (pu *ProjectUpdate) SetCreatedBy(i int) *ProjectUpdate {
 	pu.mutation.SetCreatedBy(i)
+	return pu
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableCreatedBy(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetCreatedBy(*i)
+	}
 	return pu
 }
 
@@ -103,6 +119,14 @@ func (pu *ProjectUpdate) ClearManagerID() *ProjectUpdate {
 // SetName sets the "name" field.
 func (pu *ProjectUpdate) SetName(s string) *ProjectUpdate {
 	pu.mutation.SetName(s)
+	return pu
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableName(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetName(*s)
+	}
 	return pu
 }
 
@@ -868,9 +892,25 @@ func (puo *ProjectUpdateOne) SetAccountID(i int) *ProjectUpdateOne {
 	return puo
 }
 
+// SetNillableAccountID sets the "account_id" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableAccountID(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetAccountID(*i)
+	}
+	return puo
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (puo *ProjectUpdateOne) SetCreatedBy(i int) *ProjectUpdateOne {
 	puo.mutation.SetCreatedBy(i)
+	return puo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableCreatedBy(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetCreatedBy(*i)
+	}
 	return puo
 }
 
@@ -931,6 +971,14 @@ func (puo *ProjectUpdateOne) ClearManagerID() *ProjectUpdateOne {
 // SetName sets the "name" field.
 func (puo *ProjectUpdateOne) SetName(s string) *ProjectUpdateOne {
 	puo.mutation.SetName(s)
+	return puo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableName(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetName(*s)
+	}
 	return puo
 }
 

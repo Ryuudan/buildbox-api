@@ -41,25 +41,9 @@ func (rc *RoleCreate) SetName(s string) *RoleCreate {
 	return rc
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (rc *RoleCreate) SetNillableName(s *string) *RoleCreate {
-	if s != nil {
-		rc.SetName(*s)
-	}
-	return rc
-}
-
 // SetDescription sets the "description" field.
 func (rc *RoleCreate) SetDescription(s string) *RoleCreate {
 	rc.mutation.SetDescription(s)
-	return rc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (rc *RoleCreate) SetNillableDescription(s *string) *RoleCreate {
-	if s != nil {
-		rc.SetDescription(*s)
-	}
 	return rc
 }
 
@@ -178,6 +162,12 @@ func (rc *RoleCreate) check() error {
 	if _, ok := rc.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`generated: missing required field "Role.created_by"`)}
 	}
+	if _, ok := rc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Role.name"`)}
+	}
+	if _, ok := rc.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`generated: missing required field "Role.description"`)}
+	}
 	if _, ok := rc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`generated: missing required field "Role.updated_at"`)}
 	}
@@ -221,11 +211,11 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 	)
 	if value, ok := rc.mutation.Name(); ok {
 		_spec.SetField(role.FieldName, field.TypeString, value)
-		_node.Name = &value
+		_node.Name = value
 	}
 	if value, ok := rc.mutation.Description(); ok {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
-		_node.Description = &value
+		_node.Description = value
 	}
 	if value, ok := rc.mutation.UpdatedAt(); ok {
 		_spec.SetField(role.FieldUpdatedAt, field.TypeTime, value)

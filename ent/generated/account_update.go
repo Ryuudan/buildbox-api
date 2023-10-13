@@ -43,6 +43,14 @@ func (au *AccountUpdate) SetName(s string) *AccountUpdate {
 	return au
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (au *AccountUpdate) SetNillableName(s *string) *AccountUpdate {
+	if s != nil {
+		au.SetName(*s)
+	}
+	return au
+}
+
 // SetEmail sets the "email" field.
 func (au *AccountUpdate) SetEmail(s string) *AccountUpdate {
 	au.mutation.SetEmail(s)
@@ -66,6 +74,14 @@ func (au *AccountUpdate) ClearEmail() *AccountUpdate {
 // SetPhoneNumber sets the "phone_number" field.
 func (au *AccountUpdate) SetPhoneNumber(s string) *AccountUpdate {
 	au.mutation.SetPhoneNumber(s)
+	return au
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (au *AccountUpdate) SetNillablePhoneNumber(s *string) *AccountUpdate {
+	if s != nil {
+		au.SetPhoneNumber(*s)
+	}
 	return au
 }
 
@@ -929,6 +945,14 @@ func (auo *AccountUpdateOne) SetName(s string) *AccountUpdateOne {
 	return auo
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (auo *AccountUpdateOne) SetNillableName(s *string) *AccountUpdateOne {
+	if s != nil {
+		auo.SetName(*s)
+	}
+	return auo
+}
+
 // SetEmail sets the "email" field.
 func (auo *AccountUpdateOne) SetEmail(s string) *AccountUpdateOne {
 	auo.mutation.SetEmail(s)
@@ -952,6 +976,14 @@ func (auo *AccountUpdateOne) ClearEmail() *AccountUpdateOne {
 // SetPhoneNumber sets the "phone_number" field.
 func (auo *AccountUpdateOne) SetPhoneNumber(s string) *AccountUpdateOne {
 	auo.mutation.SetPhoneNumber(s)
+	return auo
+}
+
+// SetNillablePhoneNumber sets the "phone_number" field if the given value is not nil.
+func (auo *AccountUpdateOne) SetNillablePhoneNumber(s *string) *AccountUpdateOne {
+	if s != nil {
+		auo.SetPhoneNumber(*s)
+	}
 	return auo
 }
 

@@ -19,6 +19,7 @@ func V1Roles(client *generated.Client, router chi.Router) {
 	router.Route("/roles", func(r chi.Router) {
 		r.Post("/", handler.CreateRole)
 		r.Get("/", handler.GetRoles)
+		r.Get("/{id}", handler.GetRole)
 		r.Patch("/{id}", handler.UpdateRole)
 	})
 }

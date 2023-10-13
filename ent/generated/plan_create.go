@@ -34,14 +34,6 @@ func (pc *PlanCreate) SetDescription(s string) *PlanCreate {
 	return pc
 }
 
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (pc *PlanCreate) SetNillableDescription(s *string) *PlanCreate {
-	if s != nil {
-		pc.SetDescription(*s)
-	}
-	return pc
-}
-
 // SetPrice sets the "price" field.
 func (pc *PlanCreate) SetPrice(f float64) *PlanCreate {
 	pc.mutation.SetPrice(f)
@@ -175,6 +167,9 @@ func (pc *PlanCreate) check() error {
 		if err := plan.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Plan.name": %w`, err)}
 		}
+	}
+	if _, ok := pc.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`generated: missing required field "Plan.description"`)}
 	}
 	if _, ok := pc.mutation.Price(); !ok {
 		return &ValidationError{Name: "price", err: errors.New(`generated: missing required field "Plan.price"`)}
