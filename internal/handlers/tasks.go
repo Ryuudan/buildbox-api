@@ -76,6 +76,8 @@ func (t *TaskHandlers) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
+
 	// Struct level validation
 	if err := validate.Struct(task); err != nil {
 		render.ValidationError(w, r, err)
@@ -114,8 +116,6 @@ func (t *TaskHandlers) CreateTask(w http.ResponseWriter, r *http.Request) {
 		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	defer r.Body.Close()
 
 	render.JSON(w, http.StatusCreated, newTask)
 }

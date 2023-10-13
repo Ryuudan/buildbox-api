@@ -36,7 +36,7 @@ func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
-
+	defer r.Body.Close()
 	// Struct level validation
 	if err := validate.Struct(plan); err != nil {
 		render.ValidationError(w, r, err)
@@ -65,7 +65,6 @@ func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
 	render.JSON(w, http.StatusCreated, newPlan)
 }
 
@@ -126,6 +125,8 @@ func (p *PlanHandler) UpdatePlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
+
 	// Struct level validation
 	if err := validate.Struct(updated); err != nil {
 		render.ValidationError(w, r, err)
@@ -161,6 +162,5 @@ func (p *PlanHandler) UpdatePlan(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	defer r.Body.Close()
 	render.JSON(w, http.StatusOK, plan)
 }

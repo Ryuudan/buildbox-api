@@ -43,7 +43,7 @@ func (a *AuthHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
-
+	defer r.Body.Close()
 	// Struct level validation
 	if err := validate.Struct(account); err != nil {
 		render.ValidationError(w, r, err)
@@ -126,7 +126,6 @@ func (a *AuthHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
 	render.JSON(w, http.StatusCreated, newAccount)
 }
 

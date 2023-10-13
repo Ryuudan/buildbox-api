@@ -122,6 +122,8 @@ func (t *TeamHandler) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
+
 	// Struct level validation
 	if err := validate.Struct(updated); err != nil {
 		render.ValidationError(w, r, err)
@@ -133,8 +135,6 @@ func (t *TeamHandler) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 		render.CustomValidationError(w, r, validationErrors)
 		return
 	}
-
-	defer r.Body.Close()
 
 	updatedTeam, err := t.teamService.UpdateTeam(r.Context(), id, updated)
 

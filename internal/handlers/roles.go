@@ -37,6 +37,7 @@ func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
 	// Struct level validation
 	if err := validate.Struct(role); err != nil {
 		render.ValidationError(w, r, err)
@@ -68,7 +69,6 @@ func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
 	render.JSON(w, http.StatusCreated, newRole)
 }
 
@@ -128,6 +128,8 @@ func (ro *RolesHandlers) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer r.Body.Close()
+
 	// Struct level validation
 	if err := validate.Struct(payload); err != nil {
 		render.ValidationError(w, r, err)
@@ -139,8 +141,6 @@ func (ro *RolesHandlers) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		render.CustomValidationError(w, r, validationErrors)
 		return
 	}
-
-	defer r.Body.Close()
 
 	updatedRole, err := ro.rolesService.UpdateRole(r.Context(), id, payload)
 

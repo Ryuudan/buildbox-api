@@ -34,7 +34,7 @@ func (i *IssueHandlers) CreateIssue(w http.ResponseWriter, r *http.Request) {
 		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
-
+	defer r.Body.Close()
 	// Struct level validation
 	if err := validate.Struct(issue); err != nil {
 		render.ValidationError(w, r, err)
@@ -63,7 +63,6 @@ func (i *IssueHandlers) CreateIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
 	render.JSON(w, http.StatusCreated, newIssue)
 }
 

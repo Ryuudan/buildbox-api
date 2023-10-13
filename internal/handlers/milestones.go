@@ -37,6 +37,8 @@ func (m *MilestoneHandler) CreateMilestone(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	defer r.Body.Close()
+
 	// Struct level validation
 	if err := validate.Struct(milestone); err != nil {
 		render.ValidationError(w, r, err)
@@ -64,8 +66,6 @@ func (m *MilestoneHandler) CreateMilestone(w http.ResponseWriter, r *http.Reques
 		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	defer r.Body.Close()
 
 	render.JSON(w, http.StatusCreated, newMilestone)
 }
