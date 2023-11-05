@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Pyakz/buildbox-api/constants"
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
-	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -111,7 +111,7 @@ func (a *AuthHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		Name:        "Super Admin",
 		Description: "Super Admin of the " + account.Name + " account",
 		AccountID:   newAccount.ID,
-		Permissions: utils.DEFAULT_OWNER_PERMISSIONS,
+		Permissions: constants.DEFAULT_OWNER_PERMISSIONS,
 	})
 
 	if err != nil {
