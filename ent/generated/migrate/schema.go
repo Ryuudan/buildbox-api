@@ -166,6 +166,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "permissions", Type: field.TypeJSON},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
 		{Name: "created_by", Type: field.TypeInt},
@@ -178,13 +179,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "roles_accounts_roles",
-				Columns:    []*schema.Column{RolesColumns[6]},
+				Columns:    []*schema.Column{RolesColumns[7]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "roles_users_roles",
-				Columns:    []*schema.Column{RolesColumns[7]},
+				Columns:    []*schema.Column{RolesColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -374,6 +375,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "account_id", Type: field.TypeInt},
+		{Name: "role_id", Type: field.TypeInt},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -385,6 +387,12 @@ var (
 				Symbol:     "users_accounts_users",
 				Columns:    []*schema.Column{UsersColumns[11]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "users_roles_users",
+				Columns:    []*schema.Column{UsersColumns[12]},
+				RefColumns: []*schema.Column{RolesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -429,4 +437,5 @@ func init() {
 	TeamsTable.ForeignKeys[0].RefTable = AccountsTable
 	TeamsTable.ForeignKeys[1].RefTable = ProjectsTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable
+	UsersTable.ForeignKeys[1].RefTable = RolesTable
 }

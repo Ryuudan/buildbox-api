@@ -16,6 +16,7 @@ type CustomClaims struct {
 	UserID         int                    `json:"user_id"`
 	SubscriptionID int                    `json:"subscription_id"`
 	PlanID         int                    `json:"plan_id"`
+	RoleID         int                    `json:"role_id"`
 	UserUUID       uuid.UUID              `json:"user_uuid"`
 	Email          string                 `json:"email"`
 	FirstName      string                 `json:"first_name"`

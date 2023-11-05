@@ -18,6 +18,7 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("account_id"),
+		field.Int("role_id"),
 		field.String("first_name").
 			StructTag(`json:"first_name" validate:"required,min=1"`),
 		field.String("last_name").StructTag(`json:"last_name" validate:"required,min=1"`),
@@ -57,6 +58,11 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("account", Account.Type).
 			Field("account_id").
+			Ref("users").
+			Required().
+			Unique(),
+		edge.From("role", Role.Type).
+			Field("role_id").
 			Ref("users").
 			Required().
 			Unique(),

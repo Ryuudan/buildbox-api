@@ -2,7 +2,10 @@ package render
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"path"
+	"runtime"
 	"time"
 )
 
@@ -10,8 +13,8 @@ func Error(w http.ResponseWriter, r *http.Request, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
-	// _, file, line, _ := runtime.Caller(1)
-	// errorLocation := fmt.Sprintf("%s:%d", path.Base(file), line)
+	_, file, line, _ := runtime.Caller(1)
+	errorLocation := fmt.Sprintf("%s:%d", path.Base(file), line)
 	// Create a buffer to hold the JSON encoding.
 
 	var buf []byte
@@ -24,7 +27,7 @@ func Error(w http.ResponseWriter, r *http.Request, code int, message string) {
 			"user_agent":       r.Header.Get("User-Agent"),
 			"query_parameters": r.URL.Query(),
 			"time_stamp":       time.Now(),
-			// "location":         errorLocation,
+			"location":         errorLocation,
 		},
 	}
 

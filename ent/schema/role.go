@@ -28,6 +28,8 @@ func (Role) Fields() []ent.Field {
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
+		field.JSON("permissions", []string{}).
+			StructTag(`json:"permissions" validate:"required"`),
 		field.UUID("uuid", uuid.UUID{}).
 			Immutable().
 			Default(uuid.New),
@@ -47,5 +49,7 @@ func (Role) Edges() []ent.Edge {
 			Ref("roles").
 			Required().
 			Unique(),
+
+		edge.To("users", User.Type),
 	}
 }

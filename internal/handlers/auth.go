@@ -10,6 +10,7 @@ import (
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
+	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -43,6 +44,7 @@ func (a *AuthHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		render.Error(w, r, http.StatusUnprocessableEntity, "Invalid JSON: "+err.Error())
 		return
 	}
+
 	defer r.Body.Close()
 	// Struct level validation
 	if err := validate.Struct(account); err != nil {
@@ -105,6 +107,18 @@ func (a *AuthHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	role, err := a.roleService.CreateRole(r.Context(), &generated.Role{
+		Name:        "Super Admin",
+		Description: "Super Admin of the " + account.Name + " account",
+		AccountID:   newAccount.ID,
+		Permissions: utils.DEFAULT_OWNER_PERMISSIONS,
+	})
+
+	if err != nil {
+		render.Error(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	password, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	if err != nil {
 		render.Error(w, r, http.StatusBadRequest, err.Error())
@@ -119,6 +133,7 @@ func (a *AuthHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		FirstName:  account.FirstName,
 		LastName:   account.LastName,
 		MiddleName: &account.MiddleName,
+		RoleID:     role.ID,
 	})
 
 	if err != nil {
@@ -190,13 +205,7 @@ func (u *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.JSON(w, http.StatusOK, struct {
-		Token string `json:"access_token"`
-		Code  int    `json:"code"`
-	}{
-		Token: accessToken,
-		Code:  http.StatusOK,
-	})
+	render.JSON(w, http.StatusOK, map[string]string{"access_token": accessToken})
 }
 
 func generateAccessToken(user *generated.User, subscription *generated.Subscription) (string, error) {
@@ -204,6 +213,7 @@ func generateAccessToken(user *generated.User, subscription *generated.Subscript
 		AccountID:      user.AccountID,
 		PlanID:         subscription.Edges.Plan.ID,
 		SubscriptionID: subscription.ID,
+		RoleID:         user.RoleID,
 		UserID:         user.ID,
 		UserUUID:       user.UUID,
 		Email:          user.Email,
@@ -223,10 +233,7 @@ func generateAccessToken(user *generated.User, subscription *generated.Subscript
 			Description: subscription.Edges.Plan.Description,
 			Price:       subscription.Edges.Plan.Price,
 		},
-		// TODO: Add Role to the claims
-		Role: generated.Role{
-			ID: 1,
-		},
+		Role:    *user.Edges.Role,
 		Account: *user.Edges.Account,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(), // Example: 24 hours from now

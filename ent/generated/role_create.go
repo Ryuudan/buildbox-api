@@ -75,6 +75,12 @@ func (rc *RoleCreate) SetNillableCreatedAt(t *time.Time) *RoleCreate {
 	return rc
 }
 
+// SetPermissions sets the "permissions" field.
+func (rc *RoleCreate) SetPermissions(s []string) *RoleCreate {
+	rc.mutation.SetPermissions(s)
+	return rc
+}
+
 // SetUUID sets the "uuid" field.
 func (rc *RoleCreate) SetUUID(u uuid.UUID) *RoleCreate {
 	rc.mutation.SetUUID(u)
@@ -103,6 +109,21 @@ func (rc *RoleCreate) SetUserID(id int) *RoleCreate {
 // SetUser sets the "user" edge to the User entity.
 func (rc *RoleCreate) SetUser(u *User) *RoleCreate {
 	return rc.SetUserID(u.ID)
+}
+
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (rc *RoleCreate) AddUserIDs(ids ...int) *RoleCreate {
+	rc.mutation.AddUserIDs(ids...)
+	return rc
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (rc *RoleCreate) AddUsers(u ...*User) *RoleCreate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rc.AddUserIDs(ids...)
 }
 
 // Mutation returns the RoleMutation object of the builder.
@@ -174,6 +195,9 @@ func (rc *RoleCreate) check() error {
 	if _, ok := rc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`generated: missing required field "Role.created_at"`)}
 	}
+	if _, ok := rc.mutation.Permissions(); !ok {
+		return &ValidationError{Name: "permissions", err: errors.New(`generated: missing required field "Role.permissions"`)}
+	}
 	if _, ok := rc.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`generated: missing required field "Role.uuid"`)}
 	}
@@ -225,6 +249,10 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		_spec.SetField(role.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if value, ok := rc.mutation.Permissions(); ok {
+		_spec.SetField(role.FieldPermissions, field.TypeJSON, value)
+		_node.Permissions = value
+	}
 	if value, ok := rc.mutation.UUID(); ok {
 		_spec.SetField(role.FieldUUID, field.TypeUUID, value)
 		_node.UUID = value
@@ -261,6 +289,22 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatedBy = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   role.UsersTable,
+			Columns: []string{role.UsersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

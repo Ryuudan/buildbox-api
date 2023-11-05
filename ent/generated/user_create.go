@@ -34,6 +34,12 @@ func (uc *UserCreate) SetAccountID(i int) *UserCreate {
 	return uc
 }
 
+// SetRoleID sets the "role_id" field.
+func (uc *UserCreate) SetRoleID(i int) *UserCreate {
+	uc.mutation.SetRoleID(i)
+	return uc
+}
+
 // SetFirstName sets the "first_name" field.
 func (uc *UserCreate) SetFirstName(s string) *UserCreate {
 	uc.mutation.SetFirstName(s)
@@ -145,6 +151,11 @@ func (uc *UserCreate) SetNillableUUID(u *uuid.UUID) *UserCreate {
 // SetAccount sets the "account" edge to the Account entity.
 func (uc *UserCreate) SetAccount(a *Account) *UserCreate {
 	return uc.SetAccountID(a.ID)
+}
+
+// SetRole sets the "role" edge to the Role entity.
+func (uc *UserCreate) SetRole(r *Role) *UserCreate {
+	return uc.SetRoleID(r.ID)
 }
 
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
@@ -291,6 +302,9 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account_id", err: errors.New(`generated: missing required field "User.account_id"`)}
 	}
+	if _, ok := uc.mutation.RoleID(); !ok {
+		return &ValidationError{Name: "role_id", err: errors.New(`generated: missing required field "User.role_id"`)}
+	}
 	if _, ok := uc.mutation.FirstName(); !ok {
 		return &ValidationError{Name: "first_name", err: errors.New(`generated: missing required field "User.first_name"`)}
 	}
@@ -308,6 +322,9 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`generated: missing required edge "User.account"`)}
+	}
+	if _, ok := uc.mutation.RoleID(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`generated: missing required edge "User.role"`)}
 	}
 	return nil
 }
@@ -390,6 +407,23 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AccountID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.RoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.RoleTable,
+			Columns: []string{user.RoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.RoleID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.TasksIDs(); len(nodes) > 0 {

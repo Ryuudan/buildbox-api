@@ -1,4 +1,4 @@
-h1:Bn5ze/0ASdfIFCsxSh03UcaThWM3cUnRRujOBmyor50=
+h1:3//asglGcgtGdMzDHBeXdNJQ61HXvk4z2MiSjIfyuSQ=
 20230929041617_init_tables.sql h1:jp3kySL1d95OXRd1IJNuXlz5l7kcX9QLmoSckfjep2k=
 20231007134832_init_milestone_table.sql h1:m5zlcwPMJ2pAIiiEEtD1wNjtrITPkRJOCbgkuh33REE=
 20231007143404_add_milestone_id.sql h1:JMXSniDQl+FG5vj+bhtKJ/px8ZSITrWBw1PjGZCuEDA=
@@ -12,3 +12,5 @@ h1:Bn5ze/0ASdfIFCsxSh03UcaThWM3cUnRRujOBmyor50=
 20231010064230_clients_table.sql h1:m/NM/2O6nfhu7D66gERycUElqT1cUrTJWqEs8bu6NIc=
 20231010085507_role_created_by.sql h1:v/pc4cgGKLVDwCNnNtxWFGbp+HO7zYEPV5fF04t3zts=
 20231012130006_create_teams_table.sql h1:3rvzkxON9RsvcqIZPqTYzR6r1g1K8z/t95IagyNlaJ8=
+20231105085711_permissions.sql h1:zH3qvkyKzEw2UZdoV0YrT9OFLpSIr4BU2hyhwtICwtU=
+20231105092432_add_role_id.sql h1:I4QsnPLhujJ3hyPgW3+r5au+jfxrn5Emqy0i5/KO5R8=

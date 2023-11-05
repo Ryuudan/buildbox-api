@@ -3,6 +3,7 @@
 package generated
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -32,6 +33,8 @@ type Role struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Permissions holds the value of the "permissions" field.
+	Permissions []string `json:"permissions" validate:"required"`
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -46,9 +49,11 @@ type RoleEdges struct {
 	Account *Account `json:"account,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// Users holds the value of the users edge.
+	Users []*User `json:"users,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // AccountOrErr returns the Account value or an error if the edge
@@ -77,11 +82,22 @@ func (e RoleEdges) UserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "user"}
 }
 
+// UsersOrErr returns the Users value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoleEdges) UsersOrErr() ([]*User, error) {
+	if e.loadedTypes[2] {
+		return e.Users, nil
+	}
+	return nil, &NotLoadedError{edge: "users"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Role) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case role.FieldPermissions:
+			values[i] = new([]byte)
 		case role.FieldID, role.FieldAccountID, role.FieldCreatedBy:
 			values[i] = new(sql.NullInt64)
 		case role.FieldName, role.FieldDescription:
@@ -147,6 +163,14 @@ func (r *Role) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				r.CreatedAt = value.Time
 			}
+		case role.FieldPermissions:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field permissions", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &r.Permissions); err != nil {
+					return fmt.Errorf("unmarshal field permissions: %w", err)
+				}
+			}
 		case role.FieldUUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field uuid", values[i])
@@ -174,6 +198,11 @@ func (r *Role) QueryAccount() *AccountQuery {
 // QueryUser queries the "user" edge of the Role entity.
 func (r *Role) QueryUser() *UserQuery {
 	return NewRoleClient(r.config).QueryUser(r)
+}
+
+// QueryUsers queries the "users" edge of the Role entity.
+func (r *Role) QueryUsers() *UserQuery {
+	return NewRoleClient(r.config).QueryUsers(r)
 }
 
 // Update returns a builder for updating this Role.
@@ -216,6 +245,9 @@ func (r *Role) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("permissions=")
+	builder.WriteString(fmt.Sprintf("%v", r.Permissions))
 	builder.WriteString(", ")
 	builder.WriteString("uuid=")
 	builder.WriteString(fmt.Sprintf("%v", r.UUID))

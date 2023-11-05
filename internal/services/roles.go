@@ -33,16 +33,12 @@ func NewRolesService(client *generated.RoleClient) RolesService {
 
 func (s *rolesService) CreateRole(ctx context.Context, newRole *generated.Role) (*generated.Role, error) {
 
-	claims, ok := ctx.Value(models.ContextKeyClaims).(jwt.MapClaims)
-	if !ok {
-		return nil, errors.New("failed to get user claims from context")
-	}
-
 	role, err := s.client.Create().
-		SetAccountID(int(claims["account_id"].(float64))).
-		SetCreatedBy(int(claims["user_id"].(float64))).
+		SetAccountID(newRole.AccountID).
+		SetCreatedBy(newRole.CreatedBy).
 		SetName(newRole.Name).
 		SetDescription(newRole.Description).
+		SetPermissions(newRole.Permissions).
 		Save(ctx)
 
 	if err != nil {

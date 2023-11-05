@@ -12,6 +12,7 @@ import (
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/Pyakz/buildbox-api/utils/render"
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt"
 )
 
 type RolesHandlers struct {
@@ -68,6 +69,16 @@ func (ro *RolesHandlers) CreateRole(w http.ResponseWriter, r *http.Request) {
 		render.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	claims, ok := r.Context().Value(models.ContextKeyClaims).(jwt.MapClaims)
+
+	if !ok {
+		render.Error(w, r, http.StatusInternalServerError, "failed to get user claims from context")
+		return
+	}
+
+	newRole.AccountID = int(claims["account_id"].(float64))
+	newRole.CreatedBy = int(claims["user_id"].(float64))
 
 	render.JSON(w, http.StatusCreated, newRole)
 }

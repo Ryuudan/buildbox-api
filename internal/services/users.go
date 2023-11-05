@@ -41,6 +41,7 @@ func (s *userService) RegisterUser(ctx context.Context, newUser *generated.User)
 		SetNillableMiddleName(newUser.MiddleName).
 		SetNillableBirthday(newUser.Birthday).
 		SetNillablePhoneNumber(newUser.PhoneNumber).
+		SetRoleID(newUser.RoleID).
 		Save(ctx)
 
 	if err != nil {
@@ -53,7 +54,7 @@ func (s *userService) RegisterUser(ctx context.Context, newUser *generated.User)
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (*generated.User, error) {
 	user, err := s.client.Query().Where(
 		user.EmailEQ(email),
-	).WithAccount().First(ctx)
+	).WithAccount().WithRole().First(ctx)
 
 	if err != nil {
 		return nil, err
