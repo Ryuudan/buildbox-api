@@ -64,7 +64,6 @@ func main() {
 
 	app.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-
 	})
 
 	routers.PrivateInitializeRoutes(db_client, app)

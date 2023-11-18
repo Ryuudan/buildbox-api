@@ -4,6 +4,7 @@ version: "3.8"
 services:
   postgres:
     image: postgres:alpine
+    container_name: postgres
     environment:
       POSTGRES_DB: buildbox
       POSTGRES_PASSWORD: bb_password
@@ -14,6 +15,7 @@ services:
 
   pgweb:
     image: sosedoff/pgweb
+    container_name: pgweb
     depends_on:
       - postgres
     environment:
