@@ -10,6 +10,7 @@ import (
 	"github.com/Pyakz/buildbox-api/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httprate"
+	"github.com/redis/go-redis/v9"
 )
 
 func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
@@ -37,7 +38,7 @@ func PrivateInitializeRoutes(client *generated.Client, router chi.Router) http.H
 	return router
 }
 
-func PublicInitializeRoutes(client *generated.Client, router chi.Router) http.Handler {
+func PublicInitializeRoutes(client *generated.Client, redis_client *redis.Client, router chi.Router) http.Handler {
 	log.Println("✅ Routes: /public")
 	public := chi.NewRouter()
 
@@ -46,7 +47,7 @@ func PublicInitializeRoutes(client *generated.Client, router chi.Router) http.Ha
 	public.Group(func(v1 chi.Router) {
 		v1.Use(utils.VersionMiddleware("1.0"))
 		V1Public(client, v1)
-		V1PublicPlans(client, v1)
+		V1PublicPlans(client, redis_client, v1)
 	})
 
 	router.Mount("/public/v1", public)

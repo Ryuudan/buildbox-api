@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Pyakz/buildbox-api/constants"
+	"github.com/Pyakz/buildbox-api/database"
 	"github.com/Pyakz/buildbox-api/ent/generated"
 	"github.com/Pyakz/buildbox-api/internal/models"
 	"github.com/Pyakz/buildbox-api/internal/services"
@@ -17,11 +18,13 @@ import (
 
 type PlanHandler struct {
 	planService services.PlanService
+	cache       *database.RedisCache
 }
 
-func NewPlanHandler(planService services.PlanService) *PlanHandler {
+func NewPlanHandler(planService services.PlanService, cache *database.RedisCache) *PlanHandler {
 	return &PlanHandler{
 		planService: planService,
+		cache:       cache,
 	}
 }
 
@@ -65,17 +68,46 @@ func (p *PlanHandler) CreatePlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.JSON(w, http.StatusCreated, newPlan)
-}
-
-func (p *PlanHandler) GetPlans(w http.ResponseWriter, r *http.Request) {
-	plans, err := p.planService.GetPlans(r.Context())
-
+	// clear the cache
+	p.cache.ClearCache("plans")
 	if err != nil {
 		render.Error(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	render.JSON(w, http.StatusCreated, newPlan)
+}
+
+func (p *PlanHandler) GetPlans(w http.ResponseWriter, r *http.Request) {
+	// Attempt to retrieve plans from cache
+	if existing, err := p.cache.GetCache("plans"); err == nil && existing != "" {
+		var plans []generated.Plan
+		if err := json.Unmarshal([]byte(existing), &plans); err == nil {
+			render.JSON(w, http.StatusOK, plans)
+			return
+		}
+	}
+
+	// Plans not found in the cache or error occurred, fetch from the service
+	plans, err := p.planService.GetPlans(r.Context())
+	if err != nil {
+		render.Error(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// If plans are obtained, store them in the cache
+	if len(plans) > 0 {
+		if plansJSON, err := json.Marshal(plans); err == nil {
+			if err := p.cache.SetCache("plans", string(plansJSON), 0); err != nil {
+				fmt.Println("Error setting cache:", err)
+			}
+		} else {
+			render.Error(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	// Return the plans
 	render.JSON(w, http.StatusOK, plans)
 }
 

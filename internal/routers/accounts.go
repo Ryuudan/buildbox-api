@@ -17,7 +17,6 @@ func V1Accounts(client *generated.Client, router chi.Router) {
 	userService := services.NewUserService(client.User)
 	planService := services.NewPlanService(client.Plan)
 	subscriptionService := services.NewSubscriptionService(client.Subscription)
-
 	account := handlers.NewAccountHandler(accountService, userService, planService, subscriptionService)
 
 	router.Route("/accounts", func(r chi.Router) {

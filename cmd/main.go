@@ -26,7 +26,8 @@ func init() {
 }
 
 func main() {
-
+	// init redis
+	redis_client := database.RedisClient()
 	db_client, err := database.PostgresConnect()
 
 	if err != nil {
@@ -67,7 +68,7 @@ func main() {
 	})
 
 	routers.PrivateInitializeRoutes(db_client, app)
-	routers.PublicInitializeRoutes(db_client, app)
+	routers.PublicInitializeRoutes(db_client, redis_client, app)
 
 	// Start server
 	server := http.Server{

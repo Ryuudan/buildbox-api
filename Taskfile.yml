@@ -11,7 +11,7 @@ tasks:
   tidy:
     cmds:
       - go mod tidy
-  docs:
+  docs: # Not yet
     cmds:
       - swag init --dir ./cmd
   build:
